@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCG Card Pack Opener - 卡包开封模拟器</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- ====== 全局加载遮罩层 ====== -->
+    <div id="loading-overlay" class="loading-overlay" style="display:none;">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">加载中...</p>
+        </div>
+    </div>
+
+    <!-- ====== 顶部导航栏 ====== -->
+    <header class="top-bar">
+        <h1 class="game-title">TCG Pack Opener</h1>
+        <nav class="top-nav">
+            <button id="btn-cache-manage" class="nav-btn">💾 缓存</button>
+            <button id="btn-changelog" class="nav-btn">📋 日志</button>
+        </nav>
+    </header>
+
+    <!-- ====== 主游戏区域 ====== -->
+    <main class="game-area">
+        <!-- 卡包选择区域 -->
+        <section id="pack-select-section" class="section-panel">
+            <h2 class="section-title">选择卡包</h2>
+            <p class="section-subtitle">卡牌数据来自 YGOProDeck API（离线时使用内置数据）</p>
+            <div id="pack-list" class="pack-list">
+                <!-- 卡包列表会由 JS 动态生成 -->
+            </div>
+        </section>
+
+        <!-- 开包按钮区域 -->
+        <section id="open-pack-section" class="section-panel" style="display:none;">
+            <div class="pack-info">
+                <h2 id="current-pack-name" class="section-title"></h2>
+                <p id="current-pack-desc" class="pack-desc"></p>
+            </div>
+            <div class="open-btn-container">
+                <button id="btn-open-pack" class="btn-open-pack">🎴 开启卡包</button>
+            </div>
+            <button id="btn-back-to-packs" class="btn-secondary">← 返回选择卡包</button>
+        </section>
+
+        <!-- 开包动画遮罩层 -->
+        <div id="opening-overlay" class="opening-overlay" style="display:none;">
+            <div class="opening-animation">
+                <div class="pack-tear">
+                    <div class="pack-visual">🎴</div>
+                    <p class="opening-text">正在开启卡包...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 卡牌结果展示区域 -->
+        <section id="result-section" class="section-panel" style="display:none;">
+            <h2 class="section-title">开包结果</h2>
+            <div id="cards-display" class="cards-display">
+                <!-- 抽到的卡牌会由 JS 动态生成 -->
+            </div>
+            <div class="result-actions">
+                <button id="btn-open-again" class="btn-open-pack">🎴 再开一包</button>
+                <button id="btn-back-from-result" class="btn-secondary">← 返回选择卡包</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- ====== 更新日志弹窗 ====== -->
+    <div id="changelog-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📋 更新日志</h2>
+                <button id="btn-close-changelog" class="modal-close">&times;</button>
+            </div>
+            <div id="changelog-content" class="modal-body">
+                <!-- 更新日志内容由 JS 动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== 缓存管理弹窗 ====== -->
+    <div id="cache-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>💾 缓存管理</h2>
+                <button id="btn-close-cache" class="modal-close">&times;</button>
+            </div>
+            <div id="cache-content" class="modal-body">
+                <!-- 缓存信息由 JS 动态生成 -->
+            </div>
+            <div class="modal-footer">
+                <button id="btn-clear-cache" class="btn-danger">🗑️ 清除所有缓存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== 页脚 ====== -->
+    <footer class="footer">
+        <p>TCG Pack Opener v0.2.0 | 卡包开封模拟器</p>
+        <p class="footer-credit">
+            Card data provided by <a href="https://ygoprodeck.com/" target="_blank" rel="noopener">YGOProDeck</a>. 
+            Yu-Gi-Oh! is a trademark of <a href="https://www.konami.com/" target="_blank" rel="noopener">Konami Digital Entertainment</a>.
+        </p>
+    </footer>
+
+    <!-- 先加载离线备用数据，再加载 API 模块，最后加载游戏逻辑 -->
+    <script src="data/fallback_cards.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
