@@ -1,7 +1,7 @@
 /**
  * ============================================
  * YGO Pack Opener - 游戏核心逻辑
- * 版本: 0.4.0
+ * 版本: 0.5.0
  * 
  * 【文件说明】
  * 这是游戏的"大脑"，负责：
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         hideLoadingState();
 
-        console.log(`🎴 YGO Pack Opener v0.4.0 初始化完成！当前模式: ${currentGameMode.toUpperCase()}`);
+        console.log(`🎴 YGO Pack Opener v0.5.0 初始化完成！当前模式: ${currentGameMode.toUpperCase()}`);
 
     } catch (error) {
         console.error('❌ 加载配置文件失败:', error);
@@ -214,12 +214,12 @@ function updateModeButtons() {
     // 更新模式提示文本
     if (modeInfoText) {
         if (currentGameMode === 'ocg') {
-            modeInfoText.textContent = '🎌 OCG 模式（亚洲版） — 每包5张 | 数据源: YGOCDB';
+            const langConfig = TCG_API.getLanguageConfig('ocg');
+            modeInfoText.textContent = `🇰 OCG 模式（亚洲版） — 每包5张 | ${langConfig.nameLocal} | 数据源: YGOProDeck`;
         } else {
-            modeInfoText.textContent = '🌎 TCG 模式（欧美版） — 每包9张 | 数据源: YGOProDeck';
+            modeInfoText.textContent = '🌎 TCG 模式（欧美版） — 每包9张 | 英文 | 数据源: YGOProDeck';
         }
-    }
-}
+    }}
 
 /**
  * 获取当前模式的卡包配置
@@ -301,7 +301,9 @@ async function selectPack(pack) {
     currentPack = pack;
 
     // 显示加载状态
-    const dataSourceName = currentGameMode === 'ocg' ? 'YGOCDB' : 'YGOProDeck';
+    const dataSourceName = currentGameMode === 'ocg'
+        ? 'YGOProDeck (' + TCG_API.getLanguageConfig('ocg').nameLocal + ')'
+        : 'YGOProDeck';
     showLoadingState(`正在从 ${dataSourceName} 加载「${pack.packName}」...`);
 
     try {
@@ -334,7 +336,7 @@ async function selectPack(pack) {
     } catch (error) {
         console.error('❌ 加载卡包数据失败:', error);
         hideLoadingState();
-        const apiName = currentGameMode === 'ocg' ? 'YGOCDB' : 'YGOProDeck';
+        const apiName = currentGameMode === 'ocg' ? 'YGOProDeck' : 'YGOProDeck';
         alert(`加载卡包「${pack.packName}」失败。\n\n可能原因：\n1. 网络无法连接到 ${apiName} API\n2. 该卡包没有对应的离线备用数据\n\n错误详情: ${error.message}`);
     }
 }

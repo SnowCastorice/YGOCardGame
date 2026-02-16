@@ -1,18 +1,18 @@
 {
-  "_说明": "卡包配置表 v0.4.0 —— OCG 使用 YGOCDB API（中文数据源），TCG 使用 YGOProDeck API",
+  "_说明": "卡包配置表 v0.5.0 —— OCG 使用 YGOProDeck API（日文），TCG 使用 YGOProDeck API（英文）",
   "_格式说明": {
     "packId": "卡包唯一ID（自定义，不能重复）",
     "packName": "卡包显示名称（显示在网页上）",
     "setCode": "TCG 专用：YGOProDeck 卡包编码（用于调用 API）",
-    "cardIds": "OCG 专用：预定义的卡牌ID列表及稀有度（通过 YGOCDB API 获取中文卡牌详情）",
+    "cardIds": "OCG 专用：预定义的卡牌ID列表及稀有度（通过 YGOProDeck API + language=ja 获取日文卡牌详情）",
     "cardsPerPack": "每包抽取的卡牌数量",
     "rarityRates": "各稀有度的抽取权重（数字越大越容易抽到）",
     "guaranteedRareSlot": "是否保底最后一张至少为 R 及以上",
     "gameMode": "游戏模式：ocg = 亚洲版, tcg = 欧美版"
   },
   "ocg": {
-    "_说明": "OCG（Official Card Game）亚洲版卡包 — 每包5张，使用 YGOCDB API 获取中文卡牌数据",
-    "_数据源": "卡牌信息: ygocdb.com | 卡图: images.ygoprodeck.com",
+    "_说明": "OCG（Official Card Game）亚洲版卡包 — 每包5张，使用 YGOProDeck API (?language=ja) 获取日文卡牌数据",
+    "_数据源": "卡牌信息 + 卡图: ygoprodeck.com | 中文备用: ygocdb.com",
     "packs": [
       {
         "packId": "ocg_vol1",

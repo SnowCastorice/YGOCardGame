@@ -1,12 +1,12 @@
 /**
  * ============================================
  * YGO Pack Opener - 离线备用卡牌数据
- * 版本: 0.4.0
+ * 版本: 0.5.0
  * 
  * 【文件说明】
  * 当 API 无法访问时使用这些内嵌数据。
  * - TCG 卡包：英文数据（对应 YGOProDeck API 离线时）
- * - OCG 卡包：中文数据（对应 YGOCDB API 离线时）
+ * - OCG 卡包：日文数据（对应 YGOProDeck ?language=ja 离线时）
  * 卡牌数据版权归 Konami Digital Entertainment
  * ============================================
  */
@@ -150,10 +150,10 @@ window.FALLBACK_CARD_DATA = {
     },
 
     // ====================================================================
-    // OCG 卡包备用数据（亚洲版）
+    // OCG カードパック予備データ（日本語）
     // ====================================================================
 
-    // ====== OCG Vol.1（中文备用数据，key 对应 packId） ======
+    // ====== OCG Vol.1（日本語予備データ、key は packId に対応） ======
     "ocg_vol1": {
         setCode: "ocg_vol1",
         totalCards: 30,
@@ -161,39 +161,39 @@ window.FALLBACK_CARD_DATA = {
         dataSource: 'fallback',
         cards: [
             // === UR ===
-            { id: 89631139, name: "青眼白龙", type: "Normal Monster", desc: "以高攻击力著称的传说之龙。任何对手都能粉碎，其破坏力不可估量。", atk: 3000, def: 2500, level: 8, race: "龙", attribute: "光", rarity: "Ultra Rare", rarityCode: "UR", imageUrl: null, imageLargeUrl: null },
-            { id: 46986414, name: "黑魔术师", type: "Normal Monster", desc: "作为魔术师，攻击力和守备力是最高级别。", atk: 2500, def: 2100, level: 7, race: "魔法师", attribute: "暗", rarity: "Ultra Rare", rarityCode: "UR", imageUrl: null, imageLargeUrl: null },
-            { id: 74677422, name: "真红眼黑龙", type: "Normal Monster", desc: "用锐利的爪子攻击敌人的凶恶之龙。", atk: 2400, def: 2000, level: 7, race: "龙", attribute: "暗", rarity: "Ultra Rare", rarityCode: "UR", imageUrl: null, imageLargeUrl: null },
+            { id: 89631139, name: "青眼の白龍", type: "Normal Monster", desc: "高い攻撃力を誇る伝説のドラゴン。どんな相手でも粉砕する、その破壊力は計り知れない。", atk: 3000, def: 2500, level: 8, race: "ドラゴン", attribute: "光", rarity: "Ultra Rare", rarityCode: "UR", imageUrl: null, imageLargeUrl: null },
+            { id: 46986414, name: "ブラック・マジシャン", type: "Normal Monster", desc: "魔法使いとしては、攻撃力・守備力ともに最高クラス。", atk: 2500, def: 2100, level: 7, race: "魔法使い", attribute: "闇", rarity: "Ultra Rare", rarityCode: "UR", imageUrl: null, imageLargeUrl: null },
+            { id: 74677422, name: "真紅眼の黒竜", type: "Normal Monster", desc: "真紅の眼を持つ黒竜。怒りの黒き炎はその眼に映る者全てを焼き尽くす。", atk: 2400, def: 2000, level: 7, race: "ドラゴン", attribute: "闇", rarity: "Ultra Rare", rarityCode: "UR", imageUrl: null, imageLargeUrl: null },
 
             // === SR ===
-            { id: 44209392, name: "凯尔特守护者", type: "Normal Monster", desc: "掌握了剑技的精灵。", atk: 1400, def: 1200, level: 4, race: "战士", attribute: "地", rarity: "Super Rare", rarityCode: "SR", imageUrl: null, imageLargeUrl: null },
-            { id: 12580477, name: "雷击", type: "Spell Card", desc: "破坏对方场上所有怪兽。", atk: null, def: null, level: null, race: "魔法", attribute: "魔法", rarity: "Super Rare", rarityCode: "SR", imageUrl: null, imageLargeUrl: null },
-            { id: 53129443, name: "黑洞", type: "Spell Card", desc: "破坏场上所有怪兽。", atk: null, def: null, level: null, race: "魔法", attribute: "魔法", rarity: "Super Rare", rarityCode: "SR", imageUrl: null, imageLargeUrl: null },
-            { id: 87796900, name: "诅咒之龙", type: "Normal Monster", desc: "借助暗之力量进行强力攻击的邪恶之龙。", atk: 2000, def: 1500, level: 5, race: "龙", attribute: "暗", rarity: "Super Rare", rarityCode: "SR", imageUrl: null, imageLargeUrl: null },
-            { id: 70781052, name: "恶魔召唤", type: "Normal Monster", desc: "用电击攻击使敌人混乱的恶魔。", atk: 2500, def: 1200, level: 6, race: "恶魔", attribute: "暗", rarity: "Super Rare", rarityCode: "SR", imageUrl: null, imageLargeUrl: null },
+            { id: 44209392, name: "エルフの剣士", type: "Normal Monster", desc: "エルフの剣士。素早い動きで敵をほんろうする。", atk: 1400, def: 1200, level: 4, race: "戦士", attribute: "地", rarity: "Super Rare", rarityCode: "SR", imageUrl: null, imageLargeUrl: null },
+            { id: 12580477, name: "サンダー・ボルト", type: "Spell Card", desc: "相手フィールドのモンスターを全て破壊する。", atk: null, def: null, level: null, race: "魔法", attribute: "魔法", rarity: "Super Rare", rarityCode: "SR", imageUrl: null, imageLargeUrl: null },
+            { id: 53129443, name: "ブラック・ホール", type: "Spell Card", desc: "フィールドのモンスターを全て破壊する。", atk: null, def: null, level: null, race: "魔法", attribute: "魔法", rarity: "Super Rare", rarityCode: "SR", imageUrl: null, imageLargeUrl: null },
+            { id: 87796900, name: "カース・オブ・ドラゴン", type: "Normal Monster", desc: "闇の力を使い強力な攻撃をする邪悪なドラゴン。", atk: 2000, def: 1500, level: 5, race: "ドラゴン", attribute: "闇", rarity: "Super Rare", rarityCode: "SR", imageUrl: null, imageLargeUrl: null },
+            { id: 70781052, name: "デーモンの召喚", type: "Normal Monster", desc: "悪魔族の中では最強クラスの攻撃力を持つ。", atk: 2500, def: 1200, level: 6, race: "悪魔", attribute: "闇", rarity: "Super Rare", rarityCode: "SR", imageUrl: null, imageLargeUrl: null },
 
             // === R ===
-            { id: 6368038, name: "暗黑骑士盖亚", type: "Normal Monster", desc: "骑着比风还快的马的骑士。", atk: 2300, def: 2100, level: 7, race: "战士", attribute: "地", rarity: "Rare", rarityCode: "R", imageUrl: null, imageLargeUrl: null },
-            { id: 83764718, name: "死者苏生", type: "Spell Card", desc: "从任意一方墓地选择1只怪兽特殊召唤。", atk: null, def: null, level: null, race: "魔法", attribute: "魔法", rarity: "Rare", rarityCode: "R", imageUrl: null, imageLargeUrl: null },
-            { id: 46130346, name: "陷坑", type: "Trap Card", desc: "对方通常召唤或翻转召唤攻击力1000以上怪兽时破坏该怪兽。", atk: null, def: null, level: null, race: "陷阱", attribute: "陷阱", rarity: "Rare", rarityCode: "R", imageUrl: null, imageLargeUrl: null },
-            { id: 54652250, name: "食人虫", type: "Effect Monster", desc: "翻转：选择场上1只怪兽破坏。", atk: 450, def: 600, level: 2, race: "昆虫", attribute: "地", rarity: "Rare", rarityCode: "R", imageUrl: null, imageLargeUrl: null },
-            { id: 24094653, name: "融合", type: "Spell Card", desc: "从额外卡组融合召唤1只融合怪兽。", atk: null, def: null, level: null, race: "魔法", attribute: "魔法", rarity: "Rare", rarityCode: "R", imageUrl: null, imageLargeUrl: null },
-            { id: 19159413, name: "大风暴", type: "Spell Card", desc: "破坏场上所有魔法·陷阱卡。", atk: null, def: null, level: null, race: "魔法", attribute: "魔法", rarity: "Rare", rarityCode: "R", imageUrl: null, imageLargeUrl: null },
+            { id: 6368038, name: "暗黒騎士ガイア", type: "Normal Monster", desc: "風よりも速く走る馬に乗った騎士。", atk: 2300, def: 2100, level: 7, race: "戦士", attribute: "地", rarity: "Rare", rarityCode: "R", imageUrl: null, imageLargeUrl: null },
+            { id: 83764718, name: "死者蘇生", type: "Spell Card", desc: "自分または相手の墓地からモンスター1体を選んで自分フィールドに特殊召喚する。", atk: null, def: null, level: null, race: "魔法", attribute: "魔法", rarity: "Rare", rarityCode: "R", imageUrl: null, imageLargeUrl: null },
+            { id: 46130346, name: "落とし穴", type: "Trap Card", desc: "相手が攻撃力1000以上のモンスターを召喚した時、そのモンスターを破壊する。", atk: null, def: null, level: null, race: "罠", attribute: "罠", rarity: "Rare", rarityCode: "R", imageUrl: null, imageLargeUrl: null },
+            { id: 54652250, name: "人喰い虫", type: "Effect Monster", desc: "リバース：フィールドのモンスター1体を選んで破壊する。", atk: 450, def: 600, level: 2, race: "昆虫", attribute: "地", rarity: "Rare", rarityCode: "R", imageUrl: null, imageLargeUrl: null },
+            { id: 24094653, name: "融合", type: "Spell Card", desc: "手札・自分フィールドから融合素材モンスターを墓地へ送り、エクストラデッキから融合モンスター1体を融合召喚する。", atk: null, def: null, level: null, race: "魔法", attribute: "魔法", rarity: "Rare", rarityCode: "R", imageUrl: null, imageLargeUrl: null },
+            { id: 19159413, name: "秘術の書", type: "Spell Card", desc: "魔法使い族に装備。攻撃力・守備力300ポイントアップ。", atk: null, def: null, level: null, race: "魔法", attribute: "魔法", rarity: "Rare", rarityCode: "R", imageUrl: null, imageLargeUrl: null },
 
             // === N ===
-            { id: 32274490, name: "骷髅仆人", type: "Normal Monster", desc: "力量虽弱但数量多了就很麻烦的骷髅幽灵。", atk: 300, def: 200, level: 1, race: "不死", attribute: "暗", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
-            { id: 90357090, name: "白银之牙", type: "Normal Monster", desc: "美丽但凶猛的雪狼。", atk: 1200, def: 800, level: 3, race: "兽", attribute: "地", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
-            { id: 65622692, name: "神秘的精灵", type: "Normal Monster", desc: "攻击力虽低但守备力极高的精灵。", atk: 800, def: 2000, level: 4, race: "魔法师", attribute: "光", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
-            { id: 40374923, name: "小恶魔", type: "Normal Monster", desc: "潜伏在黑暗中的淘气小恶魔。", atk: 1300, def: 1400, level: 4, race: "恶魔", attribute: "暗", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
-            { id: 69455834, name: "守护要塞的翼龙", type: "Normal Monster", desc: "常见于守卫山岳要塞的龙。", atk: 1400, def: 1200, level: 4, race: "龙", attribute: "风", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
-            { id: 49218300, name: "河童战士", type: "Normal Monster", desc: "体型虽小但在草原战斗中守备力很强。", atk: 1200, def: 1500, level: 4, race: "兽战士", attribute: "地", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
-            { id: 37313786, name: "独眼巨人", type: "Normal Monster", desc: "拥有粗壮手臂的独眼巨人。", atk: 1200, def: 1000, level: 4, race: "兽战士", attribute: "地", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
-            { id: 76184692, name: "暗黑恐惧巨人", type: "Normal Monster", desc: "栖息在暗之世界的恶魔。", atk: 1300, def: 1100, level: 4, race: "恶魔", attribute: "暗", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
-            { id: 75745607, name: "古代精灵", type: "Normal Monster", desc: "据说活了几千年的精灵。", atk: 1450, def: 1200, level: 4, race: "魔法师", attribute: "光", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+            { id: 32274490, name: "ワイト", type: "Normal Monster", desc: "力は弱いが数が増えると厄介なガイコツ幽霊。", atk: 300, def: 200, level: 1, race: "アンデット", attribute: "闇", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+            { id: 90357090, name: "シルバー・フォング", type: "Normal Monster", desc: "美しいが獰猛な雪の狼。", atk: 1200, def: 800, level: 3, race: "獣", attribute: "地", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+            { id: 65622692, name: "ホーリー・エルフ", type: "Normal Monster", desc: "攻撃力は低いが守備力は非常に高い。", atk: 800, def: 2000, level: 4, race: "魔法使い", attribute: "光", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+            { id: 40374923, name: "クリッター", type: "Normal Monster", desc: "闇に潜むいたずらっ子の小悪魔。", atk: 1300, def: 1400, level: 4, race: "悪魔", attribute: "闇", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+            { id: 69455834, name: "砦を守る翼竜", type: "Normal Monster", desc: "山岳の砦を守る竜。", atk: 1400, def: 1200, level: 4, race: "ドラゴン", attribute: "風", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+            { id: 49218300, name: "ルイーズ", type: "Normal Monster", desc: "小さい体だが草原での守備力は高い。", atk: 1200, def: 1500, level: 4, race: "獣戦士", attribute: "地", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+            { id: 37313786, name: "ヒトツメジャイアント", type: "Normal Monster", desc: "太い腕を持つ一つ目の巨人。", atk: 1200, def: 1000, level: 4, race: "獣戦士", attribute: "地", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+            { id: 76184692, name: "闇の仮面", type: "Normal Monster", desc: "闇の世界に棲む悪魔。", atk: 1300, def: 1100, level: 4, race: "悪魔", attribute: "闇", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+            { id: 75745607, name: "エンシェント・エルフ", type: "Normal Monster", desc: "何千年も生きたと言われるエルフ。", atk: 1450, def: 1200, level: 4, race: "魔法使い", attribute: "光", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
         ]
     },
 
-    // ====== OCG Vol.2（中文备用数据） ======
+    // ====== OCG Vol.2（日本語予備データ） ======
     "ocg_vol2": {
         setCode: "ocg_vol2",
         totalCards: 25,
@@ -228,7 +228,7 @@ window.FALLBACK_CARD_DATA = {
         ]
     },
 
-    // ====== OCG Vol.3（中文备用数据） ======
+    // ====== OCG Vol.3（日本語予備データ） ======
     "ocg_vol3": {
         setCode: "ocg_vol3",
         totalCards: 20,
@@ -261,7 +261,7 @@ window.FALLBACK_CARD_DATA = {
         ]
     },
 
-    // ====== OCG STARTER BOX（中文备用数据） ======
+    // ====== OCG STARTER BOX（日本語予備データ） ======
     "ocg_starter_box": {
         setCode: "ocg_starter_box",
         totalCards: 19,
@@ -290,7 +290,7 @@ window.FALLBACK_CARD_DATA = {
         ]
     },
 
-    // ====== OCG PREMIUM PACK 1（中文备用数据） ======
+    // ====== OCG PREMIUM PACK 1（日本語予備データ） ======
     "ocg_premium_pack_1": {
         setCode: "ocg_premium_pack_1",
         totalCards: 18,
@@ -322,4 +322,4 @@ window.FALLBACK_CARD_DATA = {
     }
 };
 
-console.log('📂 离线备用卡牌数据已加载（OCG 中文 + TCG 英文）');
+console.log('📂 離線予備カードデータ読み込み完了（OCG 日本語 + TCG 英語）');
