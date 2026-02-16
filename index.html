@@ -75,7 +75,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2>📋 更新日志</h2>
-                <button id="btn-close-changelog" class="modal-close">&times;</button>
+                <button id="btn-close-changelog" class="modal-close" onclick="document.getElementById('changelog-modal').style.display='none'">&times;</button>
             </div>
             <div id="changelog-content" class="modal-body">
                 <!-- 更新日志内容由 JS 动态生成 -->
@@ -88,7 +88,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2>💾 缓存管理</h2>
-                <button id="btn-close-cache" class="modal-close">&times;</button>
+                <button id="btn-close-cache" class="modal-close" onclick="document.getElementById('cache-modal').style.display='none'">&times;</button>
             </div>
             <div id="cache-content" class="modal-body">
                 <!-- 缓存信息由 JS 动态生成 -->
@@ -109,8 +109,8 @@
     </footer>
 
     <!-- 先加载离线备用数据，再加载 API 模块，最后加载游戏逻辑 -->
-    <script src="data/fallback_cards.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/game.js"></script>
+    <script src="data/fallback_cards.js?v=0.2.1"></script>
+    <script src="js/api.js?v=0.2.1"></script>
+    <script src="js/game.js?v=0.2.1"></script>
 </body>
 </html>
