@@ -107,8 +107,13 @@ const API_CONFIG = {
     // Cache API 存储名称
     IMAGE_CACHE_NAME: 'ygo-card-images',
 
-    // 请求间隔（毫秒），避免请求过快
-    REQUEST_INTERVAL: 80,
+    // === API 限流保护 ===
+    // ⚠️ 重要：YGOProDeck 免费 API 限制为 20 requests/second
+    // 超过限制会返回 403，严重违规可能被永久封禁！
+    // 这里使用保守的间隔确保安全
+    REQUEST_INTERVAL: 300,        // 请求间隔（毫秒），每秒约 3 次请求，远低于限制
+    RETRY_BACKOFF_BASE: 2000,     // 限流退避基础等待时间（毫秒）
+    RETRY_MAX_ATTEMPTS: 3,        // 限流重试最大次数
 
     // OCG 批量查询每批最大 ID 数（YGOProDeck 支持逗号分隔多个 ID）
     BATCH_SIZE: 20
@@ -289,6 +294,35 @@ function delay(ms) {
     });
 }
 
+/**
+ * 全局请求节流器
+ * 
+ * 【简单解释】
+ * 确保所有 API 请求之间至少间隔 REQUEST_INTERVAL 毫秒，
+ * 即使有多个调用链同时运行（如加载卡牌 + 补充中文名），
+ * 也不会导致请求过快触发 API 限流。
+ * 
+ * ⚠️ YGOProDeck 免费 API 限制：20 requests/second
+ *    超过限制会返回 403，严重违规可能被永久封禁！
+ */
+const requestThrottler = {
+    lastRequestTime: 0,
+    
+    /**
+     * 等待直到可以安全发送下一个请求
+     * @param {number} interval - 最小间隔（毫秒），默认使用 REQUEST_INTERVAL
+     */
+    async waitForNext(interval) {
+        const minInterval = interval || API_CONFIG.REQUEST_INTERVAL;
+        const now = Date.now();
+        const elapsed = now - this.lastRequestTime;
+        if (elapsed < minInterval) {
+            await delay(minInterval - elapsed);
+        }
+        this.lastRequestTime = Date.now();
+    }
+};
+
 // ====== 语言与数据源管理 ======
 
 /**
@@ -345,6 +379,9 @@ function getAvailableLanguages() {
  */
 async function fetchCardFromYGOCDB(cardId) {
     const url = `${API_CONFIG.YGOCDB.BASE_URL}/?search=${cardId}`;
+
+    // 使用全局节流器确保请求间隔安全
+    await requestThrottler.waitForNext();
 
     try {
         const response = await fetch(url);
@@ -456,21 +493,41 @@ async function apiRequestYGOProDeck(endpoint, language) {
         const separator = url.includes('?') ? '&' : '?';
         url += `${separator}language=${language}`;
     }
+
+    // 使用全局节流器确保请求间隔安全
+    await requestThrottler.waitForNext();
     console.log(`🌐 YGOProDeck API 请求: ${url}`);
 
-    try {
-        const response = await fetch(url);
+    // 带重试和退避的请求逻辑
+    for (let attempt = 1; attempt <= API_CONFIG.RETRY_MAX_ATTEMPTS; attempt++) {
+        try {
+            const response = await fetch(url);
 
-        if (!response.ok) {
-            throw new Error(`API 请求失败: ${response.status} ${response.statusText}`);
+            // 检测限流响应（403 或 429）
+            if (response.status === 429 || response.status === 403) {
+                const backoff = API_CONFIG.RETRY_BACKOFF_BASE * attempt;
+                console.warn(`⚠️ API 限流 (${response.status})，等待 ${backoff}ms 后重试 (${attempt}/${API_CONFIG.RETRY_MAX_ATTEMPTS})...`);
+                await delay(backoff);
+                await requestThrottler.waitForNext();
+                continue;
+            }
+
+            if (!response.ok) {
+                throw new Error(`API 请求失败: ${response.status} ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            if (attempt === API_CONFIG.RETRY_MAX_ATTEMPTS) {
+                console.error(`❌ YGOProDeck API 请求失败 [${endpoint}] (${attempt}次尝试后放弃):`, error);
+                throw error;
+            }
+            // 网络错误时也退避重试
+            const backoff = API_CONFIG.RETRY_BACKOFF_BASE * attempt;
+            console.warn(`⚠️ API 请求异常，等待 ${backoff}ms 后重试 (${attempt}/${API_CONFIG.RETRY_MAX_ATTEMPTS})...`);
+            await delay(backoff);
         }
-
-        const data = await response.json();
-        await delay(API_CONFIG.REQUEST_INTERVAL);
-        return data;
-    } catch (error) {
-        console.error(`❌ YGOProDeck API 请求失败 [${endpoint}]:`, error);
-        throw error;
     }
 }
 
@@ -715,10 +772,7 @@ async function fetchOCGCardsFromYGOProDeck(allIds, rarityMap, langConfig, onProg
             onProgress(Math.min(i + batchSize, allIds.length), allIds.length);
         }
 
-        // 控制请求频率（批次间间隔）
-        if (i + batchSize < allIds.length) {
-            await delay(API_CONFIG.REQUEST_INTERVAL);
-        }
+        // 控制请求频率（已由全局节流器 requestThrottler 保障，无需额外延迟）
     }
 
     return cards;
@@ -751,7 +805,7 @@ async function fetchOCGCardsFromYGOCDB(allIds, rarityMap, onProgress) {
         if (onProgress) {
             onProgress(loadedCount, allIds.length);
         }
-        await delay(API_CONFIG.REQUEST_INTERVAL);
+        // 请求频率已由全局节流器 requestThrottler 保障，无需额外延迟
     }
 
     if (cards.length === 0) {
@@ -823,10 +877,7 @@ async function enrichCardsWithCNNames(cards, onProgress) {
             onProgress(i + 1, cardsNeedCN.length);
         }
 
-        // 控制请求频率
-        if (i < cardsNeedCN.length - 1) {
-            await delay(API_CONFIG.REQUEST_INTERVAL);
-        }
+        // 请求频率已由全局节流器 requestThrottler 保障，无需额外延迟
     }
 
     console.log(`🇨🇳 中文名补充完成：成功 ${successCount}/${cardsNeedCN.length}，失败 ${failCount}`);
