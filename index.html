@@ -108,9 +108,28 @@
         </p>
     </footer>
 
+    <!-- 内联脚本：确保弹窗关闭按钮始终可用（不受外部JS缓存影响） -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 通用弹窗关闭逻辑
+        document.querySelectorAll('.modal-close').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var modal = this.closest('.modal-overlay');
+                if (modal) modal.style.display = 'none';
+            });
+        });
+        // 点击弹窗遮罩层（外部区域）也能关闭
+        document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === this) this.style.display = 'none';
+            });
+        });
+    });
+    </script>
+
     <!-- 先加载离线备用数据，再加载 API 模块，最后加载游戏逻辑 -->
-    <script src="data/fallback_cards.js?v=0.2.1"></script>
-    <script src="js/api.js?v=0.2.1"></script>
-    <script src="js/game.js?v=0.2.1"></script>
+    <script src="data/fallback_cards.js?v=0.2.2"></script>
+    <script src="js/api.js?v=0.2.2"></script>
+    <script src="js/game.js?v=0.2.2"></script>
 </body>
 </html>
