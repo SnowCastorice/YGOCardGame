@@ -1,6 +1,6 @@
 /* ============================================
    YGO Pack Opener - 全局样式
-   版本: 0.5.0
+   版本: 0.6.0
    ============================================ */
 
 /* --- CSS 变量（方便统一调整颜色和风格） --- */
@@ -458,6 +458,55 @@ body {
     line-height: 150px;
 }
 
+/* 卡牌名称容器（双语展示） */
+.card-name-wrapper {
+    width: 100%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    min-height: 2.4em;
+    justify-content: center;
+}
+
+/* 中文主名称 */
+.card-name-cn {
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    word-break: break-word;
+    line-height: 1.2;
+    max-height: 1.2em;
+    overflow: hidden;
+    width: 100%;
+}
+
+/* 外文副名称（日文/英文） */
+.card-name-foreign {
+    font-size: 0.55rem;
+    color: var(--text-secondary);
+    word-break: break-word;
+    line-height: 1.1;
+    max-height: 1.1em;
+    overflow: hidden;
+    width: 100%;
+    opacity: 0.8;
+}
+
+/* 单语名称（没有中文名时显示） */
+.card-name-single {
+    font-size: 0.7rem;
+    text-align: center;
+    color: var(--text-primary);
+    word-break: break-word;
+    line-height: 1.2;
+    max-height: 2.4em;
+    overflow: hidden;
+    width: 100%;
+}
+
+/* 兼容旧版的 .card-name 样式 */
 .card-name {
     font-size: 0.7rem;
     text-align: center;
@@ -814,6 +863,15 @@ body {
         line-height: 120px;
     }
 
+    .card-name-cn {
+        font-size: 0.6rem;
+    }
+
+    .card-name-foreign {
+        font-size: 0.5rem;
+    }
+
+    .card-name-single,
     .card-name {
         font-size: 0.6rem;
     }

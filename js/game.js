@@ -1,7 +1,7 @@
 /**
  * ============================================
  * YGO Pack Opener - 游戏核心逻辑
- * 版本: 0.5.0
+ * 版本: 0.6.0
  * 
  * 【文件说明】
  * 这是游戏的"大脑"，负责：
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         hideLoadingState();
 
-        console.log(`🎴 YGO Pack Opener v0.5.0 初始化完成！当前模式: ${currentGameMode.toUpperCase()}`);
+        console.log(`🎴 YGO Pack Opener v0.6.0 初始化完成！当前模式: ${currentGameMode.toUpperCase()}`);
 
     } catch (error) {
         console.error('❌ 加载配置文件失败:', error);
@@ -214,12 +214,12 @@ function updateModeButtons() {
     // 更新模式提示文本
     if (modeInfoText) {
         if (currentGameMode === 'ocg') {
-            const langConfig = TCG_API.getLanguageConfig('ocg');
-            modeInfoText.textContent = `🇰 OCG 模式（亚洲版） — 每包5张 | ${langConfig.nameLocal} | 数据源: YGOProDeck`;
+            modeInfoText.textContent = '🎌 OCG 模式（亚洲版） — 每包5张 | 中文名+日文名 | 数据源: YGOProDeck + YGOCDB';
         } else {
-            modeInfoText.textContent = '🌎 TCG 模式（欧美版） — 每包9张 | 英文 | 数据源: YGOProDeck';
+            modeInfoText.textContent = '🌎 TCG 模式（欧美版） — 每包9张 | 中文名+英文名 | 数据源: YGOProDeck + YGOCDB';
         }
-    }}
+    }
+}
 
 /**
  * 获取当前模式的卡包配置
@@ -301,9 +301,7 @@ async function selectPack(pack) {
     currentPack = pack;
 
     // 显示加载状态
-    const dataSourceName = currentGameMode === 'ocg'
-        ? 'YGOProDeck (' + TCG_API.getLanguageConfig('ocg').nameLocal + ')'
-        : 'YGOProDeck';
+    const dataSourceName = 'YGOProDeck + YGOCDB';
     showLoadingState(`正在从 ${dataSourceName} 加载「${pack.packName}」...`);
 
     try {
@@ -536,17 +534,32 @@ async function showResults(cards) {
         let imageHtml;
         if (card.imageUrl) {
             // 使用 API 提供的卡图
-            imageHtml = `<img class="card-image" src="${card.imageUrl}" alt="${card.name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+            imageHtml = `<img class="card-image" src="${card.imageUrl}" alt="${card.nameCN || card.name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
                          <span class="card-icon" style="display:none;">${getCardIcon(rarityCode)}</span>`;
         } else {
             // 没有卡图时显示图标
             imageHtml = `<span class="card-icon">${getCardIcon(rarityCode)}</span>`;
         }
 
+        // 构建双语卡名显示
+        // 如果有中文名：中文名（主） + 外文名（副）
+        // 如果没有中文名：只显示外文名
+        let nameHtml;
+        if (card.nameCN && card.nameCN !== card.nameOriginal) {
+            // 有中文名，双语展示
+            nameHtml = `<span class="card-name-cn">${card.nameCN}</span>
+                        <span class="card-name-foreign">${card.nameOriginal || card.name}</span>`;
+        } else {
+            // 没有中文名，只显示原始名
+            nameHtml = `<span class="card-name-single">${card.name}</span>`;
+        }
+
         cardEl.innerHTML = `
             <span class="card-rarity-badge rarity-${rarityCode}">${rarityCode}</span>
             ${imageHtml}
-            <span class="card-name">${card.name}</span>
+            <div class="card-name-wrapper">
+                ${nameHtml}
+            </div>
         `;
 
         display.appendChild(cardEl);

@@ -1,19 +1,20 @@
 /**
  * ============================================
  * YGO Pack Opener - API 调用与缓存管理模块
- * 版本: 0.5.0
+ * 版本: 0.6.0
  * 
  * 【文件说明】
  * 负责与数据源通信，并将数据缓存到玩家设备上：
  * 
- * 主要数据源：YGOProDeck API (db.ygoprodeck.com)
- *   - 支持多语言：?language=ja（日文）/ en（英文）/ ko（韩文）等
- *   - OCG 模式默认使用日文（language=ja）
- *   - TCG 模式默认使用英文（language=en）
+ * 主要数据源：
+ *   - YGOProDeck API (db.ygoprodeck.com) — 获取外文卡牌数据
+ *     OCG: ?language=ja（日文名+日文效果），TCG: 默认英文
+ *   - YGOCDB API (ygocdb.com) — 获取中文卡牌名称
+ *     同时返回 cn_name / jp_name / en_name，用于补充中文名
  * 
- * 备用数据源：YGOCDB API (ygocdb.com)
- *   - 提供中文卡牌数据（简体中文）
- *   - 当 YGOProDeck 不可用时作为 OCG 的 fallback
+ * 卡牌展示方式（面向中国区用户）：
+ *   - 主名称：中文名（来自 YGOCDB）
+ *   - 副名称：外文名（OCG=日文 / TCG=英文，来自 YGOProDeck）
  * 
  * 缓存方式：
  *   1. IndexedDB — 缓存卡牌数据（名称、攻防、效果、图片URL等）
@@ -86,6 +87,9 @@ const API_CONFIG = {
         ocg: 'ja',   // OCG 默认日文
         tcg: 'en'    // TCG 默认英文
     },
+
+    // 是否为中国区用户补充中文名（通过 YGOCDB 获取）
+    ENABLE_CN_NAME: true,
 
     // 缓存过期时间（毫秒）
     CACHE_EXPIRY: {
@@ -406,12 +410,20 @@ function convertYGOCDBCard(ygocdbCard, rarityCode) {
         }
     }
 
+    // 中文名作为主名称
+    const cnName = ygocdbCard.cn_name || '';
+    const jpName = ygocdbCard.jp_name || '';
+    const enName = ygocdbCard.en_name || '';
+    // 主显示名：优先中文，其次日文，最后英文
+    const displayName = cnName || jpName || enName || ('ID:' + ygocdbCard.id);
+    // 外文名：优先日文，其次英文
+    const foreignName = jpName || enName || '';
+
     return {
         id: ygocdbCard.id,
-        name: ygocdbCard.cn_name || ygocdbCard.jp_name || ygocdbCard.en_name || ('ID:' + ygocdbCard.id),
-        nameJP: ygocdbCard.jp_name || '',
-        nameEN: ygocdbCard.en_name || '',
-        nameCN: ygocdbCard.cn_name || '',
+        name: displayName,
+        nameCN: cnName,
+        nameOriginal: foreignName,
         type: cardType,
         desc: ygocdbCard.text ? ygocdbCard.text.desc : '',
         atk: ygocdbCard.data ? ygocdbCard.data.atk : atk,
@@ -487,7 +499,9 @@ function convertYGOProDeckCard(card, rarityCode, setCode) {
 
     return {
         id: card.id,
-        name: card.name,
+        name: card.name,            // 外文名（OCG=日文 / TCG=英文）
+        nameCN: '',                  // 中文名（后续通过 YGOCDB 补充）
+        nameOriginal: card.name,     // 保存原始外文名（供双语展示用）
         type: card.type,
         desc: card.desc,
         atk: card.atk,
@@ -562,6 +576,14 @@ async function getOCGCardSetData(packConfig, onProgress) {
         // 2.1 尝试 YGOProDeck 批量查询
         cards = await fetchOCGCardsFromYGOProDeck(allIds, rarityMap, langConfig, onProgress);
         console.log(`✅ YGOProDeck 返回 ${cards.length} 张卡`);
+
+        // 2.1.1 补充中文名（从 YGOCDB 获取，面向中国区用户）
+        if (API_CONFIG.ENABLE_CN_NAME) {
+            if (onProgress) onProgress(0, cards.length); // 重置进度
+            await enrichCardsWithCNNames(cards, function (loaded, total) {
+                updateLoadingTextIfAvailable(`正在补充中文名... (${loaded}/${total})`);
+            });
+        }
 
     } catch (error) {
         console.warn(`⚠️ YGOProDeck 批量获取失败:`, error.message);
@@ -700,6 +722,78 @@ async function fetchOCGCardsFromYGOCDB(allIds, rarityMap, onProgress) {
     return cards;
 }
 
+// ====== 中文名补充功能（YGOCDB） ======
+
+/**
+ * 辅助函数：更新加载提示文本（如果页面有加载遮罩的话）
+ */
+function updateLoadingTextIfAvailable(message) {
+    const loadingEl = document.getElementById('loading-overlay');
+    if (loadingEl && loadingEl.style.display !== 'none') {
+        const textEl = loadingEl.querySelector('.loading-text');
+        if (textEl) textEl.textContent = message;
+    }
+}
+
+/**
+ * 为卡牌数组批量补充中文名（通过 YGOCDB API）
+ * 
+ * 【用途】面向中国区用户，在卡牌上方显示中文主名称
+ * 【工作方式】逐张卡通过 YGOCDB 查询中文名，填充到 nameCN 字段
+ * 
+ * @param {Array} cards - 已获取的卡牌数组（来自 YGOProDeck）
+ * @param {function} onProgress - 进度回调（可选）
+ * @returns {Array} 补充了中文名的卡牌数组（原地修改并返回）
+ */
+async function enrichCardsWithCNNames(cards, onProgress) {
+    if (!API_CONFIG.ENABLE_CN_NAME) return cards;
+    if (!cards || cards.length === 0) return cards;
+
+    // 筛选出没有中文名的卡牌
+    const cardsNeedCN = cards.filter(function (c) { return !c.nameCN; });
+    if (cardsNeedCN.length === 0) return cards;
+
+    console.log(`🇨🇳 开始从 YGOCDB 补充中文名，共 ${cardsNeedCN.length} 张卡...`);
+
+    let successCount = 0;
+    let failCount = 0;
+
+    for (let i = 0; i < cardsNeedCN.length; i++) {
+        const card = cardsNeedCN[i];
+        try {
+            const ygocdbCard = await fetchCardFromYGOCDB(card.id);
+            if (ygocdbCard && ygocdbCard.cn_name) {
+                card.nameCN = ygocdbCard.cn_name;
+                // 同时保存日文名和英文名（如果还没有的话）
+                if (!card.nameJP && ygocdbCard.jp_name) {
+                    card.nameJP = ygocdbCard.jp_name;
+                }
+                if (!card.nameEN && ygocdbCard.en_name) {
+                    card.nameEN = ygocdbCard.en_name;
+                }
+                successCount++;
+            } else {
+                failCount++;
+            }
+        } catch (error) {
+            failCount++;
+            console.warn(`⚠️ YGOCDB 获取卡牌 ${card.id} 中文名失败`);
+        }
+
+        if (onProgress) {
+            onProgress(i + 1, cardsNeedCN.length);
+        }
+
+        // 控制请求频率
+        if (i < cardsNeedCN.length - 1) {
+            await delay(API_CONFIG.REQUEST_INTERVAL);
+        }
+    }
+
+    console.log(`🇨🇳 中文名补充完成：成功 ${successCount}/${cardsNeedCN.length}，失败 ${failCount}`);
+    return cards;
+}
+
 // ====== TCG 卡包获取（YGOProDeck，英文） ======
 
 /**
@@ -739,6 +833,13 @@ async function getTCGCardSetData(setCode) {
         const cards = apiData.data.map(function (card) {
             return convertYGOProDeckCard(card, null, setCode);
         });
+
+        // 补充中文名（从 YGOCDB 获取，面向中国区用户）
+        if (API_CONFIG.ENABLE_CN_NAME) {
+            await enrichCardsWithCNNames(cards, function (loaded, total) {
+                updateLoadingTextIfAvailable(`正在补充中文名... (${loaded}/${total})`);
+            });
+        }
 
         // 存入缓存
         const setData = {
@@ -1001,4 +1102,4 @@ window.TCG_API = {
     CONFIG: API_CONFIG
 };
 
-console.log('🔌 API 模块加载完成（YGOProDeck 多语言 + YGOCDB 中文备用）');
+console.log('🔌 API 模块加载完成（YGOProDeck 多语言 + YGOCDB 中文名补充）');
