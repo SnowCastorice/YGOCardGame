@@ -1001,38 +1001,41 @@ function loadSingleCDN(source, cardId, cidValue) {
 
     return new Promise(function (resolve) {
         const img = new Image();
-        img.crossOrigin = 'anonymous';
+        // 注意：不设置 crossOrigin，因为大多数图片 CDN 不支持 CORS
+        // 设置 crossOrigin 会导致浏览器在 CDN 不返回 CORS 头时直接拒绝加载
 
-        // 设置超时（10秒）
+        // 设置超时（15秒，给慢速 CDN 更多时间）
         const timeout = setTimeout(function () {
             resolve({
                 source: source,
                 url: url,
                 status: 'timeout',
-                loadTime: 10000,
+                loadTime: 15000,
                 fileSize: null,
                 width: null,
                 height: null
             });
-        }, 10000);
+        }, 15000);
 
         img.onload = function () {
             clearTimeout(timeout);
             const loadTime = Math.round(performance.now() - startTime);
 
-            // 尝试通过 fetch HEAD 请求获取文件大小
-            fetchImageSize(url).then(function (fileSize) {
-                resolve({
-                    source: source,
-                    url: url,
-                    status: 'ok',
-                    loadTime: loadTime,
-                    fileSize: fileSize,
-                    width: img.naturalWidth,
-                    height: img.naturalHeight,
-                    imgElement: img
+            // 延迟一点获取文件大小，等 Performance API 记录完成
+            setTimeout(function () {
+                fetchImageSize(img.src).then(function (fileSize) {
+                    resolve({
+                        source: source,
+                        url: url,
+                        status: 'ok',
+                        loadTime: loadTime,
+                        fileSize: fileSize,
+                        width: img.naturalWidth,
+                        height: img.naturalHeight,
+                        imgElement: img
+                    });
                 });
-            });
+            }, 100);
         };
 
         img.onerror = function () {
@@ -1049,8 +1052,9 @@ function loadSingleCDN(source, cardId, cidValue) {
             });
         };
 
-        // 加上时间戳防止浏览器缓存干扰测试
-        img.src = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
+        // 直接使用原始 URL，不添加时间戳
+        // 时间戳可能导致某些 CDN 返回 404 或绕过缓存策略
+        img.src = url;
     });
 }
 
@@ -1059,20 +1063,38 @@ function loadSingleCDN(source, cardId, cidValue) {
  * @param {string} url - 图片 URL
  * @returns {number|null} 文件大小（字节），失败返回 null
  */
+/**
+ * 获取图片文件大小
+ * 优先使用 Performance API（无需 CORS），失败时尝试 fetch
+ * 
+ * @param {string} url - 图片 URL
+ * @returns {number|null} 文件大小（字节），失败返回 null
+ */
 async function fetchImageSize(url) {
+    // 方案1：使用 Performance API 获取 transferSize（无需 CORS）
+    try {
+        const entries = performance.getEntriesByName(url);
+        if (entries.length > 0) {
+            const entry = entries[entries.length - 1];
+            if (entry.transferSize > 0) {
+                return entry.transferSize;
+            }
+            if (entry.encodedBodySize > 0) {
+                return entry.encodedBodySize;
+            }
+        }
+    } catch (e) {
+        // Performance API 不可用，忽略
+    }
+
+    // 方案2：尝试 fetch（部分 CDN 支持 CORS）
     try {
         const resp = await fetch(url, { method: 'HEAD', mode: 'cors' });
         const size = resp.headers.get('content-length');
         return size ? parseInt(size) : null;
     } catch (e) {
-        // HEAD 请求失败时尝试用 GET + blob
-        try {
-            const resp = await fetch(url, { mode: 'cors' });
-            const blob = await resp.blob();
-            return blob.size;
-        } catch (e2) {
-            return null;
-        }
+        // CORS 被拦截，返回 null（不影响图片显示）
+        return null;
     }
 }
 
