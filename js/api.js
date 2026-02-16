@@ -548,6 +548,16 @@ async function getOCGCardSetData(packConfig, onProgress) {
     if (cacheValid) {
         const cached = await dbGet('cardSets', `${packId}_${langCode}`);
         if (cached && cached.cards && cached.cards.length > 0) {
+            // 检查缓存中的卡牌是否已有中文名（旧版本缓存可能没有）
+            const needsCNEnrich = API_CONFIG.ENABLE_CN_NAME && cached.cards.some(function (c) { return !c.nameCN; });
+            if (needsCNEnrich) {
+                console.log(`🇨🇳 缓存中的卡牌缺少中文名，正在补充...`);
+                await enrichCardsWithCNNames(cached.cards, function (loaded, total) {
+                    updateLoadingTextIfAvailable(`正在补充中文名... (${loaded}/${total})`);
+                });
+                // 更新缓存（补充了中文名后重新存入）
+                await dbPut('cardSets', cached);
+            }
             console.log(`📦 从缓存加载 OCG 卡包 [${packConfig.packName}] (${langConfig.nameLocal})，共 ${cached.cards.length} 张卡`);
             return cached;
         }
@@ -810,7 +820,17 @@ async function getTCGCardSetData(setCode) {
 
     if (cacheValid) {
         const cached = await dbGet('cardSets', setCode);
-        if (cached) {
+        if (cached && cached.cards && cached.cards.length > 0) {
+            // 检查缓存中的卡牌是否已有中文名（旧版本缓存可能没有）
+            const needsCNEnrich = API_CONFIG.ENABLE_CN_NAME && cached.cards.some(function (c) { return !c.nameCN; });
+            if (needsCNEnrich) {
+                console.log(`🇨🇳 TCG 缓存中的卡牌缺少中文名，正在补充...`);
+                await enrichCardsWithCNNames(cached.cards, function (loaded, total) {
+                    updateLoadingTextIfAvailable(`正在补充中文名... (${loaded}/${total})`);
+                });
+                // 更新缓存
+                await dbPut('cardSets', cached);
+            }
             console.log(`📦 从缓存加载 TCG 卡包 [${setCode}]，共 ${cached.cards.length} 张卡`);
             return cached;
         }
