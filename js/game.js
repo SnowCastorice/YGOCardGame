@@ -1,7 +1,7 @@
-/**
+﻿/**
  * ============================================
  * YGO Pack Opener - 游戏核心逻辑
- * 版本: 0.6.1
+ * 版本: 0.7.0
  * 
  * 【文件说明】
  * 这是游戏的"大脑"，负责：
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         hideLoadingState();
 
-        console.log(`🎴 YGO Pack Opener v0.6.1 初始化完成！当前模式: ${currentGameMode.toUpperCase()}`);
+        console.log(`🎴 YGO Pack Opener v0.7.0 初始化完成！当前模式: ${currentGameMode.toUpperCase()}`);
 
     } catch (error) {
         console.error('❌ 加载配置文件失败:', error);
@@ -247,6 +247,82 @@ function bindGameEvents() {
 function bindEvents() {
     bindNavEvents();
     bindGameEvents();
+    bindCardImageViewer();
+}
+
+// ============================================
+// 卡片图片放大查看器
+// ============================================
+
+/**
+ * 初始化卡片图片放大查看器
+ * 
+ * 【工作原理（简单解释）】
+ * 使用事件委托：监听整个卡片展示区域的点击事件，
+ * 如果点到了带 clickable 类的卡图，就打开全屏大图查看器。
+ * 再次点击任意位置即可关闭。
+ */
+function bindCardImageViewer() {
+    const viewer = document.getElementById('card-image-viewer');
+    const viewerImage = viewer.querySelector('.viewer-image');
+    const viewerName = viewer.querySelector('.viewer-card-name');
+    const cardsDisplay = document.getElementById('cards-display');
+
+    // 事件委托：监听卡片展示区域的点击
+    cardsDisplay.addEventListener('click', function (e) {
+        const img = e.target.closest('.card-image.clickable');
+        if (!img) return;
+
+        // 阻止事件冒泡到 card-item
+        e.stopPropagation();
+
+        // 获取大图 URL 和卡片名称
+        const largeUrl = img.getAttribute('data-large-url');
+        const cardName = img.getAttribute('data-card-name') || '';
+        const foreignName = img.getAttribute('data-card-foreign') || '';
+
+        if (!largeUrl) return;
+
+        // 设置大图和名称
+        viewerImage.src = largeUrl;
+        viewerImage.alt = cardName;
+
+        // 构建显示名称（中文名 + 外文名）
+        let displayName = cardName;
+        if (foreignName && foreignName !== cardName) {
+            displayName += `<br><span style="font-size:0.8em;opacity:0.7;">${foreignName}</span>`;
+        }
+        viewerName.innerHTML = displayName;
+
+        // 打开查看器（带过渡动画）
+        viewer.classList.add('active');
+    });
+
+    // 点击查看器任意位置关闭
+    viewer.addEventListener('click', function () {
+        closeCardImageViewer();
+    });
+
+    // ESC 键也可以关闭
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && viewer.classList.contains('active')) {
+            closeCardImageViewer();
+        }
+    });
+}
+
+/** 关闭卡片图片查看器（带过渡动画） */
+function closeCardImageViewer() {
+    const viewer = document.getElementById('card-image-viewer');
+    viewer.classList.remove('active');
+
+    // 过渡动画结束后清除图片 src（释放内存）
+    setTimeout(function () {
+        const img = viewer.querySelector('.viewer-image');
+        if (!viewer.classList.contains('active')) {
+            img.src = '';
+        }
+    }, 400);
 }
 
 // ============================================
@@ -531,10 +607,16 @@ async function showResults(cards) {
         cardEl.className = `card-item rarity-${rarityCode}`;
 
         // 构建卡片 HTML
+        // 有卡图时，点击图片可放大查看（使用 imageLargeUrl 作为大图源）
         let imageHtml;
         if (card.imageUrl) {
-            // 使用 API 提供的卡图
-            imageHtml = `<img class="card-image" src="${card.imageUrl}" alt="${card.nameCN || card.name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+            const largeUrl = card.imageLargeUrl || card.imageUrl;
+            const cardName = card.nameCN || card.name;
+            const foreignName = card.nameOriginal || '';
+            // 使用 API 提供的卡图，添加 clickable 类和 data 属性供放大查看
+            imageHtml = `<img class="card-image clickable" src="${card.imageUrl}" alt="${cardName}" loading="lazy" 
+                              data-large-url="${largeUrl}" data-card-name="${cardName}" data-card-foreign="${foreignName}"
+                              onerror="this.style.display='none';this.classList.remove('clickable');this.nextElementSibling.style.display='block';">
                          <span class="card-icon" style="display:none;">${getCardIcon(rarityCode)}</span>`;
         } else {
             // 没有卡图时显示图标
@@ -566,6 +648,9 @@ async function showResults(cards) {
     }
 
     switchSection('result-section');
+
+    // 滚动到顶部，方便查看结果
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 /**
