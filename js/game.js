@@ -113,23 +113,40 @@ function updateLoadingText(message) {
     }
 }
 
+// ====== 安全绑定事件的辅助函数 ======
+/**
+ * 安全地为 DOM 元素绑定事件
+ * 如果元素不存在，会在控制台输出警告而不是报错崩溃
+ * @param {string} id - 元素的 id
+ * @param {string} event - 事件类型，如 'click'
+ * @param {Function} handler - 事件处理函数
+ */
+function bindEvent(id, event, handler) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.addEventListener(event, handler);
+    } else {
+        console.warn(`⚠️ 未找到元素 #${id}，跳过事件绑定`);
+    }
+}
+
 // ====== 绑定导航栏按钮事件（缓存、日志） ======
 function bindNavEvents() {
     // 更新日志
-    document.getElementById('btn-changelog').addEventListener('click', showChangelog);
-    document.getElementById('btn-close-changelog').addEventListener('click', hideChangelog);
+    bindEvent('btn-changelog', 'click', showChangelog);
+    bindEvent('btn-close-changelog', 'click', hideChangelog);
 
     // 缓存管理
-    document.getElementById('btn-cache-manage').addEventListener('click', showCacheManage);
-    document.getElementById('btn-close-cache').addEventListener('click', hideCacheManage);
-    document.getElementById('btn-clear-cache').addEventListener('click', handleClearCache);
+    bindEvent('btn-cache-manage', 'click', showCacheManage);
+    bindEvent('btn-close-cache', 'click', hideCacheManage);
+    bindEvent('btn-clear-cache', 'click', handleClearCache);
 
     // 点击弹窗外部关闭
-    document.getElementById('changelog-modal').addEventListener('click', function (e) {
-        if (e.target === this) hideChangelog();
+    bindEvent('changelog-modal', 'click', function (e) {
+        if (e.target === document.getElementById('changelog-modal')) hideChangelog();
     });
-    document.getElementById('cache-modal').addEventListener('click', function (e) {
-        if (e.target === this) hideCacheManage();
+    bindEvent('cache-modal', 'click', function (e) {
+        if (e.target === document.getElementById('cache-modal')) hideCacheManage();
     });
 
     console.log('✅ 导航栏事件绑定完成');
@@ -138,14 +155,14 @@ function bindNavEvents() {
 // ====== 绑定游戏区域按钮事件 ======
 function bindGameEvents() {
     // 开包按钮
-    document.getElementById('btn-open-pack').addEventListener('click', openPack);
+    bindEvent('btn-open-pack', 'click', openPack);
 
     // 再开一包
-    document.getElementById('btn-open-again').addEventListener('click', openPack);
+    bindEvent('btn-open-again', 'click', openPack);
 
     // 返回选择卡包（两个返回按钮）
-    document.getElementById('btn-back-to-packs').addEventListener('click', showPackSelect);
-    document.getElementById('btn-back-from-result').addEventListener('click', showPackSelect);
+    bindEvent('btn-back-to-packs', 'click', showPackSelect);
+    bindEvent('btn-back-from-result', 'click', showPackSelect);
 }
 
 // ====== 绑定所有按钮事件 ======
