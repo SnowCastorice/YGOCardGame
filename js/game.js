@@ -830,6 +830,15 @@ const CDN_SOURCES = [
         format: 'JPEG',
         desc: 'YGOProDeck 大图',
         usedBy: null
+    },
+    {
+        id: 'konami_official',
+        name: 'KONAMI 官网（日文卡图）',
+        urlTemplate: 'https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=1&osplang=1&cid={cid}&ciid=1',
+        format: 'JPEG',
+        desc: 'KONAMI 游戏王官方数据库（需要 cid 映射，图片较小 200×290）',
+        usedBy: null,
+        needsCid: true  // 标记此源需要 cid 而非卡片密码
     }
 ];
 
@@ -893,6 +902,43 @@ function hideDevTools() {
 }
 
 /**
+ * 通过 YGOCDB API 获取卡片的 KONAMI cid 编号
+ * KONAMI 官网使用内部 cid 而非卡片密码，YGOCDB API 返回数据中包含 cid 字段
+ * 
+ * @param {number} cardId - 卡片密码（password）
+ * @returns {number|null} KONAMI 内部 cid 编号，失败返回 null
+ */
+async function fetchCidFromYGOCDB(cardId) {
+    try {
+        const url = `https://ygocdb.com/api/v0/?search=${cardId}`;
+        const response = await fetch(url);
+        if (!response.ok) return null;
+
+        const data = await response.json();
+        if (!data.result || data.result.length === 0) return null;
+
+        // 找到 ID 精确匹配的卡片
+        const card = data.result.find(function (c) {
+            return c.id === cardId || c.id === parseInt(cardId);
+        });
+
+        if (card && card.cid) {
+            return card.cid;
+        }
+
+        // 如果第一个结果有 cid，也可以用
+        if (data.result[0] && data.result[0].cid) {
+            return data.result[0].cid;
+        }
+
+        return null;
+    } catch (error) {
+        console.warn(`⚠️ 获取卡片 ${cardId} 的 cid 失败:`, error);
+        return null;
+    }
+}
+
+/**
  * 加载 CDN 对比数据
  * 对指定卡片 ID，同时从所有 CDN 源加载图片并对比
  * @param {number} cardId - 卡片 ID
@@ -901,10 +947,22 @@ async function loadCDNComparison(cardId) {
     const compareArea = document.getElementById('devtools-compare-area');
     compareArea.innerHTML = '<p class="devtools-placeholder">⏳ 正在加载各 CDN 源的图片...</p>';
 
+    // 检查是否有需要 cid 的源，如果有则先获取 cid 映射
+    let cidValue = null;
+    const hasCidSource = CDN_SOURCES.some(function (s) { return s.needsCid; });
+    if (hasCidSource) {
+        cidValue = await fetchCidFromYGOCDB(cardId);
+        if (cidValue) {
+            console.log(`🔗 卡片 ${cardId} 的 KONAMI cid = ${cidValue}`);
+        } else {
+            console.warn(`⚠️ 无法获取卡片 ${cardId} 的 cid 映射`);
+        }
+    }
+
     // 并行加载所有 CDN 源的图片
     const results = await Promise.all(
         CDN_SOURCES.map(function (source) {
-            return loadSingleCDN(source, cardId);
+            return loadSingleCDN(source, cardId, cidValue);
         })
     );
 
@@ -918,8 +976,27 @@ async function loadCDNComparison(cardId) {
  * @param {number} cardId - 卡片 ID
  * @returns {object} 加载结果（含时间、大小、状态等）
  */
-function loadSingleCDN(source, cardId) {
-    const url = source.urlTemplate.replace('{id}', cardId);
+function loadSingleCDN(source, cardId, cidValue) {
+    // 处理需要 cid 的特殊源（如 KONAMI 官网）
+    let url;
+    if (source.needsCid) {
+        if (!cidValue) {
+            // 没有 cid 映射，直接返回错误
+            return Promise.resolve({
+                source: source,
+                url: '（无法获取 cid 映射）',
+                status: 'error',
+                loadTime: 0,
+                fileSize: null,
+                width: null,
+                height: null,
+                errorMsg: '未找到此卡片的 KONAMI cid 编号'
+            });
+        }
+        url = source.urlTemplate.replace('{cid}', cidValue);
+    } else {
+        url = source.urlTemplate.replace('{id}', cardId);
+    }
     const startTime = performance.now();
 
     return new Promise(function (resolve) {
@@ -1048,7 +1125,7 @@ function renderCDNComparison(results, cardId) {
         } else if (result.status === 'timeout') {
             html += '<div class="devtools-img-error">⏰ 加载超时 (>10s)</div>';
         } else {
-            html += '<div class="devtools-img-error">❌ 加载失败</div>';
+            html += '<div class="devtools-img-error">❌ ' + (result.errorMsg || '加载失败') + '</div>';
         }
         html += '</div>';
 
@@ -1064,7 +1141,7 @@ function renderCDNComparison(results, cardId) {
         } else {
             html += '<div class="devtools-info-row">';
             html += '<span class="devtools-info-label">状态</span>';
-            html += '<span class="devtools-info-value bad">❌ ' + (result.status === 'timeout' ? '超时' : '失败') + '</span>';
+            html += '<span class="devtools-info-value bad">❌ ' + (result.status === 'timeout' ? '超时' : (result.errorMsg || '失败')) + '</span>';
             html += '</div>';
         }
 
