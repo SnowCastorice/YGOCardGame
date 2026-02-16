@@ -499,12 +499,12 @@ function showChangelog() {
         });
     }
 
-    document.getElementById('changelog-modal').style.display = 'flex';
+    document.getElementById('changelog-modal').classList.add('active');
 }
 
 /** 关闭更新日志弹窗 */
 function hideChangelog() {
-    document.getElementById('changelog-modal').style.display = 'none';
+    document.getElementById('changelog-modal').classList.remove('active');
 }
 
 // ============================================
@@ -516,7 +516,7 @@ async function showCacheManage() {
     const container = document.getElementById('cache-content');
     container.innerHTML = '<p style="color:var(--text-secondary);">正在获取缓存信息...</p>';
 
-    document.getElementById('cache-modal').style.display = 'flex';
+    document.getElementById('cache-modal').classList.add('active');
 
     try {
         const status = await TCG_API.getCacheStatus();
@@ -552,7 +552,7 @@ async function showCacheManage() {
 
 /** 关闭缓存管理弹窗 */
 function hideCacheManage() {
-    document.getElementById('cache-modal').style.display = 'none';
+    document.getElementById('cache-modal').classList.remove('active');
 }
 
 /** 清除所有缓存 */

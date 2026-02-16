@@ -449,10 +449,16 @@ body {
     height: 100%;
     background: rgba(0, 0, 0, 0.8);
     z-index: 300;
-    display: flex;
+    /* 默认隐藏弹窗，只有加上 .active 类时才显示 */
+    display: none;
     justify-content: center;
     align-items: center;
     padding: 20px;
+}
+
+/* 弹窗激活状态：通过 JS 添加/移除此类来控制显示 */
+.modal-overlay.active {
+    display: flex;
 }
 
 .modal-content {

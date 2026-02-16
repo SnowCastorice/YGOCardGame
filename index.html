@@ -71,11 +71,11 @@
     </main>
 
     <!-- ====== 更新日志弹窗 ====== -->
-    <div id="changelog-modal" class="modal-overlay" style="display:none;">
+    <div id="changelog-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>📋 更新日志</h2>
-                <button id="btn-close-changelog" class="modal-close" onclick="document.getElementById('changelog-modal').style.display='none'">&times;</button>
+                <button id="btn-close-changelog" class="modal-close" onclick="document.getElementById('changelog-modal').classList.remove('active')">&times;</button>
             </div>
             <div id="changelog-content" class="modal-body">
                 <!-- 更新日志内容由 JS 动态生成 -->
@@ -84,11 +84,11 @@
     </div>
 
     <!-- ====== 缓存管理弹窗 ====== -->
-    <div id="cache-modal" class="modal-overlay" style="display:none;">
+    <div id="cache-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>💾 缓存管理</h2>
-                <button id="btn-close-cache" class="modal-close" onclick="document.getElementById('cache-modal').style.display='none'">&times;</button>
+                <button id="btn-close-cache" class="modal-close" onclick="document.getElementById('cache-modal').classList.remove('active')">&times;</button>
             </div>
             <div id="cache-content" class="modal-body">
                 <!-- 缓存信息由 JS 动态生成 -->
@@ -115,13 +115,13 @@
         document.querySelectorAll('.modal-close').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 var modal = this.closest('.modal-overlay');
-                if (modal) modal.style.display = 'none';
+                if (modal) modal.classList.remove('active');
             });
         });
         // 点击弹窗遮罩层（外部区域）也能关闭
         document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
             overlay.addEventListener('click', function(e) {
-                if (e.target === this) this.style.display = 'none';
+                if (e.target === this) this.classList.remove('active');
             });
         });
     });
