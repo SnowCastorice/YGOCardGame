@@ -1,21 +1,24 @@
 {
-  "_说明": "卡包配置表 v0.3.0 —— 支持 OCG（亚洲版）和 TCG（欧美版）双模式。",
+  "_说明": "卡包配置表 v0.4.0 —— OCG 使用 YGOCDB API（中文数据源），TCG 使用 YGOProDeck API",
   "_格式说明": {
     "packId": "卡包唯一ID（自定义，不能重复）",
-    "packName": "卡包显示名称（中文，显示在网页上）",
-    "setCode": "YGOProDeck 卡包编码（用于调用 API）",
+    "packName": "卡包显示名称（显示在网页上）",
+    "setCode": "TCG 专用：YGOProDeck 卡包编码（用于调用 API）",
+    "cardIds": "OCG 专用：预定义的卡牌ID列表及稀有度（通过 YGOCDB API 获取中文卡牌详情）",
     "cardsPerPack": "每包抽取的卡牌数量",
     "rarityRates": "各稀有度的抽取权重（数字越大越容易抽到）",
     "guaranteedRareSlot": "是否保底最后一张至少为 R 及以上",
     "gameMode": "游戏模式：ocg = 亚洲版, tcg = 欧美版"
   },
   "ocg": {
-    "_说明": "OCG（Official Card Game）亚洲版卡包 —— 每包5张，概率更接近日版开包体验",
+    "_说明": "OCG（Official Card Game）亚洲版卡包 — 每包5张，使用 YGOCDB API 获取中文卡牌数据",
+    "_数据源": "卡牌信息: ygocdb.com | 卡图: images.ygoprodeck.com",
     "packs": [
       {
         "packId": "ocg_vol1",
         "packName": "Vol.1",
-        "setCode": "vol1",
+        "packCode": "VOL1",
+        "releaseDate": "1999-02-04",
         "cardsPerPack": 5,
         "rarityRates": {
           "UR": 1,
@@ -23,12 +26,45 @@
           "R": 25,
           "N": 70
         },
-        "guaranteedRareSlot": true
+        "guaranteedRareSlot": true,
+        "cardIds": [
+          {"id": 89631139, "rarityCode": "UR", "name_hint": "青眼白龙"},
+          {"id": 46986414, "rarityCode": "UR", "name_hint": "黑魔术师"},
+          {"id": 74677422, "rarityCode": "UR", "name_hint": "真红眼黑龙"},
+          {"id": 44209392, "rarityCode": "SR", "name_hint": "凯尔特守护者"},
+          {"id": 12580477, "rarityCode": "SR", "name_hint": "雷击"},
+          {"id": 53129443, "rarityCode": "SR", "name_hint": "黑洞"},
+          {"id": 87796900, "rarityCode": "SR", "name_hint": "诅咒之龙"},
+          {"id": 70781052, "rarityCode": "SR", "name_hint": "恶魔召唤"},
+          {"id": 6368038,  "rarityCode": "R",  "name_hint": "暗黑骑士盖亚"},
+          {"id": 83764718, "rarityCode": "R",  "name_hint": "死者苏生"},
+          {"id": 46130346, "rarityCode": "R",  "name_hint": "陷坑"},
+          {"id": 54652250, "rarityCode": "R",  "name_hint": "食人虫"},
+          {"id": 24094653, "rarityCode": "R",  "name_hint": "融合"},
+          {"id": 19159413, "rarityCode": "R",  "name_hint": "大风暴"},
+          {"id": 50045299, "rarityCode": "R",  "name_hint": "龙之封印壶"},
+          {"id": 19613556, "rarityCode": "R",  "name_hint": "大岚"},
+          {"id": 32274490, "rarityCode": "N",  "name_hint": "骷髅仆人"},
+          {"id": 90357090, "rarityCode": "N",  "name_hint": "白银之牙"},
+          {"id": 65622692, "rarityCode": "N",  "name_hint": "神秘的精灵"},
+          {"id": 40374923, "rarityCode": "N",  "name_hint": "小恶魔"},
+          {"id": 69455834, "rarityCode": "N",  "name_hint": "守护要塞的翼龙"},
+          {"id": 49218300, "rarityCode": "N",  "name_hint": "河童战士"},
+          {"id": 37313786, "rarityCode": "N",  "name_hint": "独眼巨人"},
+          {"id": 76184692, "rarityCode": "N",  "name_hint": "暗黑恐惧巨人"},
+          {"id": 75745607, "rarityCode": "N",  "name_hint": "古代精灵"},
+          {"id": 66788016, "rarityCode": "N",  "name_hint": "灵巧幻影"},
+          {"id": 97590747, "rarityCode": "N",  "name_hint": "拉巴斯"},
+          {"id": 44287299, "rarityCode": "N",  "name_hint": "钢铁骑士"},
+          {"id": 62340868, "rarityCode": "N",  "name_hint": "双头暗黑龙"},
+          {"id": 13945283, "rarityCode": "N",  "name_hint": "睡梦子"}
+        ]
       },
       {
         "packId": "ocg_vol2",
         "packName": "Vol.2",
-        "setCode": "vol2",
+        "packCode": "VOL2",
+        "releaseDate": "1999-03-27",
         "cardsPerPack": 5,
         "rarityRates": {
           "UR": 1,
@@ -36,12 +72,40 @@
           "R": 25,
           "N": 70
         },
-        "guaranteedRareSlot": true
+        "guaranteedRareSlot": true,
+        "cardIds": [
+          {"id": 70368879, "rarityCode": "UR", "name_hint": "守护神"},
+          {"id": 11384280, "rarityCode": "UR", "name_hint": "神圣防护罩-反射镜力-"},
+          {"id": 41420027, "rarityCode": "UR", "name_hint": "神之宣告"},
+          {"id": 12511899, "rarityCode": "SR", "name_hint": "雷魔神-桑加"},
+          {"id": 62340868, "rarityCode": "SR", "name_hint": "风魔神-修加"},
+          {"id": 98434877, "rarityCode": "SR", "name_hint": "水魔神-苏伽"},
+          {"id": 12510878, "rarityCode": "SR", "name_hint": "鹰身女郎三姐妹"},
+          {"id": 45231177, "rarityCode": "SR", "name_hint": "火焰剑士"},
+          {"id": 11868825, "rarityCode": "SR", "name_hint": "黑暗骷髅龙"},
+          {"id": 77414722, "rarityCode": "R",  "name_hint": "魔法干扰阵"},
+          {"id": 28279543, "rarityCode": "R",  "name_hint": "黑暗假面"},
+          {"id": 31890399, "rarityCode": "R",  "name_hint": "圣之魔术师"},
+          {"id": 37820550, "rarityCode": "R",  "name_hint": "突进"},
+          {"id": 29155212, "rarityCode": "R",  "name_hint": "盗贼的七道具"},
+          {"id": 24068492, "rarityCode": "R",  "name_hint": "万华镜-华丽的分身-"},
+          {"id": 55784832, "rarityCode": "N",  "name_hint": "栗子球"},
+          {"id": 17985575, "rarityCode": "N",  "name_hint": "雷电球"},
+          {"id": 72842870, "rarityCode": "N",  "name_hint": "青蛙大师"},
+          {"id": 85602018, "rarityCode": "N",  "name_hint": "诅咒之术师"},
+          {"id": 15401633, "rarityCode": "N",  "name_hint": "阿玛伊尔"},
+          {"id": 66788016, "rarityCode": "N",  "name_hint": "灵巧幻影"},
+          {"id": 97590747, "rarityCode": "N",  "name_hint": "拉巴斯"},
+          {"id": 13039848, "rarityCode": "N",  "name_hint": "飞行企鹅"},
+          {"id": 96851799, "rarityCode": "N",  "name_hint": "多罗佛"},
+          {"id": 66672569, "rarityCode": "N",  "name_hint": "黏液怪"}
+        ]
       },
       {
         "packId": "ocg_vol3",
         "packName": "Vol.3",
-        "setCode": "vol3",
+        "packCode": "VOL3",
+        "releaseDate": "1999-05-27",
         "cardsPerPack": 5,
         "rarityRates": {
           "UR": 1,
@@ -49,12 +113,35 @@
           "R": 25,
           "N": 70
         },
-        "guaranteedRareSlot": true
+        "guaranteedRareSlot": true,
+        "cardIds": [
+          {"id": 14536035, "rarityCode": "UR", "name_hint": "人造人-Psycho Shocker"},
+          {"id": 63515678, "rarityCode": "UR", "name_hint": "王宫的敕命"},
+          {"id": 44095762, "rarityCode": "UR", "name_hint": "银幕之镜壁"},
+          {"id": 44256816, "rarityCode": "SR", "name_hint": "活死人的呼声"},
+          {"id": 43154985, "rarityCode": "SR", "name_hint": "限制器解除"},
+          {"id": 49721904, "rarityCode": "SR", "name_hint": "铁骑士 基尔弗里德"},
+          {"id": 20060230, "rarityCode": "SR", "name_hint": "早过期的埋葬"},
+          {"id": 17375316, "rarityCode": "R",  "name_hint": "尘旋风"},
+          {"id": 8753087,  "rarityCode": "R",  "name_hint": "针虫"},
+          {"id": 52077741, "rarityCode": "R",  "name_hint": "贵族的抹杀者"},
+          {"id": 94773007, "rarityCode": "R",  "name_hint": "停战协定"},
+          {"id": 81385346, "rarityCode": "R",  "name_hint": "守墓的仆从"},
+          {"id": 42348802, "rarityCode": "N",  "name_hint": "隼之骑士"},
+          {"id": 34743446, "rarityCode": "N",  "name_hint": "人型黏液怪"},
+          {"id": 76232340, "rarityCode": "N",  "name_hint": "尖钉机器人"},
+          {"id": 87880531, "rarityCode": "N",  "name_hint": "科学战士"},
+          {"id": 37580756, "rarityCode": "N",  "name_hint": "钢铁蝎子"},
+          {"id": 14851496, "rarityCode": "N",  "name_hint": "神秘之灯"},
+          {"id": 96851799, "rarityCode": "N",  "name_hint": "多罗佛"},
+          {"id": 44287299, "rarityCode": "N",  "name_hint": "钢铁骑士"}
+        ]
       },
       {
         "packId": "ocg_starter_box",
         "packName": "STARTER BOX",
-        "setCode": "Starter Box",
+        "packCode": "SB",
+        "releaseDate": "1999-03-18",
         "cardsPerPack": 5,
         "rarityRates": {
           "UR": 2,
@@ -62,12 +149,34 @@
           "R": 22,
           "N": 70
         },
-        "guaranteedRareSlot": true
+        "guaranteedRareSlot": true,
+        "cardIds": [
+          {"id": 89631139, "rarityCode": "UR", "name_hint": "青眼白龙"},
+          {"id": 46986414, "rarityCode": "UR", "name_hint": "黑魔术师"},
+          {"id": 6368038,  "rarityCode": "SR", "name_hint": "暗黑骑士盖亚"},
+          {"id": 87796900, "rarityCode": "SR", "name_hint": "诅咒之龙"},
+          {"id": 44209392, "rarityCode": "SR", "name_hint": "凯尔特守护者"},
+          {"id": 53129443, "rarityCode": "SR", "name_hint": "黑洞"},
+          {"id": 12580477, "rarityCode": "SR", "name_hint": "雷击"},
+          {"id": 83764718, "rarityCode": "R",  "name_hint": "死者苏生"},
+          {"id": 24094653, "rarityCode": "R",  "name_hint": "融合"},
+          {"id": 46130346, "rarityCode": "R",  "name_hint": "陷坑"},
+          {"id": 54652250, "rarityCode": "R",  "name_hint": "食人虫"},
+          {"id": 65622692, "rarityCode": "N",  "name_hint": "神秘的精灵"},
+          {"id": 40374923, "rarityCode": "N",  "name_hint": "小恶魔"},
+          {"id": 32274490, "rarityCode": "N",  "name_hint": "骷髅仆人"},
+          {"id": 90357090, "rarityCode": "N",  "name_hint": "白银之牙"},
+          {"id": 69455834, "rarityCode": "N",  "name_hint": "守护要塞的翼龙"},
+          {"id": 49218300, "rarityCode": "N",  "name_hint": "河童战士"},
+          {"id": 37313786, "rarityCode": "N",  "name_hint": "独眼巨人"},
+          {"id": 76184692, "rarityCode": "N",  "name_hint": "暗黑恐惧巨人"}
+        ]
       },
       {
         "packId": "ocg_premium_pack_1",
         "packName": "PREMIUM PACK 1",
-        "setCode": "Premium Pack 1",
+        "packCode": "PP1",
+        "releaseDate": "1999-08-26",
         "cardsPerPack": 5,
         "rarityRates": {
           "UR": 3,
@@ -75,7 +184,27 @@
           "R": 20,
           "N": 70
         },
-        "guaranteedRareSlot": true
+        "guaranteedRareSlot": true,
+        "cardIds": [
+          {"id": 74677422, "rarityCode": "UR", "name_hint": "真红眼黑龙"},
+          {"id": 70781052, "rarityCode": "UR", "name_hint": "恶魔召唤"},
+          {"id": 11384280, "rarityCode": "SR", "name_hint": "神圣防护罩"},
+          {"id": 41420027, "rarityCode": "SR", "name_hint": "神之宣告"},
+          {"id": 19613556, "rarityCode": "SR", "name_hint": "大岚"},
+          {"id": 55784832, "rarityCode": "SR", "name_hint": "栗子球"},
+          {"id": 45231177, "rarityCode": "R",  "name_hint": "火焰剑士"},
+          {"id": 77414722, "rarityCode": "R",  "name_hint": "魔法干扰阵"},
+          {"id": 28279543, "rarityCode": "R",  "name_hint": "黑暗假面"},
+          {"id": 31890399, "rarityCode": "R",  "name_hint": "圣之魔术师"},
+          {"id": 37820550, "rarityCode": "R",  "name_hint": "突进"},
+          {"id": 17985575, "rarityCode": "N",  "name_hint": "雷电球"},
+          {"id": 72842870, "rarityCode": "N",  "name_hint": "青蛙大师"},
+          {"id": 85602018, "rarityCode": "N",  "name_hint": "诅咒之术师"},
+          {"id": 66788016, "rarityCode": "N",  "name_hint": "灵巧幻影"},
+          {"id": 13039848, "rarityCode": "N",  "name_hint": "飞行企鹅"},
+          {"id": 15401633, "rarityCode": "N",  "name_hint": "阿玛伊尔"},
+          {"id": 97590747, "rarityCode": "N",  "name_hint": "拉巴斯"}
+        ]
       }
     ],
     "defaultRarityRates": {
@@ -87,7 +216,8 @@
     }
   },
   "tcg": {
-    "_说明": "TCG（Trading Card Game）欧美版卡包 —— 每包9张，传统欧美开包规则",
+    "_说明": "TCG（Trading Card Game）欧美版卡包 —— 每包9张，使用 YGOProDeck API",
+    "_数据源": "卡牌信息 + 卡图: ygoprodeck.com",
     "packs": [
       {
         "packId": "pack_LOB",

@@ -2,6 +2,21 @@
   "_说明": "版本更新日志。每次更新都会在这里记录，网页上也会显示这些信息。格式：版本号、日期、更新内容列表。",
   "versions": [
     {
+      "version": "0.4.0",
+      "date": "2026-02-16",
+      "title": "OCG 接入 YGOCDB 中文数据源 — 真正的亚洲版体验",
+      "changes": [
+        "🎌 OCG 模式改用 YGOCDB API（ygocdb.com）获取中文卡牌数据",
+        "📝 OCG 卡牌现在显示中文卡名和中文效果描述",
+        "🌎 TCG 模式继续使用 YGOProDeck API（英文数据）",
+        "🔀 双数据源架构：OCG = YGOCDB + YGOProDeck CDN卡图，TCG = YGOProDeck",
+        "📦 OCG 卡包配置改为预定义卡牌ID列表，数据更准确",
+        "⚡ OCG 首次加载会逐张获取卡牌信息并缓存，后续秒开",
+        "💾 缓存管理界面现在显示数据来源（YGOCDB / YGOProDeck）",
+        "🏷️ 卡包列表显示发售日期和卡牌数量"
+      ]
+    },
+    {
       "version": "0.3.0",
       "date": "2026-02-16",
       "title": "新增 OCG 模式 — 支持亚洲版游戏王开包体验",

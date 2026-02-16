@@ -1,7 +1,7 @@
 /**
  * ============================================
  * YGO Pack Opener - 游戏核心逻辑
- * 版本: 0.3.0
+ * 版本: 0.4.0
  * 
  * 【文件说明】
  * 这是游戏的"大脑"，负责：
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         hideLoadingState();
 
-        console.log(`🎴 YGO Pack Opener v0.3.0 初始化完成！当前模式: ${currentGameMode.toUpperCase()}`);
+        console.log(`🎴 YGO Pack Opener v0.4.0 初始化完成！当前模式: ${currentGameMode.toUpperCase()}`);
 
     } catch (error) {
         console.error('❌ 加载配置文件失败:', error);
@@ -214,9 +214,9 @@ function updateModeButtons() {
     // 更新模式提示文本
     if (modeInfoText) {
         if (currentGameMode === 'ocg') {
-            modeInfoText.textContent = '🎌 OCG 模式（亚洲版） — 每包5张卡牌';
+            modeInfoText.textContent = '🎌 OCG 模式（亚洲版） — 每包5张 | 数据源: YGOCDB';
         } else {
-            modeInfoText.textContent = '🌎 TCG 模式（欧美版） — 每包9张卡牌';
+            modeInfoText.textContent = '🌎 TCG 模式（欧美版） — 每包9张 | 数据源: YGOProDeck';
         }
     }
 }
@@ -274,11 +274,16 @@ function renderPackList() {
         // 根据模式显示不同的图标
         const modeIcon = currentGameMode === 'ocg' ? '🎌' : '🌎';
 
+        // OCG 卡包显示 packCode，TCG 卡包显示 setCode
+        const displayCode = pack.packCode || pack.setCode || pack.packId;
+        // OCG 卡包显示卡牌数量（来自 cardIds），TCG 不显示
+        const cardCountInfo = pack.cardIds ? ` | ${pack.cardIds.length} 种卡` : '';
+
         packCard.innerHTML = `
             <span class="pack-icon">🎴</span>
             <div class="pack-name">${pack.packName}</div>
-            <div class="pack-code">${pack.setCode}</div>
-            <div class="pack-count">每包 ${pack.cardsPerPack} 张 | ${pack.guaranteedRareSlot ? '保底R以上' : '纯随机'} ${modeIcon}</div>
+            <div class="pack-code">${displayCode}${pack.releaseDate ? ' (' + pack.releaseDate + ')' : ''}</div>
+            <div class="pack-count">每包 ${pack.cardsPerPack} 张${cardCountInfo} | ${pack.guaranteedRareSlot ? '保底R以上' : '纯随机'} ${modeIcon}</div>
         `;
         packCard.addEventListener('click', function () {
             selectPack(pack);
@@ -296,19 +301,25 @@ async function selectPack(pack) {
     currentPack = pack;
 
     // 显示加载状态
-    showLoadingState(`正在加载卡包「${pack.packName}」的卡牌数据...`);
+    const dataSourceName = currentGameMode === 'ocg' ? 'YGOCDB' : 'YGOProDeck';
+    showLoadingState(`正在从 ${dataSourceName} 加载「${pack.packName}」...`);
 
     try {
-        // 通过 API 模块获取卡牌数据（自动缓存）
-        const setData = await TCG_API.getCardSetData(pack.setCode);
+        // 通过 API 模块获取卡牌数据（根据模式选择不同数据源）
+        const setData = await TCG_API.getCardSetData(currentGameMode, pack, function (loaded, total) {
+            // OCG 模式下显示逐张卡牌的加载进度
+            updateLoadingText(`正在从 ${dataSourceName} 加载「${pack.packName}」... (${loaded}/${total})`);
+        });
         currentPackCards = setData.cards;
 
         // 更新开包界面信息
         const offlineTag = setData.isOfflineData ? ' [离线模式]' : '';
         const modeTag = currentGameMode === 'ocg' ? ' [OCG]' : ' [TCG]';
         document.getElementById('current-pack-name').textContent = pack.packName + modeTag + offlineTag;
+
+        const displayCode = pack.packCode || pack.setCode || pack.packId;
         document.getElementById('current-pack-desc').textContent =
-            `${pack.setCode} | 共 ${currentPackCards.length} 种卡牌 | 每包抽取 ${pack.cardsPerPack} 张${setData.isOfflineData ? '\n⚠️ 当前使用离线备用数据，联网后可获取完整卡牌数据和卡图' : ''}`;
+            `${displayCode} | 共 ${currentPackCards.length} 种卡牌 | 每包抽取 ${pack.cardsPerPack} 张 | 数据: ${dataSourceName}${setData.isOfflineData ? '\n⚠️ 当前使用离线备用数据' : ''}`;
 
         hideLoadingState();
         switchSection('open-pack-section');
@@ -323,7 +334,8 @@ async function selectPack(pack) {
     } catch (error) {
         console.error('❌ 加载卡包数据失败:', error);
         hideLoadingState();
-        alert(`加载卡包「${pack.packName}」失败。\n\n可能原因：\n1. 网络无法连接到 YGOProDeck API\n2. 该卡包没有对应的离线备用数据\n\n错误详情: ${error.message}`);
+        const apiName = currentGameMode === 'ocg' ? 'YGOCDB' : 'YGOProDeck';
+        alert(`加载卡包「${pack.packName}」失败。\n\n可能原因：\n1. 网络无法连接到 ${apiName} API\n2. 该卡包没有对应的离线备用数据\n\n错误详情: ${error.message}`);
     }
 }
 
@@ -625,9 +637,10 @@ async function showCacheManage() {
             html += `<div class="cache-list">`;
             html += `<h3>已缓存的卡包：</h3>`;
             status.cardSets.forEach(function (set) {
+                const sourceIcon = set.dataSource === 'ygocdb' ? '🎌' : set.dataSource === 'ygoprodeck' ? '🌎' : '📦';
                 html += `<div class="cache-item">`;
-                html += `<span class="cache-item-name">📦 ${set.setCode}</span>`;
-                html += `<span class="cache-item-info">${set.cardCount} 张 | 缓存于 ${set.fetchedAt}</span>`;
+                html += `<span class="cache-item-name">${sourceIcon} ${set.setCode}</span>`;
+                html += `<span class="cache-item-info">${set.cardCount} 张 | ${set.dataSource || '未知来源'} | ${set.fetchedAt}</span>`;
                 html += `</div>`;
             });
             html += `</div>`;
