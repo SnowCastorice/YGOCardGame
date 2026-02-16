@@ -1,7 +1,7 @@
 /**
  * ============================================
  * YGO Pack Opener - API 调用与缓存管理模块
- * 版本: 0.6.0
+ * 版本: 0.6.1
  * 
  * 【文件说明】
  * 负责与数据源通信，并将数据缓存到玩家设备上：
@@ -33,7 +33,9 @@ const API_CONFIG = {
 
     // === 备用数据源：YGOCDB（中文数据，OCG fallback 用） ===
     YGOCDB: {
-        BASE_URL: 'https://ygocdb.com/api/v0'
+        BASE_URL: 'https://ygocdb.com/api/v0',
+        // YGOCDB CDN 卡图（YGOPro 数据库日文卡图）
+        IMAGE_URL: 'https://cdn.233.momobako.com/ygopro/pics'
     },
 
     // === 语言配置 ===
@@ -433,8 +435,9 @@ function convertYGOCDBCard(ygocdbCard, rarityCode) {
         attribute: attribute,
         rarity: rarityNames[rarityCode] || 'Common',
         rarityCode: rarityCode || 'N',
-        imageUrl: `${API_CONFIG.YGOPRODECK.IMAGE_SMALL_URL}/${ygocdbCard.id}.jpg`,
-        imageLargeUrl: `${API_CONFIG.YGOPRODECK.IMAGE_LARGE_URL}/${ygocdbCard.id}.jpg`,
+        // YGOCDB fallback 是 OCG 专用路径，使用日文版卡图
+        imageUrl: `${API_CONFIG.YGOCDB.IMAGE_URL}/${ygocdbCard.id}.jpg`,
+        imageLargeUrl: `${API_CONFIG.YGOCDB.IMAGE_URL}/${ygocdbCard.id}.jpg`,
         dataSource: 'ygocdb'
     };
 }
@@ -477,9 +480,10 @@ async function apiRequestYGOProDeck(endpoint, language) {
  * @param {object} card - YGOProDeck 返回的卡牌对象
  * @param {string} rarityCode - 稀有度编码（从 cards.json 预定义，OCG 模式专用）
  * @param {string} setCode - 卡包编码（TCG 模式用于匹配稀有度）
+ * @param {string} mode - 模式标识（'ocg' 或 'tcg'），用于选择卡图源
  * @returns {object} 统一格式的卡牌对象
  */
-function convertYGOProDeckCard(card, rarityCode, setCode) {
+function convertYGOProDeckCard(card, rarityCode, setCode, mode) {
     // 如果没有预定义稀有度，从 card_sets 中获取（TCG 模式）
     let rarity = 'Common';
     let code = rarityCode || 'N';
@@ -497,6 +501,24 @@ function convertYGOProDeckCard(card, rarityCode, setCode) {
         rarity = rarityNames[code] || 'Common';
     }
 
+    // 根据模式选择卡图源：
+    // OCG → YGOCDB CDN（日文版卡图）
+    // TCG → YGOProDeck CDN（英文版卡图，默认）
+    let imageUrl, imageLargeUrl;
+    if (mode === 'ocg') {
+        // OCG 使用日文版卡图（YGOCDB CDN / YGOPro 数据库图片）
+        imageUrl = `${API_CONFIG.YGOCDB.IMAGE_URL}/${card.id}.jpg`;
+        imageLargeUrl = `${API_CONFIG.YGOCDB.IMAGE_URL}/${card.id}.jpg`;
+    } else {
+        // TCG 使用英文版卡图（YGOProDeck CDN）
+        imageUrl = card.card_images && card.card_images[0]
+            ? card.card_images[0].image_url_small
+            : `${API_CONFIG.YGOPRODECK.IMAGE_SMALL_URL}/${card.id}.jpg`;
+        imageLargeUrl = card.card_images && card.card_images[0]
+            ? card.card_images[0].image_url
+            : `${API_CONFIG.YGOPRODECK.IMAGE_LARGE_URL}/${card.id}.jpg`;
+    }
+
     return {
         id: card.id,
         name: card.name,            // 外文名（OCG=日文 / TCG=英文）
@@ -511,12 +533,8 @@ function convertYGOProDeckCard(card, rarityCode, setCode) {
         attribute: card.attribute,
         rarity: rarity,
         rarityCode: code,
-        imageUrl: card.card_images && card.card_images[0]
-            ? card.card_images[0].image_url_small
-            : `${API_CONFIG.YGOPRODECK.IMAGE_SMALL_URL}/${card.id}.jpg`,
-        imageLargeUrl: card.card_images && card.card_images[0]
-            ? card.card_images[0].image_url
-            : `${API_CONFIG.YGOPRODECK.IMAGE_LARGE_URL}/${card.id}.jpg`,
+        imageUrl: imageUrl,
+        imageLargeUrl: imageLargeUrl,
         dataSource: 'ygoprodeck'
     };
 }
@@ -555,7 +573,18 @@ async function getOCGCardSetData(packConfig, onProgress) {
                 await enrichCardsWithCNNames(cached.cards, function (loaded, total) {
                     updateLoadingTextIfAvailable(`正在补充中文名... (${loaded}/${total})`);
                 });
-                // 更新缓存（补充了中文名后重新存入）
+                await dbPut('cardSets', cached);
+            }
+            // 检查缓存中的卡图是否为日文版（旧版本缓存可能使用英文卡图）
+            const needsImageUpdate = cached.cards.some(function (c) {
+                return c.imageUrl && c.imageUrl.includes('ygoprodeck.com');
+            });
+            if (needsImageUpdate) {
+                console.log(`🖼️ OCG 缓存中的卡图为英文版，正在更新为日文版...`);
+                cached.cards.forEach(function (c) {
+                    c.imageUrl = `${API_CONFIG.YGOCDB.IMAGE_URL}/${c.id}.jpg`;
+                    c.imageLargeUrl = `${API_CONFIG.YGOCDB.IMAGE_URL}/${c.id}.jpg`;
+                });
                 await dbPut('cardSets', cached);
             }
             console.log(`📦 从缓存加载 OCG 卡包 [${packConfig.packName}] (${langConfig.nameLocal})，共 ${cached.cards.length} 张卡`);
@@ -677,7 +706,7 @@ async function fetchOCGCardsFromYGOProDeck(allIds, rarityMap, langConfig, onProg
         if (apiData && apiData.data) {
             apiData.data.forEach(function (card) {
                 const rarityCode = rarityMap[card.id] || 'N';
-                cards.push(convertYGOProDeckCard(card, rarityCode, null));
+                cards.push(convertYGOProDeckCard(card, rarityCode, null, 'ocg'));
             });
         }
 
@@ -851,7 +880,7 @@ async function getTCGCardSetData(setCode) {
 
         // 使用统一转换函数
         const cards = apiData.data.map(function (card) {
-            return convertYGOProDeckCard(card, null, setCode);
+            return convertYGOProDeckCard(card, null, setCode, 'tcg');
         });
 
         // 补充中文名（从 YGOCDB 获取，面向中国区用户）

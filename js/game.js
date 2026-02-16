@@ -1,7 +1,7 @@
 /**
  * ============================================
  * YGO Pack Opener - 游戏核心逻辑
- * 版本: 0.6.0
+ * 版本: 0.6.1
  * 
  * 【文件说明】
  * 这是游戏的"大脑"，负责：
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         hideLoadingState();
 
-        console.log(`🎴 YGO Pack Opener v0.6.0 初始化完成！当前模式: ${currentGameMode.toUpperCase()}`);
+        console.log(`🎴 YGO Pack Opener v0.6.1 初始化完成！当前模式: ${currentGameMode.toUpperCase()}`);
 
     } catch (error) {
         console.error('❌ 加载配置文件失败:', error);
