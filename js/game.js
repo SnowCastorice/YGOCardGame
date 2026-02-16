@@ -69,6 +69,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         bindGameEvents();
         console.log('✅ bindGameEvents 完成');
 
+        bindCardImageViewer();
+        console.log('✅ bindCardImageViewer 完成');
+
         hideLoadingState();
 
         console.log(`🎴 YGO Pack Opener v0.7.0 初始化完成！当前模式: ${currentGameMode.toUpperCase()}`);
