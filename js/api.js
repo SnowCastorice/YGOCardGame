@@ -419,10 +419,56 @@ async function getOCGCardSetData(packConfig, onProgress) {
         throw new Error(`OCG 卡包 [${packConfig.packName}] 没有配置 cardIds`);
     }
 
+    // 2.1 先试一张卡，检测网络是否可用
+    let networkAvailable = true;
+    let firstCardResult = null;
+    try {
+        firstCardResult = await fetchCardFromYGOCDB(cardIds[0].id);
+        if (!firstCardResult) {
+            networkAvailable = false;
+        }
+    } catch (error) {
+        networkAvailable = false;
+    }
+
+    // 2.2 如果网络不可用，尝试使用离线备用数据
+    if (!networkAvailable) {
+        console.warn(`⚠️ YGOCDB 网络不可用，尝试使用离线备用数据 [${packId}]`);
+        if (window.FALLBACK_CARD_DATA && window.FALLBACK_CARD_DATA[packId]) {
+            const fallbackData = window.FALLBACK_CARD_DATA[packId];
+            const setData = {
+                setCode: packId,
+                cards: fallbackData.cards,
+                totalCards: fallbackData.cards.length,
+                fetchedAt: Date.now(),
+                isOfflineData: true,
+                dataSource: 'fallback'
+            };
+            await dbPut('cardSets', setData);
+            await updateCacheTimestamp(cacheKey);
+            console.log(`📦 使用离线备用数据 [${packConfig.packName}]，共 ${setData.cards.length} 张卡`);
+            return setData;
+        }
+        // 如果连离线数据都没有，继续尝试逐个获取（可能部分成功）
+        console.warn(`⚠️ 没有找到离线备用数据 [${packId}]，尝试逐卡获取...`);
+    }
+
     const cards = [];
     let loadedCount = 0;
 
-    for (const cardDef of cardIds) {
+    // 如果网络预检测成功，第一张卡复用预检测结果
+    if (firstCardResult) {
+        cards.push(convertYGOCDBCard(firstCardResult, cardIds[0].rarityCode));
+        loadedCount = 1;
+        if (onProgress) {
+            onProgress(loadedCount, cardIds.length);
+        }
+    }
+
+    // 从第二张（或第一张，如果预检测失败）开始逐个获取
+    const startIndex = firstCardResult ? 1 : 0;
+    for (let i = startIndex; i < cardIds.length; i++) {
+        const cardDef = cardIds[i];
         try {
             const ygocdbCard = await fetchCardFromYGOCDB(cardDef.id);
 

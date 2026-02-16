@@ -60,7 +60,7 @@ window.FALLBACK_CARD_DATA = {
             { id: 66788016, name: "Witty Phantom", type: "Normal Monster", desc: "A phantom known for its tricky and cunning ways.", atk: 1400, def: 1300, level: 4, race: "Fiend", attribute: "DARK", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
             { id: 97590747, name: "Larvas", type: "Normal Monster", desc: "A fast-moving creature with a razor-sharp tail.", atk: 800, def: 1000, level: 3, race: "Beast", attribute: "EARTH", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
             { id: 44287299, name: "Hard Armor", type: "Normal Monster", desc: "A living suit of armor that attacks enemies with razor-sharp claws.", atk: 300, def: 1200, level: 3, race: "Warrior", attribute: "EARTH", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
-            { id: 62340868, name: "Two-Mouth Darkruler", type: "Normal Monster", desc: "A dinosaur with two deadly jaws.", atk: 900, def: 700, level: 3, race: "Dinosaur", attribute: "EARTH", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+            { id: 57305373, name: "Two-Mouth Darkruler", type: "Normal Monster", desc: "A dinosaur with two deadly jaws.", atk: 900, def: 700, level: 3, race: "Dinosaur", attribute: "EARTH", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
             { id: 13945283, name: "Nemuriko", type: "Normal Monster", desc: "A child-like creature that controls a sleep fiend to protect itself.", atk: 800, def: 700, level: 3, race: "Spellcaster", attribute: "DARK", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
             { id: 75745607, name: "Ancient Elf", type: "Normal Monster", desc: "This elf is said to have lived for thousands of years.", atk: 1450, def: 1200, level: 4, race: "Spellcaster", attribute: "LIGHT", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
         ]
@@ -147,8 +147,7 @@ window.FALLBACK_CARD_DATA = {
             { id: 68827491, name: "Labyrinth Tank", type: "Fusion Monster", desc: "Giga-Tech Wolf + Cannon Soldier", atk: 2400, def: 2400, level: 7, race: "Machine", attribute: "DARK", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
             { id: 87880531, name: "Science Soldier", type: "Normal Monster", desc: "A soldier equipped with high-tech equipment.", atk: 800, def: 800, level: 3, race: "Warrior", attribute: "DARK", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
         ]
-    }
-};
+    },
 
     // ====================================================================
     // OCG 卡包备用数据（亚洲版）
@@ -259,6 +258,66 @@ window.FALLBACK_CARD_DATA = {
             { id: 87880531, name: "科学战士", type: "Normal Monster", desc: "装备高科技设备的战士。", atk: 800, def: 800, level: 3, race: "战士", attribute: "暗", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
             { id: 37580756, name: "钢铁蝎子", type: "Effect Monster", desc: "钢铁制成的蝎子。", atk: 250, def: 300, level: 1, race: "机械", attribute: "地", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
             { id: 44287299, name: "钢铁骑士", type: "Normal Monster", desc: "活着的铠甲。", atk: 300, def: 1200, level: 3, race: "战士", attribute: "地", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+        ]
+    },
+
+    // ====== OCG STARTER BOX（中文备用数据） ======
+    "ocg_starter_box": {
+        setCode: "ocg_starter_box",
+        totalCards: 19,
+        fetchedAt: 0,
+        dataSource: 'fallback',
+        cards: [
+            // === UR ===
+            { id: 89631139, name: "青眼白龙", type: "Normal Monster", desc: "以高攻击力著称的传说之龙。", atk: 3000, def: 2500, level: 8, race: "龙", attribute: "光", rarity: "Ultra Rare", rarityCode: "UR", imageUrl: null, imageLargeUrl: null },
+            { id: 46986414, name: "黑魔术师", type: "Normal Monster", desc: "作为魔术师，攻击力和守备力是最高级别。", atk: 2500, def: 2100, level: 7, race: "魔法师", attribute: "暗", rarity: "Ultra Rare", rarityCode: "UR", imageUrl: null, imageLargeUrl: null },
+            // === SR ===
+            { id: 6368038, name: "暗黑骑士盖亚", type: "Normal Monster", desc: "骑着比风还快的马的骑士。", atk: 2300, def: 2100, level: 7, race: "战士", attribute: "地", rarity: "Super Rare", rarityCode: "SR", imageUrl: null, imageLargeUrl: null },
+            { id: 87796900, name: "诅咒之龙", type: "Normal Monster", desc: "借助暗之力量进行强力攻击的邪恶之龙。", atk: 2000, def: 1500, level: 5, race: "龙", attribute: "暗", rarity: "Super Rare", rarityCode: "SR", imageUrl: null, imageLargeUrl: null },
+            { id: 53129443, name: "黑洞", type: "Spell Card", desc: "破坏场上所有怪兽。", atk: null, def: null, level: null, race: "魔法", attribute: "魔法", rarity: "Super Rare", rarityCode: "SR", imageUrl: null, imageLargeUrl: null },
+            { id: 12580477, name: "雷击", type: "Spell Card", desc: "破坏对方场上所有怪兽。", atk: null, def: null, level: null, race: "魔法", attribute: "魔法", rarity: "Super Rare", rarityCode: "SR", imageUrl: null, imageLargeUrl: null },
+            // === R ===
+            { id: 83764718, name: "死者苏生", type: "Spell Card", desc: "从任意一方墓地选择1只怪兽特殊召唤。", atk: null, def: null, level: null, race: "魔法", attribute: "魔法", rarity: "Rare", rarityCode: "R", imageUrl: null, imageLargeUrl: null },
+            { id: 24094653, name: "融合", type: "Spell Card", desc: "从额外卡组融合召唤1只融合怪兽。", atk: null, def: null, level: null, race: "魔法", attribute: "魔法", rarity: "Rare", rarityCode: "R", imageUrl: null, imageLargeUrl: null },
+            { id: 46130346, name: "陷坑", type: "Trap Card", desc: "对方通常召唤攻击力1000以上怪兽时破坏该怪兽。", atk: null, def: null, level: null, race: "陷阱", attribute: "陷阱", rarity: "Rare", rarityCode: "R", imageUrl: null, imageLargeUrl: null },
+            // === N ===
+            { id: 65622692, name: "神秘的精灵", type: "Normal Monster", desc: "攻击力虽低但守备力极高的精灵。", atk: 800, def: 2000, level: 4, race: "魔法师", attribute: "光", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+            { id: 40374923, name: "小恶魔", type: "Normal Monster", desc: "潜伏在黑暗中的淘气小恶魔。", atk: 1300, def: 1400, level: 4, race: "恶魔", attribute: "暗", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+            { id: 32274490, name: "骷髅仆人", type: "Normal Monster", desc: "力量虽弱但数量多了就很麻烦的骷髅幽灵。", atk: 300, def: 200, level: 1, race: "不死", attribute: "暗", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+            { id: 90357090, name: "白银之牙", type: "Normal Monster", desc: "美丽但凶猛的雪狼。", atk: 1200, def: 800, level: 3, race: "兽", attribute: "地", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+            { id: 69455834, name: "守护要塞的翼龙", type: "Normal Monster", desc: "常见于守卫山岳要塞的龙。", atk: 1400, def: 1200, level: 4, race: "龙", attribute: "风", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+            { id: 49218300, name: "河童战士", type: "Normal Monster", desc: "体型虽小但在草原战斗中守备力很强。", atk: 1200, def: 1500, level: 4, race: "兽战士", attribute: "地", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+        ]
+    },
+
+    // ====== OCG PREMIUM PACK 1（中文备用数据） ======
+    "ocg_premium_pack_1": {
+        setCode: "ocg_premium_pack_1",
+        totalCards: 18,
+        fetchedAt: 0,
+        dataSource: 'fallback',
+        cards: [
+            // === UR ===
+            { id: 74677422, name: "真红眼黑龙", type: "Normal Monster", desc: "用锐利的爪子攻击敌人的凶恶之龙。", atk: 2400, def: 2000, level: 7, race: "龙", attribute: "暗", rarity: "Ultra Rare", rarityCode: "UR", imageUrl: null, imageLargeUrl: null },
+            { id: 70781052, name: "恶魔召唤", type: "Normal Monster", desc: "用电击攻击使敌人混乱的恶魔。", atk: 2500, def: 1200, level: 6, race: "恶魔", attribute: "暗", rarity: "Ultra Rare", rarityCode: "UR", imageUrl: null, imageLargeUrl: null },
+            // === SR ===
+            { id: 11384280, name: "神圣防护罩", type: "Trap Card", desc: "对方怪兽攻击宣言时，破坏对方场上所有攻击表示怪兽。", atk: null, def: null, level: null, race: "陷阱", attribute: "陷阱", rarity: "Super Rare", rarityCode: "SR", imageUrl: null, imageLargeUrl: null },
+            { id: 41420027, name: "神之宣告", type: "Trap Card", desc: "支付一半基本分；怪兽的召唤·魔法·陷阱的发动无效并破坏。", atk: null, def: null, level: null, race: "陷阱", attribute: "陷阱", rarity: "Super Rare", rarityCode: "SR", imageUrl: null, imageLargeUrl: null },
+            { id: 19613556, name: "大岚", type: "Spell Card", desc: "破坏场上所有魔法·陷阱卡。", atk: null, def: null, level: null, race: "魔法", attribute: "魔法", rarity: "Super Rare", rarityCode: "SR", imageUrl: null, imageLargeUrl: null },
+            { id: 55784832, name: "栗子球", type: "Effect Monster", desc: "丢弃此卡使战斗伤害变为0。", atk: 300, def: 200, level: 1, race: "恶魔", attribute: "暗", rarity: "Super Rare", rarityCode: "SR", imageUrl: null, imageLargeUrl: null },
+            // === R ===
+            { id: 45231177, name: "火焰剑士", type: "Fusion Monster", desc: "火焰操纵者+传说之剑豪 将兵", atk: 1800, def: 1600, level: 5, race: "战士", attribute: "炎", rarity: "Rare", rarityCode: "R", imageUrl: null, imageLargeUrl: null },
+            { id: 77414722, name: "魔法干扰阵", type: "Trap Card", desc: "丢弃1张手卡；魔法卡的发动无效并破坏。", atk: null, def: null, level: null, race: "陷阱", attribute: "陷阱", rarity: "Rare", rarityCode: "R", imageUrl: null, imageLargeUrl: null },
+            { id: 28279543, name: "黑暗假面", type: "Effect Monster", desc: "翻转：从墓地选择1张陷阱卡加入手卡。", atk: 900, def: 400, level: 2, race: "恶魔", attribute: "暗", rarity: "Rare", rarityCode: "R", imageUrl: null, imageLargeUrl: null },
+            { id: 31890399, name: "圣之魔术师", type: "Effect Monster", desc: "翻转：从墓地选择1张魔法卡加入手卡。", atk: 300, def: 400, level: 1, race: "魔法师", attribute: "光", rarity: "Rare", rarityCode: "R", imageUrl: null, imageLargeUrl: null },
+            // === N ===
+            { id: 17985575, name: "雷电球", type: "Normal Monster", desc: "无情地碾过所有敌人的雷球。", atk: 750, def: 600, level: 2, race: "雷", attribute: "风", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+            { id: 72842870, name: "青蛙大师", type: "Normal Monster", desc: "像青蛙一样的生物。", atk: 1000, def: 1000, level: 3, race: "水", attribute: "水", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+            { id: 85602018, name: "诅咒之术师", type: "Normal Monster", desc: "操纵暗黑魔法的术师。", atk: 1450, def: 1200, level: 4, race: "魔法师", attribute: "暗", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+            { id: 66788016, name: "灵巧幻影", type: "Normal Monster", desc: "以诡计和狡猾而闻名的幻影。", atk: 1400, def: 1300, level: 4, race: "恶魔", attribute: "暗", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+            { id: 13039848, name: "飞行企鹅", type: "Normal Monster", desc: "可以在天空翱翔的企鹅。", atk: 1200, def: 1000, level: 4, race: "水", attribute: "水", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+            { id: 15401633, name: "阿玛伊尔", type: "Normal Monster", desc: "用双手和尾巴操纵三把剑的奇特战士。", atk: 700, def: 1300, level: 3, race: "战士", attribute: "地", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
+            { id: 97590747, name: "拉巴斯", type: "Normal Monster", desc: "快速移动的尾部锋利的生物。", atk: 800, def: 1000, level: 3, race: "兽", attribute: "地", rarity: "Common", rarityCode: "N", imageUrl: null, imageLargeUrl: null },
         ]
     }
 };
