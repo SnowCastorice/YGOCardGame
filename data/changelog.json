@@ -2,6 +2,22 @@
   "_说明": "版本更新日志。每次更新都会在这里记录，网页上也会显示这些信息。格式：版本号、日期、更新内容列表。",
   "versions": [
     {
+      "version": "0.3.0",
+      "date": "2026-02-16",
+      "title": "新增 OCG 模式 — 支持亚洲版游戏王开包体验",
+      "changes": [
+        "🎌 新增 OCG（Official Card Game）亚洲版模式，默认展示 OCG 卡包",
+        "🌎 原有 TCG（Trading Card Game）欧美版卡包保留，支持一键切换",
+        "🔄 顶部导航栏新增 OCG / TCG 模式切换开关",
+        "💾 切换模式后自动记住选择，下次打开网页保持上次模式",
+        "📦 OCG 初始配置5个卡包：Vol.1、Vol.2、Vol.3、STARTER BOX、PREMIUM PACK 1",
+        "🎴 OCG 模式每包5张卡牌（对应日版开包规则），TCG 模式每包9张",
+        "📊 OCG 概率调整：UR 更稀有（1%），更贴近真实日版体验",
+        "📂 新增 OCG 卡包离线备用数据",
+        "🏷️ 网页标题更新为「YGO Pack Opener」"
+      ]
+    },
+    {
       "version": "0.2.0",
       "date": "2026-02-13",
       "title": "接入 YGOProDeck API — 真实卡牌数据与卡图",

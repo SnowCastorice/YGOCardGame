@@ -1,30 +1,40 @@
 /**
  * ============================================
- * TCG Pack Opener - 游戏核心逻辑
- * 版本: 0.2.0
+ * YGO Pack Opener - 游戏核心逻辑
+ * 版本: 0.3.0
  * 
  * 【文件说明】
  * 这是游戏的"大脑"，负责：
- * 1. 读取卡包配置表（cards.json）— 只包含卡包设置和概率
+ * 1. 读取卡包配置表（cards.json）— 支持 OCG / TCG 双模式
  * 2. 通过 API 模块获取卡牌数据（自动缓存到玩家设备）
  * 3. 读取更新日志（changelog.json）
  * 4. 实现开包抽卡逻辑（按稀有度权重随机抽取）
  * 5. 控制界面切换和动画播放
+ * 6. 管理 OCG/TCG 模式切换
  * ============================================
  */
 
 // ====== 全局数据存储 ======
-let packConfig = null;     // 卡包配置数据（来自 cards.json）
+let packConfig = null;     // 卡包配置数据（来自 cards.json，包含 ocg 和 tcg 两组）
 let changelogData = null;  // 更新日志数据
 let currentPack = null;    // 当前选中的卡包配置
 let currentPackCards = null; // 当前选中卡包的卡牌数据（来自 API 缓存）
+let currentGameMode = 'ocg'; // 当前游戏模式：'ocg' 或 'tcg'，默认 OCG
 
 // ====== 页面加载完成后初始化 ======
 document.addEventListener('DOMContentLoaded', async function () {
     console.log('🚀 DOMContentLoaded 触发，开始初始化...');
 
-    // 先绑定导航栏按钮事件（缓存、日志），确保即使加载失败也能使用
+    // 先绑定导航栏按钮事件（缓存、日志、模式切换），确保即使加载失败也能使用
     bindNavEvents();
+
+    // 从本地存储读取上次的游戏模式（如果有的话）
+    const savedMode = localStorage.getItem('ygo_game_mode');
+    if (savedMode === 'tcg' || savedMode === 'ocg') {
+        currentGameMode = savedMode;
+    }
+    // 更新切换按钮的激活状态
+    updateModeButtons();
 
     try {
         showLoadingState('正在加载游戏配置...');
@@ -48,7 +58,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         packConfig = await cardsResponse.json();
         changelogData = await changelogResponse.json();
-        console.log('✅ JSON 解析成功，卡包数量:', packConfig.packs ? packConfig.packs.length : 'packs 不存在');
+        console.log('✅ JSON 解析成功');
+        console.log(`📦 OCG 卡包数量: ${packConfig.ocg.packs.length}`);
+        console.log(`📦 TCG 卡包数量: ${packConfig.tcg.packs.length}`);
 
         // 初始化各个模块
         renderPackList();
@@ -59,8 +71,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         hideLoadingState();
 
-        console.log('🎴 TCG Pack Opener v0.2.0 初始化完成！');
-        console.log(`📦 已配置 ${packConfig.packs.length} 个卡包`);
+        console.log(`🎴 YGO Pack Opener v0.3.0 初始化完成！当前模式: ${currentGameMode.toUpperCase()}`);
 
     } catch (error) {
         console.error('❌ 加载配置文件失败:', error);
@@ -130,7 +141,7 @@ function bindEvent(id, event, handler) {
     }
 }
 
-// ====== 绑定导航栏按钮事件（缓存、日志） ======
+// ====== 绑定导航栏按钮事件（缓存、日志、模式切换） ======
 function bindNavEvents() {
     // 更新日志
     bindEvent('btn-changelog', 'click', showChangelog);
@@ -141,6 +152,10 @@ function bindNavEvents() {
     bindEvent('btn-close-cache', 'click', hideCacheManage);
     bindEvent('btn-clear-cache', 'click', handleClearCache);
 
+    // OCG / TCG 模式切换按钮
+    bindEvent('btn-mode-ocg', 'click', function () { switchGameMode('ocg'); });
+    bindEvent('btn-mode-tcg', 'click', function () { switchGameMode('tcg'); });
+
     // 点击弹窗外部关闭
     bindEvent('changelog-modal', 'click', function (e) {
         if (e.target === document.getElementById('changelog-modal')) hideChangelog();
@@ -150,6 +165,69 @@ function bindNavEvents() {
     });
 
     console.log('✅ 导航栏事件绑定完成');
+}
+
+// ====== OCG / TCG 模式切换 ======
+
+/**
+ * 切换游戏模式
+ * @param {string} mode - 'ocg' 或 'tcg'
+ */
+function switchGameMode(mode) {
+    if (mode === currentGameMode) return; // 同一模式不重复切换
+
+    currentGameMode = mode;
+    // 保存到本地存储，下次打开网页时记住选择
+    localStorage.setItem('ygo_game_mode', mode);
+
+    // 更新按钮激活状态
+    updateModeButtons();
+
+    // 重置当前选中的卡包
+    currentPack = null;
+    currentPackCards = null;
+
+    // 回到卡包选择界面并重新渲染
+    if (packConfig) {
+        renderPackList();
+        switchSection('pack-select-section');
+    }
+
+    console.log(`🔄 游戏模式切换为: ${mode.toUpperCase()}`);
+}
+
+/**
+ * 更新模式切换按钮的激活状态和模式提示文本
+ */
+function updateModeButtons() {
+    const ocgBtn = document.getElementById('btn-mode-ocg');
+    const tcgBtn = document.getElementById('btn-mode-tcg');
+    const modeInfoText = document.getElementById('mode-info-text');
+
+    if (ocgBtn) {
+        ocgBtn.classList.toggle('active', currentGameMode === 'ocg');
+    }
+    if (tcgBtn) {
+        tcgBtn.classList.toggle('active', currentGameMode === 'tcg');
+    }
+
+    // 更新模式提示文本
+    if (modeInfoText) {
+        if (currentGameMode === 'ocg') {
+            modeInfoText.textContent = '🎌 OCG 模式（亚洲版） — 每包5张卡牌';
+        } else {
+            modeInfoText.textContent = '🌎 TCG 模式（欧美版） — 每包9张卡牌';
+        }
+    }
+}
+
+/**
+ * 获取当前模式的卡包配置
+ * @returns {object} 当前模式的配置（packs数组 + defaultRarityRates）
+ */
+function getCurrentModeConfig() {
+    if (!packConfig) return null;
+    return packConfig[currentGameMode] || packConfig.ocg;
 }
 
 // ====== 绑定游戏区域按钮事件 ======
@@ -177,20 +255,30 @@ function bindEvents() {
 
 /**
  * 渲染卡包选择列表
- * 读取 cards.json 中的 packs 数组，生成可点击的卡包卡片
+ * 根据当前 OCG/TCG 模式，读取对应的 packs 数组，生成可点击的卡包卡片
  */
 function renderPackList() {
     const packListEl = document.getElementById('pack-list');
     packListEl.innerHTML = '';
 
-    packConfig.packs.forEach(function (pack) {
+    const modeConfig = getCurrentModeConfig();
+    if (!modeConfig || !modeConfig.packs) {
+        packListEl.innerHTML = '<p style="text-align:center;color:var(--text-secondary);grid-column:1/-1;">当前模式下暂无可用卡包</p>';
+        return;
+    }
+
+    modeConfig.packs.forEach(function (pack) {
         const packCard = document.createElement('div');
         packCard.className = 'pack-card';
+
+        // 根据模式显示不同的图标
+        const modeIcon = currentGameMode === 'ocg' ? '🎌' : '🌎';
+
         packCard.innerHTML = `
             <span class="pack-icon">🎴</span>
             <div class="pack-name">${pack.packName}</div>
             <div class="pack-code">${pack.setCode}</div>
-            <div class="pack-count">每包 ${pack.cardsPerPack} 张 | ${pack.guaranteedRareSlot ? '保底R以上' : '纯随机'}</div>
+            <div class="pack-count">每包 ${pack.cardsPerPack} 张 | ${pack.guaranteedRareSlot ? '保底R以上' : '纯随机'} ${modeIcon}</div>
         `;
         packCard.addEventListener('click', function () {
             selectPack(pack);
@@ -217,7 +305,8 @@ async function selectPack(pack) {
 
         // 更新开包界面信息
         const offlineTag = setData.isOfflineData ? ' [离线模式]' : '';
-        document.getElementById('current-pack-name').textContent = pack.packName + offlineTag;
+        const modeTag = currentGameMode === 'ocg' ? ' [OCG]' : ' [TCG]';
+        document.getElementById('current-pack-name').textContent = pack.packName + modeTag + offlineTag;
         document.getElementById('current-pack-desc').textContent =
             `${pack.setCode} | 共 ${currentPackCards.length} 种卡牌 | 每包抽取 ${pack.cardsPerPack} 张${setData.isOfflineData ? '\n⚠️ 当前使用离线备用数据，联网后可获取完整卡牌数据和卡图' : ''}`;
 
@@ -300,8 +389,9 @@ async function openPack() {
  * 如果开启了「保底R以上」，最后一张卡至少是 R 稀有度
  */
 function drawCards(pack, cards) {
-    // 使用卡包自己的概率配置，如果没有就用默认值
-    const rates = pack.rarityRates || packConfig.defaultRarityRates;
+    // 使用卡包自己的概率配置，如果没有就用当前模式的默认值
+    const modeConfig = getCurrentModeConfig();
+    const rates = pack.rarityRates || modeConfig.defaultRarityRates;
     const results = [];
 
     // 按稀有度把卡牌分组
@@ -527,6 +617,7 @@ async function showCacheManage() {
         html += `<div class="cache-summary">`;
         html += `<p>📊 已缓存 <strong>${status.cardSets.length}</strong> 个卡包，共 <strong>${status.totalCards}</strong> 张卡牌数据</p>`;
         html += `<p>🖼️ 图片缓存：${status.imageCacheAvailable ? '✅ 可用' : '❌ 浏览器不支持'}</p>`;
+        html += `<p>🎮 当前模式：<strong>${currentGameMode.toUpperCase()}</strong></p>`;
         html += `</div>`;
 
         // 各卡包详情

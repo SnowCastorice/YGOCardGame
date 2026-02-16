@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TCG Card Pack Opener - 卡包开封模拟器</title>
+    <title>YGO Pack Opener - 游戏王卡包开封模拟器</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -17,7 +17,12 @@
 
     <!-- ====== 顶部导航栏 ====== -->
     <header class="top-bar">
-        <h1 class="game-title">TCG Pack Opener</h1>
+        <h1 class="game-title">YGO Pack Opener</h1>
+        <!-- OCG / TCG 模式切换开关 -->
+        <div class="mode-switch-container">
+            <button id="btn-mode-ocg" class="mode-btn active" data-mode="ocg">OCG</button>
+            <button id="btn-mode-tcg" class="mode-btn" data-mode="tcg">TCG</button>
+        </div>
         <nav class="top-nav">
             <button id="btn-cache-manage" class="nav-btn">💾 缓存</button>
             <button id="btn-changelog" class="nav-btn">📋 日志</button>
@@ -26,6 +31,11 @@
 
     <!-- ====== 主游戏区域 ====== -->
     <main class="game-area">
+        <!-- 当前模式提示 -->
+        <div id="mode-info" class="mode-info">
+            <span id="mode-info-text">🎌 OCG 模式（亚洲版） — 每包5张卡牌</span>
+        </div>
+
         <!-- 卡包选择区域 -->
         <section id="pack-select-section" class="section-panel">
             <h2 class="section-title">选择卡包</h2>
@@ -101,7 +111,7 @@
 
     <!-- ====== 页脚 ====== -->
     <footer class="footer">
-        <p>TCG Pack Opener v0.2.0 | 卡包开封模拟器</p>
+        <p>YGO Pack Opener v0.3.0 | 游戏王卡包开封模拟器</p>
         <p class="footer-credit">
             Card data provided by <a href="https://ygoprodeck.com/" target="_blank" rel="noopener">YGOProDeck</a>. 
             Yu-Gi-Oh! is a trademark of <a href="https://www.konami.com/" target="_blank" rel="noopener">Konami Digital Entertainment</a>.
@@ -128,8 +138,8 @@
     </script>
 
     <!-- 先加载离线备用数据，再加载 API 模块，最后加载游戏逻辑 -->
-    <script src="data/fallback_cards.js?v=0.2.2"></script>
-    <script src="js/api.js?v=0.2.2"></script>
-    <script src="js/game.js?v=0.2.2"></script>
+    <script src="data/fallback_cards.js?v=0.3.0"></script>
+    <script src="js/api.js?v=0.3.0"></script>
+    <script src="js/game.js?v=0.3.0"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 /* ============================================
-   TCG Pack Opener - 全局样式
-   版本: 0.2.0
+   YGO Pack Opener - 全局样式
+   版本: 0.3.0
    ============================================ */
 
 /* --- CSS 变量（方便统一调整颜色和风格） --- */
@@ -91,6 +91,8 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
 .game-title {
@@ -119,6 +121,54 @@ body {
 .nav-btn:hover {
     background: var(--accent-blue);
     color: #fff;
+}
+
+/* ============================================
+   OCG / TCG 模式切换开关
+   ============================================ */
+.mode-switch-container {
+    display: flex;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.mode-btn {
+    padding: 6px 16px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 1px;
+}
+
+.mode-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.mode-btn.active {
+    background: var(--accent-gold);
+    color: #000;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+}
+
+/* 当前模式提示条 */
+.mode-info {
+    width: 100%;
+    text-align: center;
+    padding: 8px 16px;
+    margin-bottom: 16px;
+    background: rgba(255, 215, 0, 0.08);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--accent-gold);
+    animation: fadeIn 0.5s ease;
 }
 
 /* ============================================
@@ -722,6 +772,23 @@ body {
 
     .pack-list {
         grid-template-columns: 1fr;
+    }
+
+    .mode-switch-container {
+        order: -1;
+        flex-basis: 100%;
+        justify-content: center;
+        margin-bottom: 4px;
+    }
+
+    .top-bar {
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    .mode-info {
+        font-size: 0.78rem;
+        padding: 6px 12px;
     }
 
     .btn-open-pack {
