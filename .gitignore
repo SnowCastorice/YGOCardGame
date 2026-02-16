@@ -14,3 +14,6 @@ node_modules/
 
 # 日志
 *.log
+
+# AI 协作文档（仅本地使用）
+AIRead.md
