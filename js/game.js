@@ -159,12 +159,19 @@ function bindNavEvents() {
     bindEvent('btn-mode-ocg', 'click', function () { switchGameMode('ocg'); });
     bindEvent('btn-mode-tcg', 'click', function () { switchGameMode('tcg'); });
 
+    // 开发者工具
+    bindEvent('btn-dev-tools', 'click', showDevTools);
+    bindEvent('btn-close-devtools', 'click', hideDevTools);
+
     // 点击弹窗外部关闭
     bindEvent('changelog-modal', 'click', function (e) {
         if (e.target === document.getElementById('changelog-modal')) hideChangelog();
     });
     bindEvent('cache-modal', 'click', function (e) {
         if (e.target === document.getElementById('cache-modal')) hideCacheManage();
+    });
+    bindEvent('devtools-modal', 'click', function (e) {
+        if (e.target === document.getElementById('devtools-modal')) hideDevTools();
     });
 
     console.log('✅ 导航栏事件绑定完成');
@@ -775,4 +782,396 @@ async function handleClearCache() {
     } else {
         alert('❌ 清除缓存失败，请重试。');
     }
+}
+
+// ====== 开发者工具：CDN 卡图对比 ======
+
+/**
+ * CDN 图片源定义
+ * 每个源包含：名称、URL 模板、格式说明、是否为当前使用的源
+ */
+const CDN_SOURCES = [
+    {
+        id: 'ygocdb_pics',
+        name: 'YGOCDB CDN (pics)',
+        urlTemplate: 'https://cdn.233.momobako.com/ygopro/pics/{id}.jpg',
+        format: 'JPEG',
+        desc: '萌卡 YGOPro 卡图（当前 OCG 使用）',
+        usedBy: 'ocg'
+    },
+    {
+        id: 'ygocdb_ygoimg_webp',
+        name: 'YGOCDB CDN (ygoimg/webp)',
+        urlTemplate: 'https://cdn.233.momobako.com/ygoimg/ygopro/{id}.webp',
+        format: 'WebP',
+        desc: 'YGOCDB 高清卡图（WebP 格式）',
+        usedBy: null
+    },
+    {
+        id: 'ygocdb_ygoimg_scaled',
+        name: 'YGOCDB CDN (ygoimg/压缩)',
+        urlTemplate: 'https://cdn.233.momobako.com/ygoimg/ygopro/{id}.webp!/fw/400/quality/85',
+        format: 'WebP (压缩)',
+        desc: 'YGOCDB CDN 处理：宽400 + 质量85',
+        usedBy: null
+    },
+    {
+        id: 'ygoprodeck_small',
+        name: 'YGOProDeck (small)',
+        urlTemplate: 'https://images.ygoprodeck.com/images/cards_small/{id}.jpg',
+        format: 'JPEG',
+        desc: 'YGOProDeck 小图（当前 TCG 使用）',
+        usedBy: 'tcg'
+    },
+    {
+        id: 'ygoprodeck_large',
+        name: 'YGOProDeck (large)',
+        urlTemplate: 'https://images.ygoprodeck.com/images/cards/{id}.jpg',
+        format: 'JPEG',
+        desc: 'YGOProDeck 大图',
+        usedBy: null
+    }
+];
+
+// 一些常用卡片 ID，用于随机测试
+const SAMPLE_CARD_IDS = [
+    89631139,  // 青眼白龙
+    46986414,  // 黑魔导
+    70903634,  // 骷髅仆人
+    66788016,  // 地割れ
+    74677422,  // 陷阱之穴
+    44095762,  // 死者苏生
+    5318639,   // 光之护封剑
+    80604091,  // 混沌帝龙
+    36996508,  // 灰流丽
+    14558127,  // 増殖するG
+    24094653,  // 屋敷わらし
+    59438930,  // 电脑堺娘-娘々
+];
+
+/** 打开开发者工具弹窗 */
+function showDevTools() {
+    const modal = document.getElementById('devtools-modal');
+    modal.classList.add('active');
+
+    // 显示当前模式信息
+    const modeInfo = document.getElementById('devtools-mode-info');
+    const modeText = currentGameMode === 'ocg' ? 'OCG（使用 YGOCDB CDN 卡图）' : 'TCG（使用 YGOProDeck CDN 卡图）';
+    modeInfo.textContent = `当前模式：${modeText}`;
+    modeInfo.classList.add('visible');
+
+    // 绑定按钮事件（仅首次）
+    const loadBtn = document.getElementById('btn-devtools-load');
+    const randomBtn = document.getElementById('btn-devtools-random');
+    const input = document.getElementById('devtools-card-id');
+
+    // 移除旧事件，防止重复绑定
+    loadBtn.onclick = function () {
+        const cardId = input.value.trim();
+        if (!cardId || isNaN(cardId)) {
+            alert('请输入有效的卡片ID（纯数字）');
+            return;
+        }
+        loadCDNComparison(parseInt(cardId));
+    };
+
+    randomBtn.onclick = function () {
+        const randomId = SAMPLE_CARD_IDS[Math.floor(Math.random() * SAMPLE_CARD_IDS.length)];
+        input.value = randomId;
+        loadCDNComparison(randomId);
+    };
+
+    // 回车键触发加载
+    input.onkeydown = function (e) {
+        if (e.key === 'Enter') loadBtn.click();
+    };
+}
+
+/** 关闭开发者工具弹窗 */
+function hideDevTools() {
+    document.getElementById('devtools-modal').classList.remove('active');
+}
+
+/**
+ * 加载 CDN 对比数据
+ * 对指定卡片 ID，同时从所有 CDN 源加载图片并对比
+ * @param {number} cardId - 卡片 ID
+ */
+async function loadCDNComparison(cardId) {
+    const compareArea = document.getElementById('devtools-compare-area');
+    compareArea.innerHTML = '<p class="devtools-placeholder">⏳ 正在加载各 CDN 源的图片...</p>';
+
+    // 并行加载所有 CDN 源的图片
+    const results = await Promise.all(
+        CDN_SOURCES.map(function (source) {
+            return loadSingleCDN(source, cardId);
+        })
+    );
+
+    // 渲染对比结果
+    renderCDNComparison(results, cardId);
+}
+
+/**
+ * 加载单个 CDN 源的图片并获取性能数据
+ * @param {object} source - CDN 源配置
+ * @param {number} cardId - 卡片 ID
+ * @returns {object} 加载结果（含时间、大小、状态等）
+ */
+function loadSingleCDN(source, cardId) {
+    const url = source.urlTemplate.replace('{id}', cardId);
+    const startTime = performance.now();
+
+    return new Promise(function (resolve) {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+
+        // 设置超时（10秒）
+        const timeout = setTimeout(function () {
+            resolve({
+                source: source,
+                url: url,
+                status: 'timeout',
+                loadTime: 10000,
+                fileSize: null,
+                width: null,
+                height: null
+            });
+        }, 10000);
+
+        img.onload = function () {
+            clearTimeout(timeout);
+            const loadTime = Math.round(performance.now() - startTime);
+
+            // 尝试通过 fetch HEAD 请求获取文件大小
+            fetchImageSize(url).then(function (fileSize) {
+                resolve({
+                    source: source,
+                    url: url,
+                    status: 'ok',
+                    loadTime: loadTime,
+                    fileSize: fileSize,
+                    width: img.naturalWidth,
+                    height: img.naturalHeight,
+                    imgElement: img
+                });
+            });
+        };
+
+        img.onerror = function () {
+            clearTimeout(timeout);
+            const loadTime = Math.round(performance.now() - startTime);
+            resolve({
+                source: source,
+                url: url,
+                status: 'error',
+                loadTime: loadTime,
+                fileSize: null,
+                width: null,
+                height: null
+            });
+        };
+
+        // 加上时间戳防止浏览器缓存干扰测试
+        img.src = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
+    });
+}
+
+/**
+ * 通过 fetch HEAD 请求获取图片文件大小
+ * @param {string} url - 图片 URL
+ * @returns {number|null} 文件大小（字节），失败返回 null
+ */
+async function fetchImageSize(url) {
+    try {
+        const resp = await fetch(url, { method: 'HEAD', mode: 'cors' });
+        const size = resp.headers.get('content-length');
+        return size ? parseInt(size) : null;
+    } catch (e) {
+        // HEAD 请求失败时尝试用 GET + blob
+        try {
+            const resp = await fetch(url, { mode: 'cors' });
+            const blob = await resp.blob();
+            return blob.size;
+        } catch (e2) {
+            return null;
+        }
+    }
+}
+
+/**
+ * 格式化文件大小（字节 → KB/MB）
+ * @param {number|null} bytes - 字节数
+ * @returns {string} 格式化后的大小字符串
+ */
+function formatFileSize(bytes) {
+    if (bytes === null || bytes === undefined) return '未知';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+/**
+ * 渲染 CDN 对比结果
+ * @param {Array} results - 所有 CDN 源的加载结果
+ * @param {number} cardId - 卡片 ID
+ */
+function renderCDNComparison(results, cardId) {
+    const compareArea = document.getElementById('devtools-compare-area');
+    let html = '';
+
+    // 找出加载成功的结果中的最佳值
+    const okResults = results.filter(function (r) { return r.status === 'ok'; });
+    const bestLoadTime = okResults.length > 0 ? Math.min.apply(null, okResults.map(function (r) { return r.loadTime; })) : null;
+    const bestSize = okResults.length > 0 ? Math.min.apply(null, okResults.filter(function (r) { return r.fileSize; }).map(function (r) { return r.fileSize; })) : null;
+    const bestRes = okResults.length > 0 ? Math.max.apply(null, okResults.map(function (r) { return (r.width || 0) * (r.height || 0); })) : null;
+
+    // 渲染每个 CDN 源
+    results.forEach(function (result) {
+        const isCurrentSource = result.source.usedBy === currentGameMode;
+        const activeClass = isCurrentSource ? 'active-source' : '';
+        const badge = isCurrentSource
+            ? '<span class="devtools-cdn-badge badge-current">当前使用</span>'
+            : (result.source.usedBy ? '<span class="devtools-cdn-badge badge-alt">' + result.source.usedBy.toUpperCase() + '用</span>' : '');
+
+        html += '<div class="devtools-cdn-card ' + activeClass + '">';
+        html += '<div class="devtools-cdn-header">';
+        html += '<span class="devtools-cdn-name">' + result.source.name + '</span>';
+        html += badge;
+        html += '</div>';
+        html += '<div class="devtools-cdn-body">';
+
+        // 图片区域
+        html += '<div class="devtools-img-container">';
+        if (result.status === 'ok') {
+            html += '<img src="' + result.url + '" alt="' + result.source.name + '" />';
+        } else if (result.status === 'timeout') {
+            html += '<div class="devtools-img-error">⏰ 加载超时 (>10s)</div>';
+        } else {
+            html += '<div class="devtools-img-error">❌ 加载失败</div>';
+        }
+        html += '</div>';
+
+        // 信息面板
+        html += '<div class="devtools-info-panel">';
+
+        // 状态
+        if (result.status === 'ok') {
+            html += '<div class="devtools-info-row">';
+            html += '<span class="devtools-info-label">状态</span>';
+            html += '<span class="devtools-info-value good">✅ 加载成功</span>';
+            html += '</div>';
+        } else {
+            html += '<div class="devtools-info-row">';
+            html += '<span class="devtools-info-label">状态</span>';
+            html += '<span class="devtools-info-value bad">❌ ' + (result.status === 'timeout' ? '超时' : '失败') + '</span>';
+            html += '</div>';
+        }
+
+        // 加载时间
+        const timeClass = result.status === 'ok' && result.loadTime === bestLoadTime ? 'good' : (result.loadTime > 3000 ? 'bad' : '');
+        html += '<div class="devtools-info-row">';
+        html += '<span class="devtools-info-label">加载时间</span>';
+        html += '<span class="devtools-info-value ' + timeClass + '">' + result.loadTime + 'ms' + (result.loadTime === bestLoadTime ? ' 🏆' : '') + '</span>';
+        html += '</div>';
+
+        // 文件大小
+        if (result.fileSize) {
+            const sizeClass = result.fileSize === bestSize ? 'good' : (result.fileSize > 100 * 1024 ? 'warn' : '');
+            html += '<div class="devtools-info-row">';
+            html += '<span class="devtools-info-label">文件大小</span>';
+            html += '<span class="devtools-info-value ' + sizeClass + '">' + formatFileSize(result.fileSize) + (result.fileSize === bestSize ? ' 🏆' : '') + '</span>';
+            html += '</div>';
+        }
+
+        // 分辨率
+        if (result.width && result.height) {
+            const res = result.width * result.height;
+            const resClass = res === bestRes ? 'good' : '';
+            html += '<div class="devtools-info-row">';
+            html += '<span class="devtools-info-label">分辨率</span>';
+            html += '<span class="devtools-info-value ' + resClass + '">' + result.width + '×' + result.height + (res === bestRes ? ' 🏆' : '') + '</span>';
+            html += '</div>';
+        }
+
+        // 格式
+        html += '<div class="devtools-info-row">';
+        html += '<span class="devtools-info-label">格式</span>';
+        html += '<span class="devtools-info-value">' + result.source.format + '</span>';
+        html += '</div>';
+
+        // 说明
+        html += '<div class="devtools-info-row">';
+        html += '<span class="devtools-info-label">说明</span>';
+        html += '<span class="devtools-info-value" style="font-weight:normal;font-size:0.75rem;">' + result.source.desc + '</span>';
+        html += '</div>';
+
+        // URL
+        html += '<div class="devtools-url-row">';
+        html += '<div class="devtools-url-text">' + result.url.split('?')[0] + '</div>';
+        html += '</div>';
+
+        html += '</div>'; // info-panel
+        html += '</div>'; // cdn-body
+        html += '</div>'; // cdn-card
+    });
+
+    // 总结对比
+    if (okResults.length > 1) {
+        html += '<div class="devtools-summary">';
+        html += '<h3>📊 对比总结（Card ID: ' + cardId + '）</h3>';
+        html += '<div class="devtools-summary-grid">';
+
+        // 最快加载
+        const fastest = okResults.reduce(function (a, b) { return a.loadTime < b.loadTime ? a : b; });
+        html += '<div class="devtools-summary-item">';
+        html += '<div class="label">⚡ 最快加载</div>';
+        html += '<div class="value best">' + fastest.source.name.split('(')[0].trim() + '</div>';
+        html += '<div class="label">' + fastest.loadTime + 'ms</div>';
+        html += '</div>';
+
+        // 最小体积
+        const sizedResults = okResults.filter(function (r) { return r.fileSize; });
+        if (sizedResults.length > 0) {
+            const smallest = sizedResults.reduce(function (a, b) { return a.fileSize < b.fileSize ? a : b; });
+            html += '<div class="devtools-summary-item">';
+            html += '<div class="label">📦 最小体积</div>';
+            html += '<div class="value best">' + smallest.source.name.split('(')[0].trim() + '</div>';
+            html += '<div class="label">' + formatFileSize(smallest.fileSize) + '</div>';
+            html += '</div>';
+        }
+
+        // 最高分辨率
+        const highestRes = okResults.reduce(function (a, b) {
+            return (a.width || 0) * (a.height || 0) > (b.width || 0) * (b.height || 0) ? a : b;
+        });
+        if (highestRes.width) {
+            html += '<div class="devtools-summary-item">';
+            html += '<div class="label">🔍 最高分辨率</div>';
+            html += '<div class="value best">' + highestRes.source.name.split('(')[0].trim() + '</div>';
+            html += '<div class="label">' + highestRes.width + '×' + highestRes.height + '</div>';
+            html += '</div>';
+        }
+
+        html += '</div>'; // summary-grid
+
+        // 带宽节省建议
+        if (sizedResults.length >= 2) {
+            const sorted = sizedResults.slice().sort(function (a, b) { return a.fileSize - b.fileSize; });
+            const smallest = sorted[0];
+            const largest = sorted[sorted.length - 1];
+            const savedPercent = Math.round((1 - smallest.fileSize / largest.fileSize) * 100);
+            if (savedPercent > 10) {
+                html += '<p style="margin-top:12px;font-size:0.82rem;color:var(--text-secondary);">';
+                html += '💡 使用 <strong style="color:var(--accent-gold);">' + smallest.source.name + '</strong> 相比 ' + largest.source.name;
+                html += ' 可节省约 <strong style="color:#4caf50;">' + savedPercent + '%</strong> 带宽';
+                html += ' （' + formatFileSize(largest.fileSize - smallest.fileSize) + '/张卡）';
+                html += '</p>';
+            }
+        }
+
+        html += '</div>'; // summary
+    }
+
+    compareArea.innerHTML = html;
 }

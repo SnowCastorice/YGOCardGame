@@ -904,7 +904,7 @@ body {
     z-index: 9999;
     cursor: pointer;
     pointer-events: none;
-    transition: background 0.3s ease;
+    transition: background 0.8s ease;
 }
 
 /* 激活状态 */
@@ -922,8 +922,8 @@ body {
     box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
     transform: scale(0.3);
     opacity: 0;
-    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), 
-                opacity 0.3s ease;
+    transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                opacity 0.8s ease;
 }
 
 /* 图片显示动画 */
@@ -943,7 +943,7 @@ body {
     text-align: center;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
     opacity: 0;
-    transition: opacity 0.3s ease 0.15s;
+    transition: opacity 0.8s ease 0.4s;
     max-width: 90vw;
     line-height: 1.4;
 }
@@ -960,7 +960,7 @@ body {
     color: rgba(255, 255, 255, 0.5);
     font-size: 0.8rem;
     opacity: 0;
-    transition: opacity 0.3s ease 0.2s;
+    transition: opacity 0.8s ease 0.5s;
 }
 
 .card-image-viewer.active .viewer-hint {
@@ -993,5 +993,354 @@ body {
         font-size: 0.7rem;
         top: 12px;
         right: 14px;
+    }
+}
+
+/* ============================================
+   开发者工具：CDN 卡图对比面板
+   ============================================ */
+
+/* 开发者按钮样式 */
+.dev-btn {
+    padding: 8px 10px !important;
+    font-size: 0.85rem !important;
+    opacity: 0.6;
+    transition: all 0.3s ease !important;
+}
+
+.dev-btn:hover {
+    opacity: 1;
+}
+
+/* 开发者工具弹窗内容（宽一些） */
+.devtools-modal-content {
+    max-width: 900px !important;
+    max-height: 90vh !important;
+}
+
+.devtools-body {
+    padding: 16px 20px !important;
+}
+
+/* 输入区域 */
+.devtools-input-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.devtools-input-area label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.devtools-input-area input {
+    flex: 1;
+    min-width: 160px;
+    padding: 8px 12px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.devtools-input-area input:focus {
+    border-color: var(--accent-blue);
+}
+
+.btn-devtools-action {
+    padding: 8px 16px;
+    background: var(--accent-blue);
+    border: none;
+    color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.btn-devtools-action:hover {
+    background: #3a88dd;
+    transform: translateY(-1px);
+}
+
+.btn-devtools-random {
+    background: transparent;
+    border: 1px solid var(--accent-gold);
+    color: var(--accent-gold);
+}
+
+.btn-devtools-random:hover {
+    background: var(--accent-gold);
+    color: #000;
+}
+
+/* 当前模式信息 */
+.devtools-mode-info {
+    padding: 8px 12px;
+    background: rgba(255, 215, 0, 0.08);
+    border: 1px solid rgba(255, 215, 0, 0.15);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: var(--accent-gold);
+    margin-bottom: 16px;
+    display: none;
+}
+
+.devtools-mode-info.visible {
+    display: block;
+}
+
+/* CDN 对比区域 */
+.devtools-compare-area {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.devtools-placeholder {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 40px 16px;
+    font-size: 0.9rem;
+}
+
+/* 单个 CDN 卡片 */
+.devtools-cdn-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.3s;
+}
+
+.devtools-cdn-card.active-source {
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.15);
+}
+
+/* CDN 卡片头部 */
+.devtools-cdn-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.devtools-cdn-name {
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.devtools-cdn-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+.devtools-cdn-badge.badge-current {
+    background: var(--accent-gold);
+    color: #000;
+}
+
+.devtools-cdn-badge.badge-alt {
+    background: var(--accent-blue);
+    color: #fff;
+}
+
+/* CDN 卡片主体 */
+.devtools-cdn-body {
+    display: flex;
+    gap: 14px;
+    padding: 14px;
+    align-items: flex-start;
+}
+
+/* 图片容器 */
+.devtools-img-container {
+    flex-shrink: 0;
+    width: 150px;
+    min-height: 200px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.devtools-img-container img {
+    max-width: 100%;
+    max-height: 220px;
+    object-fit: contain;
+    border-radius: 4px;
+    cursor: zoom-in;
+}
+
+/* 加载中指示器 */
+.devtools-img-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+/* 图片加载失败 */
+.devtools-img-error {
+    color: var(--accent-red);
+    font-size: 0.8rem;
+    text-align: center;
+    padding: 10px;
+}
+
+/* 信息面板 */
+.devtools-info-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.devtools-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 0.82rem;
+    gap: 8px;
+}
+
+.devtools-info-label {
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.devtools-info-value {
+    color: var(--text-primary);
+    font-weight: bold;
+    text-align: right;
+    word-break: break-all;
+}
+
+.devtools-info-value.good {
+    color: #4caf50;
+}
+
+.devtools-info-value.warn {
+    color: #ff9800;
+}
+
+.devtools-info-value.bad {
+    color: var(--accent-red);
+}
+
+/* URL 显示（可折叠） */
+.devtools-url-row {
+    margin-top: 4px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.devtools-url-text {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    word-break: break-all;
+    opacity: 0.7;
+    line-height: 1.4;
+}
+
+/* 总结对比区域 */
+.devtools-summary {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 14px;
+}
+
+.devtools-summary h3 {
+    font-size: 0.95rem;
+    color: var(--accent-gold);
+    margin-bottom: 10px;
+}
+
+.devtools-summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    text-align: center;
+}
+
+.devtools-summary-item {
+    padding: 8px;
+    background: var(--bg-panel);
+    border-radius: 6px;
+}
+
+.devtools-summary-item .label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.devtools-summary-item .value {
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.devtools-summary-item .value.best {
+    color: #4caf50;
+}
+
+/* 响应式适配 */
+@media (max-width: 600px) {
+    .devtools-modal-content {
+        max-width: 100% !important;
+        margin: 0 8px;
+    }
+
+    .devtools-input-area {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .devtools-input-area label {
+        margin-bottom: -4px;
+    }
+
+    .devtools-cdn-body {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .devtools-img-container {
+        width: 200px;
+    }
+
+    .devtools-info-panel {
+        width: 100%;
+    }
+
+    .devtools-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dev-btn {
+        padding: 6px 8px !important;
+        font-size: 0.8rem !important;
     }
 }

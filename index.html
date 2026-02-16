@@ -26,6 +26,7 @@
         <nav class="top-nav">
             <button id="btn-cache-manage" class="nav-btn">💾 缓存</button>
             <button id="btn-changelog" class="nav-btn">📋 日志</button>
+            <button id="btn-dev-tools" class="nav-btn dev-btn">🔧</button>
         </nav>
     </header>
 
@@ -105,6 +106,31 @@
             </div>
             <div class="modal-footer">
                 <button id="btn-clear-cache" class="btn-danger">🗑️ 清除所有缓存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== 开发者工具：CDN 卡图对比面板 ====== -->
+    <div id="devtools-modal" class="modal-overlay">
+        <div class="modal-content devtools-modal-content">
+            <div class="modal-header">
+                <h2>🔧 CDN 卡图对比工具</h2>
+                <button id="btn-close-devtools" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body devtools-body">
+                <!-- 卡片ID输入区 -->
+                <div class="devtools-input-area">
+                    <label for="devtools-card-id">卡片ID：</label>
+                    <input type="text" id="devtools-card-id" placeholder="例如 89631139（青眼白龙）" />
+                    <button id="btn-devtools-load" class="btn-devtools-action">加载对比</button>
+                    <button id="btn-devtools-random" class="btn-devtools-action btn-devtools-random">🎲 随机卡片</button>
+                </div>
+                <!-- 当前模式信息 -->
+                <div id="devtools-mode-info" class="devtools-mode-info"></div>
+                <!-- CDN 对比结果区 -->
+                <div id="devtools-compare-area" class="devtools-compare-area">
+                    <p class="devtools-placeholder">输入卡片 ID 后点击「加载对比」，或使用「🎲 随机卡片」来测试</p>
+                </div>
             </div>
         </div>
     </div>
