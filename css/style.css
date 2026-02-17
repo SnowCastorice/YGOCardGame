@@ -1187,6 +1187,13 @@ body {
     object-fit: contain;
     border-radius: 4px;
     cursor: zoom-in;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* CDN 面板卡图 hover 效果（提示可点击放大） */
+.devtools-img-container img.devtools-cdn-img-clickable:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
 }
 
 /* 加载中指示器 */

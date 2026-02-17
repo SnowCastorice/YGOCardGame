@@ -308,6 +308,23 @@ function bindCardImageViewer() {
         viewer.classList.add('active');
     });
 
+    // 事件委托：监听开发者工具 CDN 面板中的卡图点击（放大查看）
+    var devtoolsCompareArea = document.getElementById('devtools-compare-area');
+    if (devtoolsCompareArea) {
+        devtoolsCompareArea.addEventListener('click', function (e) {
+            var img = e.target.closest('.devtools-cdn-img-clickable');
+            if (!img) return;
+
+            e.stopPropagation();
+
+            var imgSrc = img.src;
+            var cdnName = img.getAttribute('data-cdn-name') || '';
+
+            // 使用通用方法打开查看器
+            openCardImageViewer(imgSrc, '', cdnName);
+        });
+    }
+
     // 点击查看器任意位置关闭
     viewer.addEventListener('click', function () {
         closeCardImageViewer();
@@ -319,6 +336,35 @@ function bindCardImageViewer() {
             closeCardImageViewer();
         }
     });
+}
+
+/**
+ * 打开卡片图片查看器（通用方法）
+ * 可从开包结果或开发者工具中调用
+ * 
+ * @param {string} imgSrc - 图片 URL
+ * @param {string} [cardName] - 卡片名称（可选）
+ * @param {string} [subText] - 副标题文字（可选，如 CDN 源名称）
+ */
+function openCardImageViewer(imgSrc, cardName, subText) {
+    var viewer = document.getElementById('card-image-viewer');
+    var viewerImage = viewer.querySelector('.viewer-image');
+    var viewerName = viewer.querySelector('.viewer-card-name');
+
+    if (!imgSrc) return;
+
+    viewerImage.src = imgSrc;
+    viewerImage.alt = cardName || '卡牌大图';
+
+    // 构建显示名称
+    var displayName = cardName || '';
+    if (subText) {
+        displayName += (displayName ? '<br>' : '') + '<span style="font-size:0.8em;opacity:0.7;">' + subText + '</span>';
+    }
+    viewerName.innerHTML = displayName;
+
+    // 打开查看器（带过渡动画）
+    viewer.classList.add('active');
 }
 
 /** 关闭卡片图片查看器（带过渡动画） */
@@ -1143,7 +1189,7 @@ function renderCDNComparison(results, cardId) {
         // 图片区域
         html += '<div class="devtools-img-container">';
         if (result.status === 'ok') {
-            html += '<img src="' + result.url + '" alt="' + result.source.name + '" />';
+            html += '<img class="devtools-cdn-img-clickable" src="' + result.url + '" alt="' + result.source.name + '" data-cdn-name="' + result.source.name + '" />';
         } else if (result.status === 'timeout') {
             html += '<div class="devtools-img-error">⏰ 加载超时 (>10s)</div>';
         } else {
