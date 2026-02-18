@@ -23,7 +23,7 @@
      python fetch_packs.py latest ocg
      python fetch_packs.py latest ocg --write
 
-  6. 更新卡包列表文件 (data/pack_list.json):
+  6. 更新卡包列表文件 (data/ocg/pack_list.json + data/tcg/pack_list.json):
      python fetch_packs.py gen-list
 """
 
@@ -38,8 +38,11 @@ from datetime import datetime
 # ===== 配置 =====
 YGOCDB_BASE = "https://ygocdb.com"
 REQUEST_INTERVAL = 0.35  # 请求间隔（秒），遵守 API 限流规范
-CARDS_JSON_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "cards.json")
-PACK_LIST_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "pack_list.json")
+# 拆分后的独立路径：OCG 和 TCG 分别存储
+OCG_PACKS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "ocg", "packs.json")
+TCG_PACKS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "tcg", "packs.json")
+OCG_PACK_LIST_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "ocg", "pack_list.json")
+TCG_PACK_LIST_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "tcg", "pack_list.json")
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 
 
@@ -209,15 +212,15 @@ def generate_pack_config(pack_info, card_entries):
     return config
 
 
-def write_to_cards_json(pack_config):
+def write_to_ocg_packs(pack_config):
     """
-    将卡包配置写入 cards.json 的 ocg.packs 数组
+    将卡包配置写入 data/ocg/packs.json 的 packs 数组
     如果同 packCode 的卡包已存在则更新，否则插入到数组开头
     """
-    with open(CARDS_JSON_PATH, "r", encoding="utf-8-sig") as f:
+    with open(OCG_PACKS_PATH, "r", encoding="utf-8-sig") as f:
         data = json.load(f)
     
-    ocg_packs = data["ocg"]["packs"]
+    ocg_packs = data["packs"]
     
     # 查找是否已有同编码的卡包
     existing_idx = None
@@ -233,11 +236,11 @@ def write_to_cards_json(pack_config):
         print(f"  ✨ 新增卡包: {pack_config['packName']}")
         ocg_packs.insert(0, pack_config)
     
-    with open(CARDS_JSON_PATH, "w", encoding="utf-8") as f:
+    with open(OCG_PACKS_PATH, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
         f.write("\n")  # 文件末尾换行
     
-    print(f"  ✅ 已写入 {CARDS_JSON_PATH}")
+    print(f"  ✅ 已写入 {OCG_PACKS_PATH}")
 
 
 def cmd_list(region, limit=20):
@@ -319,7 +322,7 @@ def cmd_fetch(pack_id, write=False):
     
     if write:
         pack_config = generate_pack_config(pack_info, card_entries)
-        write_to_cards_json(pack_config)
+        write_to_ocg_packs(pack_config)
     else:
         # 输出 JSON 到文件
         output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"_pack_{pack_id}_output.json")
@@ -362,7 +365,7 @@ def cmd_latest(region, write=False):
 
 
 def cmd_gen_list():
-    """从 YGOCDB 抓取完整 OCG/TCG 卡包列表，写入 data/pack_list.json"""
+    """从 YGOCDB 抓取完整 OCG/TCG 卡包列表，分别写入 data/ocg/pack_list.json 和 data/tcg/pack_list.json"""
     print("\n📦 正在从 YGOCDB 抓取完整卡包列表...")
     html = fetch_html(f"{YGOCDB_BASE}/packs")
     if not html:
@@ -379,26 +382,40 @@ def cmd_gen_list():
         p["ygocdbId"] = p.pop("packId")
     
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    data = {
-        "_说明": "卡包列表数据 —— 数据来源: https://ygocdb.com/packs",
-        "_格式说明": {
-            "ygocdbId": "YGOCDB 内部卡包ID（用于拉取卡包详情: ygocdb.com/pack/{ygocdbId}）",
-            "packCode": "卡包编码",
-            "packName": "卡包名称（日文/英文，取决于卡包类型）",
-            "releaseDate": "发售日期",
-            "cardCount": "收录卡牌数量"
-        },
-        "_更新时间": now_str,
-        "_更新方式": "运行 python fetch_packs.py gen-list",
-        "ocg": ocg_packs,
-        "tcg": tcg_packs
+    format_desc = {
+        "ygocdbId": "YGOCDB 内部卡包ID（用于拉取卡包详情: ygocdb.com/pack/{ygocdbId}）",
+        "packCode": "卡包编码",
+        "packName": "卡包名称（日文/英文，取决于卡包类型）",
+        "releaseDate": "发售日期",
+        "cardCount": "收录卡牌数量"
     }
     
-    with open(PACK_LIST_PATH, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    # 写入 OCG 卡包列表
+    ocg_data = {
+        "_说明": "OCG 卡包列表数据 —— 数据来源: https://ygocdb.com/packs",
+        "_格式说明": format_desc,
+        "_更新时间": now_str,
+        "_更新方式": "运行 python fetch_packs.py gen-list",
+        "packs": ocg_packs
+    }
+    with open(OCG_PACK_LIST_PATH, "w", encoding="utf-8") as f:
+        json.dump(ocg_data, f, ensure_ascii=False, indent=2)
         f.write("\n")
     
-    print(f"\n  ✅ 已写入: {PACK_LIST_PATH}")
+    # 写入 TCG 卡包列表
+    tcg_data = {
+        "_说明": "TCG 卡包列表数据 —— 数据来源: https://ygocdb.com/packs",
+        "_格式说明": format_desc,
+        "_更新时间": now_str,
+        "_更新方式": "运行 python fetch_packs.py gen-list",
+        "packs": tcg_packs
+    }
+    with open(TCG_PACK_LIST_PATH, "w", encoding="utf-8") as f:
+        json.dump(tcg_data, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+    
+    print(f"\n  ✅ OCG 已写入: {OCG_PACK_LIST_PATH}")
+    print(f"  ✅ TCG 已写入: {TCG_PACK_LIST_PATH}")
     print(f"  📅 更新时间: {now_str}")
 
 

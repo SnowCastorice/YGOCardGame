@@ -66,7 +66,12 @@ TCGGame/
 │   ├── api.js              ← API 调用 + 缓存管理模块
 │   └── game.js             ← 游戏核心逻辑
 ├── data/
-│   ├── cards.json          ← ⭐ 卡包配置表（策划编辑用）
+│   ├── ocg/
+│   │   ├── packs.json      ← ⭐ OCG 卡包配置表
+│   │   └── pack_list.json  ← OCG 完整卡包目录
+│   ├── tcg/
+│   │   ├── packs.json      ← ⭐ TCG 卡包配置表
+│   │   └── pack_list.json  ← TCG 完整卡包目录
 │   ├── changelog.json      ← 更新日志数据
 │   └── fallback_cards.js   ← 离线备用卡牌数据
 ├── VERSION.md              ← 项目说明与版本记录
@@ -77,7 +82,8 @@ TCGGame/
 
 ## 🎮 如何添加新卡包
 
-编辑 `data/cards.json`，在 `packs` 数组中添加一个新条目：
+### TCG 卡包
+编辑 `data/tcg/packs.json`，在 `packs` 数组中添加一个新条目：
 
 ```json
 {

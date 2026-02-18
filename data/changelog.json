@@ -2,6 +2,19 @@
   "_说明": "版本更新日志。每次更新都会在这里记录，网页上也会显示这些信息。格式：版本号、日期、更新内容列表。",
   "versions": [
     {
+      "version": "0.9.0",
+      "date": "2026-02-18",
+      "title": "OCG/TCG 数据独立存储 — 数据架构重构",
+      "changes": [
+        "📂 OCG 和 TCG 的卡包配置和卡包列表现在独立存储，结构更清晰",
+        "🏌️‍♂️ data/ocg/ 目录：存放所有 OCG 数据（packs.json + pack_list.json）",
+        "🏌️‍♂️ data/tcg/ 目录：存放所有 TCG 数据（packs.json + pack_list.json）",
+        "⚙️ 移除旧的混合文件 cards.json 和 pack_list.json",
+        "📦 fetch_packs.py 工具脚本已更新，支持新的目录结构",
+        "⚡ 网页初始化时并行加载 OCG/TCG 配置，不影响加载速度"
+      ]
+    },
+    {
       "version": "0.8.0",
       "date": "2026-02-18",
       "title": "卡包全面更新 — OCG 和 TCG 均替换为最近发售的三个系列",

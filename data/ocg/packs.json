@@ -1,0 +1,987 @@
+{
+  "_说明": "OCG（Official Card Game）亚洲版卡包配置 —— 从 cards.json 拆分独立",
+  "_数据源": "卡牌信息+卡图: ygoprodeck.com | 中文备用: ygocdb.com",
+  "_格式说明": {
+    "packId": "卡包唯一ID（自定义，不能重复）",
+    "packName": "卡包显示名称（显示在网页上）",
+    "setCode": "TCG 专用：YGOProDeck 卡包编码（用于调用 API）",
+    "cardIds": "OCG 专用：预定义的卡牌ID列表及稀有度（通过 YGOProDeck API + language=ja 获取日文卡牌详情）",
+    "cardsPerPack": "每包抽取的卡牌数量",
+    "rarityRates": "各稀有度的抽取权重（数字越大越容易抽到）",
+    "guaranteedRareSlot": "是否保底最后一张至少为 R 及以上",
+    "gameMode": "游戏模式：ocg = 亚洲版, tcg = 欧美版"
+  },
+  "packs": [
+    {
+      "packId": "ocg_blzd",
+      "packName": "BLAZING DOMINION",
+      "packCode": "BLZD",
+      "releaseDate": "2026-01-24",
+      "ygocdbPackId": "1000009559000",
+      "cardsPerPack": 5,
+      "rarityRates": {
+        "UR": 1,
+        "SR": 4,
+        "R": 25,
+        "N": 70
+      },
+      "guaranteedRareSlot": true,
+      "_说明": "2026年1月最新OCG补充包（ブレイジング・ドミニオン），共80张卡，通过YGOCDB自动拉取，稀有度待补充",
+      "cardIds": [
+        {
+          "id": 83445539,
+          "rarityCode": "N",
+          "name_hint": "暗冥共鸣者"
+        },
+        {
+          "id": 19434243,
+          "rarityCode": "N",
+          "name_hint": "强力恶龙"
+        },
+        {
+          "id": 56838842,
+          "rarityCode": "N",
+          "name_hint": "魔块石人"
+        },
+        {
+          "id": 82323997,
+          "rarityCode": "N",
+          "name_hint": "真红莲新星龙/爆裂体"
+        },
+        {
+          "id": 18711696,
+          "rarityCode": "N",
+          "name_hint": "爆裂音速战士"
+        },
+        {
+          "id": 45116390,
+          "rarityCode": "N",
+          "name_hint": "重装骑士 通天双层列车"
+        },
+        {
+          "id": 81101309,
+          "rarityCode": "N",
+          "name_hint": "夜光列车 蓝色旅人列车"
+        },
+        {
+          "id": 18595008,
+          "rarityCode": "N",
+          "name_hint": "捕食植物 喷瓜蜥蜴"
+        },
+        {
+          "id": 44994712,
+          "rarityCode": "N",
+          "name_hint": "捕食植物 长叶挖耳草络新妇"
+        },
+        {
+          "id": 70488851,
+          "rarityCode": "N",
+          "name_hint": "混绝狱神 比托利姆"
+        },
+        {
+          "id": 17473466,
+          "rarityCode": "N",
+          "name_hint": "狱神影兽-涅瓦红化兽"
+        },
+        {
+          "id": 43871165,
+          "rarityCode": "N",
+          "name_hint": "狱神影机-宙斯黑化机"
+        },
+        {
+          "id": 10266279,
+          "rarityCode": "N",
+          "name_hint": "狱神影精-朱诺白化精"
+        },
+        {
+          "id": 56651978,
+          "rarityCode": "N",
+          "name_hint": "耀圣之风诗 蕾吉娜"
+        },
+        {
+          "id": 82159583,
+          "rarityCode": "N",
+          "name_hint": "道化一座 白脸小丑"
+        },
+        {
+          "id": 19144622,
+          "rarityCode": "N",
+          "name_hint": "妖精传姬-玛奇莉勒"
+        },
+        {
+          "id": 82933935,
+          "rarityCode": "N",
+          "name_hint": "迷拟宝箱鬼·食人花"
+        },
+        {
+          "id": 18321034,
+          "rarityCode": "N",
+          "name_hint": "不可见之手 诱招天手"
+        },
+        {
+          "id": 44716748,
+          "rarityCode": "N",
+          "name_hint": "纠罪巧γ&#39;-欺瞒“exapatisIA”"
+        },
+        {
+          "id": 71801447,
+          "rarityCode": "N",
+          "name_hint": "纠罪巧-欲蛛 Atilε.SPIA"
+        },
+        {
+          "id": 17209452,
+          "rarityCode": "N",
+          "name_hint": "杀手级调整曲·旋钮手"
+        },
+        {
+          "id": 45538320,
+          "rarityCode": "N",
+          "name_hint": "精灵术的使魔"
+        },
+        {
+          "id": 44694191,
+          "rarityCode": "N",
+          "name_hint": "假初之幻脸师"
+        },
+        {
+          "id": 70088809,
+          "rarityCode": "N",
+          "name_hint": "调和之天救龙"
+        },
+        {
+          "id": 6083904,
+          "rarityCode": "N",
+          "name_hint": "妖光之布罗肯恶魔"
+        },
+        {
+          "id": 43471513,
+          "rarityCode": "N",
+          "name_hint": "钢卷尺骑士"
+        },
+        {
+          "id": 79966218,
+          "rarityCode": "N",
+          "name_hint": "血树龙姬 龙血树鬼"
+        },
+        {
+          "id": 6361316,
+          "rarityCode": "N",
+          "name_hint": "睡醒一杯！玉露茶"
+        },
+        {
+          "id": 42759961,
+          "rarityCode": "N",
+          "name_hint": "道化一座 花式火小丑"
+        },
+        {
+          "id": 78744660,
+          "rarityCode": "N",
+          "name_hint": "死亡女王恶魔"
+        },
+        {
+          "id": 5148778,
+          "rarityCode": "N",
+          "name_hint": "霸王暴龙 凶饿毒辉翼龙"
+        },
+        {
+          "id": 31533473,
+          "rarityCode": "N",
+          "name_hint": "道化一座 空竹魔小丑"
+        },
+        {
+          "id": 78021082,
+          "rarityCode": "N",
+          "name_hint": "妖精传姬的编写者"
+        },
+        {
+          "id": 4026187,
+          "rarityCode": "N",
+          "name_hint": "妖精传姬的讲述者"
+        },
+        {
+          "id": 31411835,
+          "rarityCode": "N",
+          "name_hint": "不可见之手 塔耳塔线手"
+        },
+        {
+          "id": 67809530,
+          "rarityCode": "N",
+          "name_hint": "红莲王者"
+        },
+        {
+          "id": 3294539,
+          "rarityCode": "N",
+          "name_hint": "深红剑龙"
+        },
+        {
+          "id": 30698243,
+          "rarityCode": "N",
+          "name_hint": "真红莲极超新星龙"
+        },
+        {
+          "id": 66787942,
+          "rarityCode": "N",
+          "name_hint": "捕食植物 羊角麻蝇王"
+        },
+        {
+          "id": 93172951,
+          "rarityCode": "N",
+          "name_hint": "道化一座 舞流星小丑"
+        },
+        {
+          "id": 39576656,
+          "rarityCode": "N",
+          "name_hint": "杀手级调整曲·噼啪削波手"
+        },
+        {
+          "id": 65961304,
+          "rarityCode": "N",
+          "name_hint": "杀手级调整曲 B2B"
+        },
+        {
+          "id": 92359409,
+          "rarityCode": "N",
+          "name_hint": "超重型炮塔列车 古斯塔夫火箭大炮"
+        },
+        {
+          "id": 38354018,
+          "rarityCode": "N",
+          "name_hint": "超重型炮塔列车 冲天火箭炮"
+        },
+        {
+          "id": 65848113,
+          "rarityCode": "N",
+          "name_hint": "终刻龙机13-格拉弗莱伊俄"
+        },
+        {
+          "id": 91237821,
+          "rarityCode": "N",
+          "name_hint": "道化一座 双魔棍小丑"
+        },
+        {
+          "id": 27632520,
+          "rarityCode": "N",
+          "name_hint": "妖精传姬-威凯特"
+        },
+        {
+          "id": 64626565,
+          "rarityCode": "N",
+          "name_hint": "黑智天至 伊里斯斐尔"
+        },
+        {
+          "id": 90011273,
+          "rarityCode": "N",
+          "name_hint": "后膛枪管龙"
+        },
+        {
+          "id": 27519978,
+          "rarityCode": "N",
+          "name_hint": "四花缭乱之灵使"
+        },
+        {
+          "id": 53904087,
+          "rarityCode": "N",
+          "name_hint": "神书的使者 拉哈穆"
+        },
+        {
+          "id": 99398682,
+          "rarityCode": "N",
+          "name_hint": "深红狱呼唤"
+        },
+        {
+          "id": 26387390,
+          "rarityCode": "N",
+          "name_hint": "废品信号"
+        },
+        {
+          "id": 52782439,
+          "rarityCode": "N",
+          "name_hint": "特别行车时间表"
+        },
+        {
+          "id": 89176044,
+          "rarityCode": "N",
+          "name_hint": "捕食原生"
+        },
+        {
+          "id": 25661743,
+          "rarityCode": "N",
+          "name_hint": "绝解的狱神门-忒耳弥努斯"
+        },
+        {
+          "id": 51669847,
+          "rarityCode": "N",
+          "name_hint": "绝无的狱神界-比托利亚"
+        },
+        {
+          "id": 84054556,
+          "rarityCode": "N",
+          "name_hint": "终刻反转『阿德剌斯忒亚』"
+        },
+        {
+          "id": 20448151,
+          "rarityCode": "N",
+          "name_hint": "道化一座『排练』"
+        },
+        {
+          "id": 57847269,
+          "rarityCode": "N",
+          "name_hint": "道化一座『开演』"
+        },
+        {
+          "id": 83232904,
+          "rarityCode": "N",
+          "name_hint": "道化一座『极艺』"
+        },
+        {
+          "id": 19326613,
+          "rarityCode": "N",
+          "name_hint": "妖精传姬开始啦开始啦"
+        },
+        {
+          "id": 56725612,
+          "rarityCode": "N",
+          "name_hint": "妖精传姬的舞蹈会"
+        },
+        {
+          "id": 82119326,
+          "rarityCode": "N",
+          "name_hint": "妖精传姬的故事尾巴"
+        },
+        {
+          "id": 19504025,
+          "rarityCode": "N",
+          "name_hint": "纠罪巧-重置再巧"
+        },
+        {
+          "id": 45508030,
+          "rarityCode": "N",
+          "name_hint": "凭依共鸣"
+        },
+        {
+          "id": 82997779,
+          "rarityCode": "N",
+          "name_hint": "恶魔的篡夺"
+        },
+        {
+          "id": 18482473,
+          "rarityCode": "N",
+          "name_hint": "H·E·R·O 一闪！"
+        },
+        {
+          "id": 44886582,
+          "rarityCode": "N",
+          "name_hint": "超逸融合"
+        },
+        {
+          "id": 71275181,
+          "rarityCode": "N",
+          "name_hint": "2选1"
+        },
+        {
+          "id": 17269895,
+          "rarityCode": "N",
+          "name_hint": "霸者的鸣动"
+        },
+        {
+          "id": 44654994,
+          "rarityCode": "N",
+          "name_hint": "神艺学的厚涂-夺还-"
+        },
+        {
+          "id": 70058649,
+          "rarityCode": "N",
+          "name_hint": "道化一座『怪演』"
+        },
+        {
+          "id": 6547248,
+          "rarityCode": "N",
+          "name_hint": "道化一座『新加入』"
+        },
+        {
+          "id": 43932352,
+          "rarityCode": "N",
+          "name_hint": "不可见之导引手"
+        },
+        {
+          "id": 79936051,
+          "rarityCode": "N",
+          "name_hint": "北十字星火力"
+        },
+        {
+          "id": 6325660,
+          "rarityCode": "N",
+          "name_hint": "霆王的闪光"
+        },
+        {
+          "id": 42719764,
+          "rarityCode": "N",
+          "name_hint": "召唤电击"
+        },
+        {
+          "id": 78114463,
+          "rarityCode": "N",
+          "name_hint": "神之密告"
+        },
+        {
+          "id": 5208118,
+          "rarityCode": "N",
+          "name_hint": "动点的心慌灵摆"
+        }
+      ]
+    },
+    {
+      "packId": "ocg_ch02",
+      "packName": "THE CHRONICLES DECK 精霊術の使い手",
+      "packCode": "CH02",
+      "releaseDate": "2026-01-24",
+      "ygocdbPackId": "1000009555000",
+      "cardsPerPack": 5,
+      "rarityRates": {
+        "UR": 2,
+        "SR": 6,
+        "R": 22,
+        "N": 70
+      },
+      "guaranteedRareSlot": true,
+      "_说明": "2026年1月OCG记事卡组（精灵术的使者），共42张卡，通过YGOCDB自动拉取，稀有度待补充",
+      "cardIds": [
+        {
+          "id": 15746348,
+          "rarityCode": "N",
+          "name_hint": "水灵媒师 艾莉娅"
+        },
+        {
+          "id": 76615300,
+          "rarityCode": "N",
+          "name_hint": "火灵媒师 希塔"
+        },
+        {
+          "id": 86395581,
+          "rarityCode": "N",
+          "name_hint": "风灵媒师 薇茵"
+        },
+        {
+          "id": 62803464,
+          "rarityCode": "N",
+          "name_hint": "地灵媒师 奥丝"
+        },
+        {
+          "id": 40894584,
+          "rarityCode": "N",
+          "name_hint": "电豪灵蜥"
+        },
+        {
+          "id": 62953041,
+          "rarityCode": "N",
+          "name_hint": "稻荷火"
+        },
+        {
+          "id": 44680819,
+          "rarityCode": "N",
+          "name_hint": "岚龙"
+        },
+        {
+          "id": 60666820,
+          "rarityCode": "N",
+          "name_hint": "恶魔食魔兽"
+        },
+        {
+          "id": 74426895,
+          "rarityCode": "N",
+          "name_hint": "凭依觉醒-魔义豪灵蜥"
+        },
+        {
+          "id": 92652813,
+          "rarityCode": "N",
+          "name_hint": "凭依觉醒-大稻荷火"
+        },
+        {
+          "id": 410904,
+          "rarityCode": "N",
+          "name_hint": "凭依觉醒-螺旋龙"
+        },
+        {
+          "id": 65268179,
+          "rarityCode": "N",
+          "name_hint": "凭依觉醒-恶魔勾魂兽"
+        },
+        {
+          "id": 9822220,
+          "rarityCode": "N",
+          "name_hint": "天狱之王"
+        },
+        {
+          "id": 84941194,
+          "rarityCode": "N",
+          "name_hint": "荷鲁斯的荣光-伊姆塞特"
+        },
+        {
+          "id": 11335209,
+          "rarityCode": "N",
+          "name_hint": "荷鲁斯的祝福-多姆泰夫"
+        },
+        {
+          "id": 47330808,
+          "rarityCode": "N",
+          "name_hint": "荷鲁斯的先导-哈碧"
+        },
+        {
+          "id": 74725513,
+          "rarityCode": "N",
+          "name_hint": "荷鲁斯的加护-凯布山纳夫"
+        },
+        {
+          "id": 86937530,
+          "rarityCode": "N",
+          "name_hint": "妖精传姬-辉夜"
+        },
+        {
+          "id": 14824019,
+          "rarityCode": "N",
+          "name_hint": "魔导书士 巴特尔"
+        },
+        {
+          "id": 11911336,
+          "rarityCode": "N",
+          "name_hint": "大轮之魔导书"
+        },
+        {
+          "id": 91530236,
+          "rarityCode": "N",
+          "name_hint": "精灵术的术使"
+        },
+        {
+          "id": 38057522,
+          "rarityCode": "N",
+          "name_hint": "大灵术-「一轮」"
+        },
+        {
+          "id": 62256492,
+          "rarityCode": "N",
+          "name_hint": "凭依觉醒"
+        },
+        {
+          "id": 89739383,
+          "rarityCode": "N",
+          "name_hint": "奥义之魔导书"
+        },
+        {
+          "id": 23314220,
+          "rarityCode": "N",
+          "name_hint": "冰火之魔导书"
+        },
+        {
+          "id": 11827244,
+          "rarityCode": "N",
+          "name_hint": "圆融魔术"
+        },
+        {
+          "id": 54693926,
+          "rarityCode": "N",
+          "name_hint": "冥王结界波"
+        },
+        {
+          "id": 19739265,
+          "rarityCode": "N",
+          "name_hint": "太阳与月亮"
+        },
+        {
+          "id": 16528181,
+          "rarityCode": "N",
+          "name_hint": "王之棺"
+        },
+        {
+          "id": 65046521,
+          "rarityCode": "N",
+          "name_hint": "凭依连携"
+        },
+        {
+          "id": 25704359,
+          "rarityCode": "N",
+          "name_hint": "凭依解放"
+        },
+        {
+          "id": 44822037,
+          "rarityCode": "N",
+          "name_hint": "碑像天使-亚兹卢恩死月弓碑"
+        },
+        {
+          "id": 48016074,
+          "rarityCode": "N",
+          "name_hint": "大轮之灵使"
+        },
+        {
+          "id": 73309655,
+          "rarityCode": "N",
+          "name_hint": "清冽之水灵使 艾莉娅"
+        },
+        {
+          "id": 48815792,
+          "rarityCode": "N",
+          "name_hint": "灼热之火灵使 希塔"
+        },
+        {
+          "id": 30674956,
+          "rarityCode": "N",
+          "name_hint": "苍翠之风灵使 薇茵"
+        },
+        {
+          "id": 97661969,
+          "rarityCode": "N",
+          "name_hint": "崔嵬之地灵使 奥丝"
+        },
+        {
+          "id": 84433295,
+          "rarityCode": "N",
+          "name_hint": "五阵魔术师"
+        },
+        {
+          "id": 73082255,
+          "rarityCode": "N",
+          "name_hint": "真血公 吸血鬼"
+        },
+        {
+          "id": 1528054,
+          "rarityCode": "N",
+          "name_hint": "影法师 大礼帽野兔"
+        },
+        {
+          "id": 45819647,
+          "rarityCode": "N",
+          "name_hint": "神圣魔皇后 塞勒涅"
+        },
+        {
+          "id": 86066372,
+          "rarityCode": "N",
+          "name_hint": "访问码语者"
+        }
+      ]
+    },
+    {
+      "packId": "ocg_25db",
+      "packName": "DUELIST BOX PRISMATIC SUMMON",
+      "packCode": "25DB",
+      "releaseDate": "2025-12-20",
+      "ygocdbPackId": "1000009541000",
+      "cardsPerPack": 5,
+      "rarityRates": {
+        "UR": 2,
+        "SR": 6,
+        "R": 22,
+        "N": 70
+      },
+      "guaranteedRareSlot": true,
+      "_说明": "2025年12月OCG决斗者盒SPECIAL PACK，共60张卡，通过YGOCDB自动拉取，稀有度待补充",
+      "cardIds": [
+        {
+          "id": 3739500,
+          "rarityCode": "N",
+          "name_hint": "破灭与终焉之支配者"
+        },
+        {
+          "id": 30138615,
+          "rarityCode": "N",
+          "name_hint": "幻惑眼纳祭神"
+        },
+        {
+          "id": 66122213,
+          "rarityCode": "N",
+          "name_hint": "地狱俯冲轰炸机"
+        },
+        {
+          "id": 92517928,
+          "rarityCode": "N",
+          "name_hint": "银河眼反物质龙"
+        },
+        {
+          "id": 39016067,
+          "rarityCode": "N",
+          "name_hint": "龙剑士 风麒麟·平行"
+        },
+        {
+          "id": 65400671,
+          "rarityCode": "N",
+          "name_hint": "水晶机巧-继承玻纤·棱镜"
+        },
+        {
+          "id": 5560911,
+          "rarityCode": "N",
+          "name_hint": "亡龙之战栗-死欲龙"
+        },
+        {
+          "id": 31178212,
+          "rarityCode": "N",
+          "name_hint": "威风妖怪·麒麟"
+        },
+        {
+          "id": 80701178,
+          "rarityCode": "N",
+          "name_hint": "魔神仪-曼德拉护符草"
+        },
+        {
+          "id": 92746535,
+          "rarityCode": "N",
+          "name_hint": "龙剑士 光辉星·灵摆"
+        },
+        {
+          "id": 56347375,
+          "rarityCode": "N",
+          "name_hint": "龙剑士 点火烈·凤凰"
+        },
+        {
+          "id": 28720123,
+          "rarityCode": "N",
+          "name_hint": "龙剑士 雾动轰·输力"
+        },
+        {
+          "id": 92332424,
+          "rarityCode": "N",
+          "name_hint": "龙剑士 威风凛·飞马"
+        },
+        {
+          "id": 58092907,
+          "rarityCode": "N",
+          "name_hint": "娱乐伙伴 天空之魔术师"
+        },
+        {
+          "id": 95492061,
+          "rarityCode": "N",
+          "name_hint": "万手神"
+        },
+        {
+          "id": 53303460,
+          "rarityCode": "N",
+          "name_hint": "魔神仪-蜡烛人偶"
+        },
+        {
+          "id": 31991800,
+          "rarityCode": "N",
+          "name_hint": "威风妖怪·狸"
+        },
+        {
+          "id": 79109599,
+          "rarityCode": "N",
+          "name_hint": "沼地的魔神王"
+        },
+        {
+          "id": 1980574,
+          "rarityCode": "N",
+          "name_hint": "跃空垂耳兔飞行队"
+        },
+        {
+          "id": 30765615,
+          "rarityCode": "N",
+          "name_hint": "百檎龙-苹果鳞虫"
+        },
+        {
+          "id": 76722334,
+          "rarityCode": "N",
+          "name_hint": "扭蛋魔壳"
+        },
+        {
+          "id": 21142671,
+          "rarityCode": "N",
+          "name_hint": "红莲新星"
+        },
+        {
+          "id": 50366775,
+          "rarityCode": "N",
+          "name_hint": "格式弹涂鱼"
+        },
+        {
+          "id": 28427869,
+          "rarityCode": "N",
+          "name_hint": "卷烟蚊"
+        },
+        {
+          "id": 59913418,
+          "rarityCode": "N",
+          "name_hint": "终焉之霸王 迪米斯"
+        },
+        {
+          "id": 13518809,
+          "rarityCode": "N",
+          "name_hint": "破灭之美神 露茵"
+        },
+        {
+          "id": 11321089,
+          "rarityCode": "N",
+          "name_hint": "守护者·奇美拉"
+        },
+        {
+          "id": 53539634,
+          "rarityCode": "N",
+          "name_hint": "三眼小巫师"
+        },
+        {
+          "id": 11765832,
+          "rarityCode": "N",
+          "name_hint": "共命之翼 迦楼罗"
+        },
+        {
+          "id": 26435595,
+          "rarityCode": "N",
+          "name_hint": "圣菓使 考维曲天使"
+        },
+        {
+          "id": 93125329,
+          "rarityCode": "N",
+          "name_hint": "金云兽-马龙"
+        },
+        {
+          "id": 52445243,
+          "rarityCode": "N",
+          "name_hint": "三刃大师"
+        },
+        {
+          "id": 84040113,
+          "rarityCode": "N",
+          "name_hint": "泥糊泥龙王"
+        },
+        {
+          "id": 21915012,
+          "rarityCode": "N",
+          "name_hint": "垒球小爱神"
+        },
+        {
+          "id": 55863245,
+          "rarityCode": "N",
+          "name_hint": "龙子"
+        },
+        {
+          "id": 46057733,
+          "rarityCode": "N",
+          "name_hint": "磷回之三弦猫"
+        },
+        {
+          "id": 67630394,
+          "rarityCode": "N",
+          "name_hint": "重铠装-暗黑骑士枪兵"
+        },
+        {
+          "id": 24701066,
+          "rarityCode": "N",
+          "name_hint": "无限起动 大河式风击龙"
+        },
+        {
+          "id": 20145685,
+          "rarityCode": "N",
+          "name_hint": "超量铠甲·要塞式"
+        },
+        {
+          "id": 94151981,
+          "rarityCode": "N",
+          "name_hint": "超量铠甲·鱼雷式"
+        },
+        {
+          "id": 4997565,
+          "rarityCode": "N",
+          "name_hint": "No.3 地狱蝉王"
+        },
+        {
+          "id": 71166481,
+          "rarityCode": "N",
+          "name_hint": "No.75 惑乱之风言暗影"
+        },
+        {
+          "id": 49105782,
+          "rarityCode": "N",
+          "name_hint": "死翼之虎钳巨鹰"
+        },
+        {
+          "id": 92812851,
+          "rarityCode": "N",
+          "name_hint": "奇迹之魔导剑士"
+        },
+        {
+          "id": 73898890,
+          "rarityCode": "N",
+          "name_hint": "大傩主水"
+        },
+        {
+          "id": 74937659,
+          "rarityCode": "N",
+          "name_hint": "地中族邪界妖魔"
+        },
+        {
+          "id": 8728498,
+          "rarityCode": "N",
+          "name_hint": "空牙团的怀剑 唐娜"
+        },
+        {
+          "id": 36768783,
+          "rarityCode": "N",
+          "name_hint": "星导龙 阿米莱尔"
+        },
+        {
+          "id": 12450071,
+          "rarityCode": "N",
+          "name_hint": "代理F魔术师"
+        },
+        {
+          "id": 98642179,
+          "rarityCode": "N",
+          "name_hint": "刚炎之剑士"
+        },
+        {
+          "id": 9763474,
+          "rarityCode": "N",
+          "name_hint": "盛悴之致命毒蜥"
+        },
+        {
+          "id": 1482001,
+          "rarityCode": "N",
+          "name_hint": "副语术士克拉拉与洛希卡"
+        },
+        {
+          "id": 1845204,
+          "rarityCode": "N",
+          "name_hint": "简易融合"
+        },
+        {
+          "id": 63854005,
+          "rarityCode": "N",
+          "name_hint": "简素融合"
+        },
+        {
+          "id": 73046708,
+          "rarityCode": "N",
+          "name_hint": "铠装超量"
+        },
+        {
+          "id": 46052429,
+          "rarityCode": "N",
+          "name_hint": "高等仪式术"
+        },
+        {
+          "id": 8198712,
+          "rarityCode": "N",
+          "name_hint": "世界末日"
+        },
+        {
+          "id": 32828635,
+          "rarityCode": "N",
+          "name_hint": "世界不灭"
+        },
+        {
+          "id": 78063197,
+          "rarityCode": "N",
+          "name_hint": "纳祭融合"
+        },
+        {
+          "id": 39733924,
+          "rarityCode": "N",
+          "name_hint": "重铠装超量"
+        }
+      ]
+    }
+  ],
+  "defaultRarityRates": {
+    "_说明": "OCG 默认概率（UR更稀有，接近日版真实体验）",
+    "UR": 1,
+    "SR": 4,
+    "R": 25,
+    "N": 70
+  }
+}

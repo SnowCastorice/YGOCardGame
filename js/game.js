@@ -1,11 +1,11 @@
 ﻿/**
  * ============================================
  * YGO Pack Opener - 游戏核心逻辑
- * 版本: 0.8.0
+ * 版本: 0.9.0
  * 
  * 【文件说明】
  * 这是游戏的"大脑"，负责：
- * 1. 读取卡包配置表（cards.json）— 支持 OCG / TCG 双模式
+ * 1. 读取卡包配置表（data/ocg/packs.json + data/tcg/packs.json）— OCG / TCG 独立管理
  * 2. 通过 API 模块获取卡牌数据（自动缓存到玩家设备）
  * 3. 读取更新日志（changelog.json）
  * 4. 实现开包抽卡逻辑（按稀有度权重随机抽取）
@@ -15,11 +15,12 @@
  */
 
 // ====== 全局数据存储 ======
-let packConfig = null;     // 卡包配置数据（来自 cards.json，包含 ocg 和 tcg 两组）
-let changelogData = null;  // 更新日志数据
-let currentPack = null;    // 当前选中的卡包配置
-let currentPackCards = null; // 当前选中卡包的卡牌数据（来自 API 缓存）
-let currentGameMode = 'ocg'; // 当前游戏模式：'ocg' 或 'tcg'，默认 OCG
+let ocgPackConfig = null;    // OCG 卡包配置数据（来自 data/ocg/packs.json）
+let tcgPackConfig = null;    // TCG 卡包配置数据（来自 data/tcg/packs.json）
+let changelogData = null;    // 更新日志数据
+let currentPack = null;      // 当前选中的卡包配置
+let currentPackCards = null;  // 当前选中卡包的卡牌数据（来自 API 缓存）
+let currentGameMode = 'ocg';  // 当前游戏模式：'ocg' 或 'tcg'，默认 OCG
 
 // ====== 页面加载完成后初始化 ======
 document.addEventListener('DOMContentLoaded', async function () {
@@ -40,27 +41,32 @@ document.addEventListener('DOMContentLoaded', async function () {
         showLoadingState('正在加载游戏配置...');
         console.log('📡 开始 fetch 配置文件...');
 
-        // 同时加载两个配置文件，加快速度
-        const [cardsResponse, changelogResponse] = await Promise.all([
-            fetch('data/cards.json'),
+        // 同时加载三个配置文件（OCG/TCG 独立存储），加快速度
+        const [ocgResponse, tcgResponse, changelogResponse] = await Promise.all([
+            fetch('data/ocg/packs.json'),
+            fetch('data/tcg/packs.json'),
             fetch('data/changelog.json')
         ]);
 
-        console.log('📡 fetch 完成，cards.json status:', cardsResponse.status, ', changelog.json status:', changelogResponse.status);
+        console.log('📡 fetch 完成，ocg/packs.json status:', ocgResponse.status, ', tcg/packs.json status:', tcgResponse.status, ', changelog.json status:', changelogResponse.status);
 
         // 检查 HTTP 响应状态
-        if (!cardsResponse.ok) {
-            throw new Error(`加载 cards.json 失败: HTTP ${cardsResponse.status} ${cardsResponse.statusText}`);
+        if (!ocgResponse.ok) {
+            throw new Error(`加载 ocg/packs.json 失败: HTTP ${ocgResponse.status} ${ocgResponse.statusText}`);
+        }
+        if (!tcgResponse.ok) {
+            throw new Error(`加载 tcg/packs.json 失败: HTTP ${tcgResponse.status} ${tcgResponse.statusText}`);
         }
         if (!changelogResponse.ok) {
             throw new Error(`加载 changelog.json 失败: HTTP ${changelogResponse.status} ${changelogResponse.statusText}`);
         }
 
-        packConfig = await cardsResponse.json();
+        ocgPackConfig = await ocgResponse.json();
+        tcgPackConfig = await tcgResponse.json();
         changelogData = await changelogResponse.json();
         console.log('✅ JSON 解析成功');
-        console.log(`📦 OCG 卡包数量: ${packConfig.ocg.packs.length}`);
-        console.log(`📦 TCG 卡包数量: ${packConfig.tcg.packs.length}`);
+        console.log(`📦 OCG 卡包数量: ${ocgPackConfig.packs.length}`);
+        console.log(`📦 TCG 卡包数量: ${tcgPackConfig.packs.length}`);
 
         // 初始化各个模块
         renderPackList();
@@ -74,7 +80,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         hideLoadingState();
 
-        console.log(`🎴 YGO Pack Opener v0.7.0 初始化完成！当前模式: ${currentGameMode.toUpperCase()}`);
+        console.log(`🎴 YGO Pack Opener v0.9.0 初始化完成！当前模式: ${currentGameMode.toUpperCase()}`);
 
     } catch (error) {
         console.error('❌ 加载配置文件失败:', error);
@@ -198,7 +204,7 @@ function switchGameMode(mode) {
     currentPackCards = null;
 
     // 回到卡包选择界面并重新渲染
-    if (packConfig) {
+    if (getCurrentModeConfig()) {
         renderPackList();
         switchSection('pack-select-section');
     }
@@ -236,8 +242,11 @@ function updateModeButtons() {
  * @returns {object} 当前模式的配置（packs数组 + defaultRarityRates）
  */
 function getCurrentModeConfig() {
-    if (!packConfig) return null;
-    return packConfig[currentGameMode] || packConfig.ocg;
+    if (currentGameMode === 'ocg') {
+        return ocgPackConfig || null;
+    } else {
+        return tcgPackConfig || null;
+    }
 }
 
 // ====== 绑定游戏区域按钮事件 ======
