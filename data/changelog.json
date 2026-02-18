@@ -2,6 +2,35 @@
   "_说明": "版本更新日志。每次更新都会在这里记录，网页上也会显示这些信息。格式：版本号、日期、更新内容列表。",
   "versions": [
     {
+      "version": "0.8.0",
+      "date": "2026-02-18",
+      "title": "卡包全面更新 — OCG 和 TCG 均替换为最近发售的三个系列",
+      "changes": [
+        "📦 OCG 卡包全面更新为最新三个系列：",
+        "  🔹 BLAZING DOMINION（ブレイジング・ドミニオン）2026-01-24，80张",
+        "  🔹 THE CHRONICLES DECK 精霊術の使い手 2026-01-24，42张",
+        "  🔹 DUELIST BOX PRISMATIC SUMMON 2025-12-20，60张",
+        "📦 TCG 卡包全面更新为最新三个系列：",
+        "  🔹 MAZE OF MUERTOS 2026-02-20",
+        "  🔹 BURST PROTOCOL 2026-02-06",
+        "  🔹 Phantom Revenge 2025-12-05",
+        "🔧 OCG 卡包数据通过 YGOCDB 自动抓取（fetch_packs.py），TCG 卡包使用 YGOProDeck API",
+        "⚠️ OCG 卡包稀有度尚未补充，使用默认分布，后续将完善"
+      ]
+    },
+    {
+      "version": "0.7.1",
+      "date": "2026-02-17",
+      "title": "新增最新OCG卡包 BURST PROTOCOL — 2026年1月最新补充包",
+      "changes": [
+        "📦 新增 OCG 卡包「BURST PROTOCOL」（バースト・プロトコル），2026年1月25日发售",
+        "🃏 共收录 99 张卡牌（UR×24 / SR×26 / N×49），全部通过 API 自动拉取",
+        "🇨🇳 全部 99 张卡牌均有中文名（通过 YGOCDB 补充），支持中日双语展示",
+        "⭐ 包含多个热门主题卡组强化：星尘龙/爆裂体、救援ACE、耀圣之诗、堕天使等",
+        "🔧 卡包数据源：YGOProDeck（英文卡牌数据）+ YGOCDB（中文名+日文名补充）"
+      ]
+    },
+    {
       "version": "0.7.0",
       "date": "2026-02-17",
       "title": "卡图点击放大查看 — 看清每一张卡牌的精美卡图",
