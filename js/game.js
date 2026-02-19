@@ -900,11 +900,10 @@ async function handleClearCache() {
 }
 
 /**
- * 重置游戏：清除所有本地数据，恢复到初始状态
- * 包括：货币余额、API 缓存、游戏模式设置等
+ * 重置货币：将金币和钻石余额恢复到初始值
  */
-async function handleResetGame() {
-    if (!confirm('❗ 确定要重置游戏吗？\n\n这将清除所有本地数据，包括：\n• 🪙 金币和钻石余额\n• 💾 卡片缓存数据\n• ⚙️ 游戏模式设置\n\n重置后会自动刷新页面。')) {
+function handleResetGame() {
+    if (!confirm('❗ 确定要重置游戏吗？\n\n这将重置你的货币余额：\n• 🪙 金币恢复为初始值\n• � 钻石恢复为初始值\n\n重置后会自动刷新页面。')) {
         return;
     }
 
@@ -914,24 +913,16 @@ async function handleResetGame() {
     }
 
     try {
-        // 1. 重置货币系统
+        // 重置货币系统（金币和钻石恢复初始值）
         CurrencySystem.resetAll();
         console.log('✅ 货币系统已重置');
 
-        // 2. 清除 API 缓存
-        await TCG_API.clearAllCache();
-        console.log('✅ API 缓存已清除');
+        alert('✅ 货币已重置！页面即将刷新...');
 
-        // 3. 清除游戏模式设置
-        localStorage.removeItem('ygo_game_mode');
-        console.log('✅ 游戏模式设置已清除');
-
-        alert('✅ 游戏已重置！页面即将刷新...');
-
-        // 4. 刷新页面
+        // 刷新页面
         location.reload();
     } catch (error) {
-        console.error('❌ 重置游戏失败:', error);
+        console.error('❌ 重置失败:', error);
         alert('❌ 重置失败，请重试。\n\n错误信息: ' + error.message);
     }
 }
