@@ -417,8 +417,8 @@ function renderPackList() {
 
         // OCG 卡包显示 packCode，TCG 卡包显示 setCode
         const displayCode = pack.packCode || pack.setCode || pack.packId;
-        // OCG 卡包显示卡牌数量（来自 cardIds），TCG 不显示
-        const cardCountInfo = pack.cardIds ? ` | ${pack.cardIds.length} 种卡` : '';
+        // OCG 卡包显示卡牌数量（优先使用 totalCards 字段，兼容旧的 cardIds 方式）
+        const cardCountInfo = pack.totalCards ? ` | ${pack.totalCards} 种卡` : (pack.cardIds ? ` | ${pack.cardIds.length} 种卡` : '');
 
         packCard.innerHTML = `
             <span class="pack-icon">🎴</span>
@@ -446,6 +446,20 @@ async function selectPack(pack) {
     showLoadingState(`正在从 ${dataSourceName} 加载「${pack.packName}」...`);
 
     try {
+        // OCG 模式：如果卡包使用独立文件存储 cardIds，先动态加载
+        if (currentGameMode === 'ocg' && pack.cardFile && !pack.cardIds) {
+            updateLoadingText(`正在加载「${pack.packName}」卡牌列表...`);
+            const cardFileUrl = `data/ocg/cards/${pack.cardFile}`;
+            const cardFileResponse = await fetch(cardFileUrl);
+            if (!cardFileResponse.ok) {
+                throw new Error(`加载卡牌文件失败: ${cardFileUrl} (HTTP ${cardFileResponse.status})`);
+            }
+            const cardFileData = await cardFileResponse.json();
+            // 将 cardIds 注入到 pack 对象中，供 API 模块使用
+            pack.cardIds = cardFileData.cardIds;
+            console.log(`📄 已加载独立卡牌文件 [${pack.cardFile}]，共 ${pack.cardIds.length} 张卡`);
+        }
+
         // 通过 API 模块获取卡牌数据（根据模式选择不同数据源）
         const setData = await TCG_API.getCardSetData(currentGameMode, pack, function (loaded, total) {
             // OCG 模式下显示逐张卡牌的加载进度

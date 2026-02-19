@@ -2,7 +2,11 @@
 # -*- coding: utf-8 -*-
 """
 从 YGOCDB (ygocdb.com) 抓取 OCG/TCG 卡包列表和 OCG 卡包收录信息
-用于更新 cards.json 配置
+
+【数据存储结构】
+  - data/ocg/packs.json          → 卡包元信息（不含卡牌列表，只有 cardFile 引用）
+  - data/ocg/cards/{packId}.json → 每个卡包的独立卡牌列表文件
+  - data/tcg/packs.json          → TCG 卡包配置（只需 setCode，无需卡牌列表）
 
 使用方法:
   1. 列出所有 OCG 卡包（最新20个）:
@@ -16,8 +20,9 @@
      python fetch_packs.py fetch <packId>
      例: python fetch_packs.py fetch 1000009559000
      
-  4. 获取指定 OCG 卡包并直接写入 cards.json:
+  4. 获取指定 OCG 卡包并写入独立文件 + 更新 packs.json:
      python fetch_packs.py fetch <packId> --write
+     （会写入 data/ocg/cards/{packId}.json 卡牌文件，并更新 packs.json 元信息）
      
   5. 获取最新一期 OCG 补充包:
      python fetch_packs.py latest ocg
@@ -41,6 +46,7 @@ REQUEST_INTERVAL = 0.35  # 请求间隔（秒），遵守 API 限流规范
 # 拆分后的独立路径：OCG 和 TCG 分别存储
 OCG_PACKS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "ocg", "packs.json")
 TCG_PACKS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "tcg", "packs.json")
+OCG_CARDS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "ocg", "cards")  # OCG 独立卡牌文件目录
 OCG_PACK_LIST_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "ocg", "pack_list.json")
 TCG_PACK_LIST_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "tcg", "pack_list.json")
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
@@ -185,11 +191,13 @@ def format_cards_json(cards):
 
 def generate_pack_config(pack_info, card_entries):
     """
-    生成 cards.json 中一个 OCG 卡包的完整配置
+    生成 packs.json 中一个 OCG 卡包的元信息配置（不含 cardIds）
+    cardIds 存储在独立文件 data/ocg/cards/{packId}.json 中
     """
     # 生成 packId: ocg_ + 小写编码
     pack_code = pack_info["packCode"]
     pack_id = f"ocg_{pack_code.lower()}"
+    card_file = f"{pack_id}.json"  # 独立卡牌文件名
     
     config = {
         "packId": pack_id,
@@ -198,6 +206,8 @@ def generate_pack_config(pack_info, card_entries):
         "releaseDate": pack_info["releaseDate"],
         "ygocdbPackId": pack_info["packId"],
         "cardsPerPack": 5,
+        "totalCards": len(card_entries),
+        "cardFile": card_file,
         "rarityRates": {
             "UR": 1,
             "SR": 4,
@@ -205,18 +215,49 @@ def generate_pack_config(pack_info, card_entries):
             "N": 70
         },
         "guaranteedRareSlot": True,
-        "_说明": f"通过 YGOCDB 自动拉取，共{len(card_entries)}张卡，稀有度待补充",
-        "cardIds": card_entries
+        "_说明": f"通过 YGOCDB 自动拉取，共{len(card_entries)}张卡，稀有度待补充"
     }
     
     return config
 
 
-def write_to_ocg_packs(pack_config):
+def write_card_file(pack_id, pack_code, pack_info, card_entries):
     """
-    将卡包配置写入 data/ocg/packs.json 的 packs 数组
+    将卡牌列表写入独立的 JSON 文件 data/ocg/cards/{packId}.json
+    """
+    # 确保目录存在
+    os.makedirs(OCG_CARDS_DIR, exist_ok=True)
+    
+    card_file_name = f"{pack_id}.json"
+    card_file_path = os.path.join(OCG_CARDS_DIR, card_file_name)
+    
+    card_data = {
+        "_说明": f"{pack_info['packName']} ({pack_code}) 卡包卡牌列表 —— 从 packs.json 拆分独立管理",
+        "_数据源": f"通过 YGOCDB 自动拉取 (ygocdb.com/pack/{pack_info['packId']})",
+        "packId": pack_id,
+        "packCode": pack_code,
+        "totalCards": len(card_entries),
+        "cardIds": card_entries
+    }
+    
+    with open(card_file_path, "w", encoding="utf-8") as f:
+        json.dump(card_data, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+    
+    print(f"  ✅ 卡牌文件已写入: {card_file_path}")
+    return card_file_name
+
+
+def write_to_ocg_packs(pack_config, card_entries, pack_info):
+    """
+    将卡包元信息写入 data/ocg/packs.json 的 packs 数组
+    并将卡牌列表写入独立文件 data/ocg/cards/{packId}.json
     如果同 packCode 的卡包已存在则更新，否则插入到数组开头
     """
+    # 1. 写入独立卡牌文件
+    write_card_file(pack_config["packId"], pack_config["packCode"], pack_info, card_entries)
+    
+    # 2. 更新 packs.json 元信息（不含 cardIds）
     with open(OCG_PACKS_PATH, "r", encoding="utf-8-sig") as f:
         data = json.load(f)
     
@@ -240,7 +281,7 @@ def write_to_ocg_packs(pack_config):
         json.dump(data, f, ensure_ascii=False, indent=2)
         f.write("\n")  # 文件末尾换行
     
-    print(f"  ✅ 已写入 {OCG_PACKS_PATH}")
+    print(f"  ✅ 元信息已写入 {OCG_PACKS_PATH}")
 
 
 def cmd_list(region, limit=20):
@@ -322,7 +363,7 @@ def cmd_fetch(pack_id, write=False):
     
     if write:
         pack_config = generate_pack_config(pack_info, card_entries)
-        write_to_ocg_packs(pack_config)
+        write_to_ocg_packs(pack_config, card_entries, pack_info)
     else:
         # 输出 JSON 到文件
         output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"_pack_{pack_id}_output.json")
