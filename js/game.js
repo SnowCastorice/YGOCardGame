@@ -903,9 +903,9 @@ const CDN_SOURCES = [
     {
         id: 'konami_official',
         name: 'KONAMI 官网（日文卡图）',
-        urlTemplate: 'https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=1&osplang=1&cid={cid}&ciid=1',
+        urlTemplate: '/api/card-image?cid={cid}',
         format: 'JPEG',
-        desc: 'KONAMI 游戏王官方数据库（需要 cid 映射，图片较小 200×290）',
+        desc: 'KONAMI 游戏王官方数据库（通过 Pages Function 代理，需要 cid 映射，图片较小 200×290）',
         usedBy: null,
         needsCid: true  // 标记此源需要 cid 而非卡片密码
     }

@@ -2,6 +2,19 @@
   "_说明": "版本更新日志。每次更新都会在这里记录，网页上也会显示这些信息。格式：版本号、日期、更新内容列表。",
   "versions": [
     {
+      "version": "0.9.2",
+      "date": "2026-02-19",
+      "title": "KONAMI 卡图代理迁移 — 从 Worker 迁移到 Pages Functions",
+      "changes": [
+        "🔄 KONAMI 卡图代理从独立 Cloudflare Worker 迁移到 Pages Functions",
+        "🌐 解决 workers.dev 域名在国内被墙导致卡图无法加载的问题",
+        "📂 新增 functions/api/card-image.js，代理 KONAMI 官方卡图请求",
+        "🔗 卡图代理路径改为同域名 /api/card-image?cid=xxx，无需跨域",
+        "⚡ 图片缓存策略：30天长期缓存，提升加载速度",
+        "🛡️ 内置域名白名单 + CORS 安全策略，防止滥用"
+      ]
+    },
+    {
       "version": "0.9.1",
       "date": "2026-02-19",
       "title": "OCG 卡牌列表拆分为独立文件 — 数据架构优化",
