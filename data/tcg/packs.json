@@ -9,7 +9,9 @@
     "cardsPerPack": "每包抽取的卡牌数量",
     "rarityRates": "各稀有度的抽取权重（数字越大越容易抽到）",
     "guaranteedRareSlot": "是否保底最后一张至少为 R 及以上",
-    "gameMode": "游戏模式：ocg = 亚洲版, tcg = 欧美版"
+    "gameMode": "游戏模式：ocg = 亚洲版, tcg = 欧美版",
+    "price": "开包所需货币数量",
+    "currency": "开包使用的货币类型（gold=金币, diamond=钻石）"
   },
   "packs": [
     {
@@ -23,7 +25,9 @@
         "R": 20,
         "N": 69
       },
-      "guaranteedRareSlot": true
+      "guaranteedRareSlot": true,
+      "price": 100,
+      "currency": "gold"
     },
     {
       "packId": "pack_BPRO",
@@ -36,7 +40,9 @@
         "R": 20,
         "N": 69
       },
-      "guaranteedRareSlot": true
+      "guaranteedRareSlot": true,
+      "price": 100,
+      "currency": "gold"
     },
     {
       "packId": "pack_PHRE",
@@ -49,7 +55,9 @@
         "R": 20,
         "N": 69
       },
-      "guaranteedRareSlot": true
+      "guaranteedRareSlot": true,
+      "price": 100,
+      "currency": "gold"
     }
   ],
   "defaultRarityRates": {

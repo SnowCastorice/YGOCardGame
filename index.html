@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YGO Pack Opener - 游戏王卡包开封模拟器</title>
-<link rel="stylesheet" href="css/style.css?v=0.8.0">
+<link rel="stylesheet" href="css/style.css?v=1.0.0">
 </head>
 <body>
     <!-- ====== 全局加载遮罩层 ====== -->
@@ -18,6 +18,17 @@
     <!-- ====== 顶部导航栏 ====== -->
     <header class="top-bar">
         <h1 class="game-title">YGO Pack Opener</h1>
+        <!-- 货币显示栏 -->
+        <div class="currency-bar">
+            <div class="currency-item" id="currency-item-gold" title="点击兑换">
+                <span class="currency-icon">🪙</span>
+                <span class="currency-value" id="currency-balance-gold">0</span>
+            </div>
+            <div class="currency-item" id="currency-item-diamond" title="点击兑换">
+                <span class="currency-icon">💎</span>
+                <span class="currency-value" id="currency-balance-diamond">0</span>
+            </div>
+        </div>
         <!-- OCG / TCG 模式切换开关 -->
         <div class="mode-switch-container">
             <button id="btn-mode-ocg" class="mode-btn active" data-mode="ocg">OCG</button>
@@ -135,6 +146,19 @@
         </div>
     </div>
 
+    <!-- ====== 货币兑换弹窗 ====== -->
+    <div id="exchange-modal" class="modal-overlay">
+        <div class="modal-content exchange-modal-content">
+            <div class="modal-header">
+                <h2>💱 货币兑换</h2>
+                <button id="btn-close-exchange" class="modal-close">&times;</button>
+            </div>
+            <div id="exchange-content" class="modal-body">
+                <!-- 兑换内容由 JS 动态生成 -->
+            </div>
+        </div>
+    </div>
+
     <!-- ====== 卡牌图片放大查看器 ====== -->
     <div id="card-image-viewer" class="card-image-viewer">
         <span class="viewer-hint">点击任意位置关闭</span>
@@ -144,7 +168,7 @@
 
     <!-- ====== 页脚 ====== -->
     <footer class="footer">
-<p>YGO Pack Opener v0.8.0 | 游戏王卡包开封模拟器</p>
+<p>YGO Pack Opener v1.0.0 | 游戏王卡包开封模拟器</p>
         <p class="footer-credit">
             外文数据: <a href="https://ygoprodeck.com/" target="_blank" rel="noopener">YGOProDeck</a> | 
             中文名称: <a href="https://ygocdb.com/" target="_blank" rel="noopener">YGOCDB</a> | 
@@ -172,8 +196,9 @@
     </script>
 
     <!-- 先加载离线备用数据，再加载 API 模块，最后加载游戏逻辑 -->
-<script src="data/fallback_cards.js?v=0.8.0"></script>
-    <script src="js/api.js?v=0.8.0"></script>
-    <script src="js/game.js?v=0.8.0"></script>
+<script src="data/fallback_cards.js?v=1.0.0"></script>
+    <script src="js/currency.js?v=1.0.0"></script>
+    <script src="js/api.js?v=1.0.0"></script>
+    <script src="js/game.js?v=1.0.0"></script>
 </body>
 </html>

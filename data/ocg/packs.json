@@ -10,7 +10,9 @@
     "rarityRates": "各稀有度的抽取权重（数字越大越容易抽到）",
     "guaranteedRareSlot": "是否保底最后一张至少为 R 及以上",
     "gameMode": "游戏模式：ocg = 亚洲版, tcg = 欧美版",
-    "totalCards": "卡包收录卡牌总数（仅供显示，实际数量以 cardFile 中为准）"
+    "totalCards": "卡包收录卡牌总数（仅供显示，实际数量以 cardFile 中为准）",
+    "price": "开包所需货币数量",
+    "currency": "开包使用的货币类型（gold=金币, diamond=钻石）"
   },
   "packs": [
     {
@@ -29,6 +31,8 @@
         "N": 70
       },
       "guaranteedRareSlot": true,
+      "price": 100,
+      "currency": "gold",
       "_说明": "2026年1月最新OCG补充包（ブレイジング・ドミニオン），共80张卡，稀有度待补充"
     },
     {
@@ -47,6 +51,8 @@
         "N": 70
       },
       "guaranteedRareSlot": true,
+      "price": 100,
+      "currency": "gold",
       "_说明": "2026年1月OCG记事卡组（精灵术的使者），共42张卡，稀有度待补充"
     },
     {
@@ -65,6 +71,8 @@
         "N": 70
       },
       "guaranteedRareSlot": true,
+      "price": 100,
+      "currency": "gold",
       "_说明": "2025年12月OCG决斗者盒SPECIAL PACK，共60张卡，稀有度待补充"
     }
   ],

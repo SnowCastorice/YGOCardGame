@@ -124,6 +124,276 @@ body {
 }
 
 /* ============================================
+   货币显示栏
+   ============================================ */
+.currency-bar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.currency-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.currency-item:hover {
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.2);
+}
+
+.currency-icon {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.currency-value {
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: var(--accent-gold);
+    min-width: 24px;
+    text-align: center;
+    transition: color 0.3s ease;
+}
+
+/* 余额变化时的闪烁动画 */
+.currency-value.balance-changed {
+    animation: balanceFlash 0.6s ease;
+}
+
+@keyframes balanceFlash {
+    0% { color: #fff; transform: scale(1.3); }
+    50% { color: var(--accent-gold); }
+    100% { color: var(--accent-gold); transform: scale(1); }
+}
+
+/* ============================================
+   货币兑换弹窗
+   ============================================ */
+.exchange-modal-content {
+    max-width: 480px !important;
+}
+
+.exchange-balance-display {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 20px;
+    padding: 16px;
+    background: var(--bg-panel);
+    border-radius: 10px;
+}
+
+.exchange-balance-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.exchange-balance-icon {
+    font-size: 1.8rem;
+}
+
+.exchange-balance-value {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--accent-gold);
+}
+
+.exchange-balance-name {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* 兑换操作区 */
+.exchange-section {
+    padding: 16px;
+    background: var(--bg-panel);
+    border-radius: 10px;
+    margin-bottom: 12px;
+}
+
+.exchange-section-title {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.exchange-rate-info {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    text-align: center;
+    padding: 8px;
+    background: rgba(255, 215, 0, 0.05);
+    border-radius: 6px;
+}
+
+.exchange-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.exchange-input-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.exchange-input-group label {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.exchange-input {
+    width: 80px;
+    padding: 6px 10px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.exchange-input:focus {
+    border-color: var(--accent-blue);
+}
+
+.exchange-preview {
+    font-size: 0.85rem;
+    color: var(--accent-gold);
+    min-width: 100px;
+    text-align: center;
+}
+
+.exchange-btn-group {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    justify-content: center;
+}
+
+.btn-exchange {
+    padding: 8px 20px;
+    background: linear-gradient(135deg, var(--accent-gold), #ffaa00);
+    border: none;
+    color: #000;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.btn-exchange:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+}
+
+.btn-exchange:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-exchange-max {
+    padding: 8px 14px;
+    background: transparent;
+    border: 1px solid var(--accent-blue);
+    color: var(--accent-blue);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.btn-exchange-max:hover {
+    background: var(--accent-blue);
+    color: #fff;
+}
+
+/* 兑换结果提示 */
+.exchange-result {
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    margin-top: 12px;
+    animation: fadeIn 0.3s ease;
+}
+
+.exchange-result.success {
+    background: rgba(76, 175, 80, 0.15);
+    color: #4caf50;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.exchange-result.error {
+    background: rgba(255, 71, 87, 0.15);
+    color: var(--accent-red);
+    border: 1px solid rgba(255, 71, 87, 0.3);
+}
+
+/* 卡包价格标签 */
+.pack-price {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    padding: 3px 10px;
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.25);
+    border-radius: 12px;
+    font-size: 0.8rem;
+    color: var(--accent-gold);
+    font-weight: bold;
+}
+
+.pack-price-icon {
+    font-size: 0.85rem;
+}
+
+/* 开包区域的价格提示 */
+.open-pack-price-info {
+    text-align: center;
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+    color: var(--accent-gold);
+}
+
+/* 余额不足时的按钮样式 */
+.btn-open-pack.insufficient {
+    background: linear-gradient(135deg, #666, #888);
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.btn-open-pack.insufficient:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* ============================================
    OCG / TCG 模式切换开关
    ============================================ */
 .mode-switch-container {
@@ -800,6 +1070,26 @@ body {
 
     .game-title {
         font-size: 1.1rem;
+    }
+
+    .currency-bar {
+        order: -1;
+        flex-basis: 100%;
+        justify-content: center;
+        margin-bottom: 4px;
+        gap: 8px;
+    }
+
+    .currency-item {
+        padding: 3px 8px;
+    }
+
+    .currency-icon {
+        font-size: 0.85rem;
+    }
+
+    .currency-value {
+        font-size: 0.78rem;
     }
 
     .top-nav {

@@ -1,7 +1,7 @@
 ﻿/**
  * ============================================
  * YGO Pack Opener - 游戏核心逻辑
- * 版本: 0.9.0
+ * 版本: 1.0.0
  * 
  * 【文件说明】
  * 这是游戏的"大脑"，负责：
@@ -11,6 +11,7 @@
  * 4. 实现开包抽卡逻辑（按稀有度权重随机抽取）
  * 5. 控制界面切换和动画播放
  * 6. 管理 OCG/TCG 模式切换
+ * 7. 集成货币系统（开包消耗货币、货币兑换）
  * ============================================
  */
 
@@ -26,7 +27,10 @@ let currentGameMode = 'ocg';  // 当前游戏模式：'ocg' 或 'tcg'，默认 O
 document.addEventListener('DOMContentLoaded', async function () {
     console.log('🚀 DOMContentLoaded 触发，开始初始化...');
 
-    // 先绑定导航栏按钮事件（缓存、日志、模式切换），确保即使加载失败也能使用
+    // 初始化货币系统（在绑定事件之前，确保余额数据已就绪）
+    CurrencySystem.init();
+
+    // 先绑定导航栏按钮事件（缓存、日志、模式切换、货币兑换），确保即使加载失败也能使用
     bindNavEvents();
 
     // 从本地存储读取上次的游戏模式（如果有的话）
@@ -78,9 +82,12 @@ document.addEventListener('DOMContentLoaded', async function () {
         bindCardImageViewer();
         console.log('✅ bindCardImageViewer 完成');
 
+        // 更新货币 UI 显示
+        CurrencySystem.updateUI();
+
         hideLoadingState();
 
-        console.log(`🎴 YGO Pack Opener v0.9.0 初始化完成！当前模式: ${currentGameMode.toUpperCase()}`);
+        console.log(`🎴 YGO Pack Opener v1.0.0 初始化完成！当前模式: ${currentGameMode.toUpperCase()}`);
 
     } catch (error) {
         console.error('❌ 加载配置文件失败:', error);
@@ -165,6 +172,12 @@ function bindNavEvents() {
     bindEvent('btn-mode-ocg', 'click', function () { switchGameMode('ocg'); });
     bindEvent('btn-mode-tcg', 'click', function () { switchGameMode('tcg'); });
 
+    // 货币兑换
+    bindEvent('btn-close-exchange', 'click', hideExchange);
+    // 货币栏点击 → 打开兑换弹窗
+    bindEvent('currency-item-gold', 'click', showExchange);
+    bindEvent('currency-item-diamond', 'click', showExchange);
+
     // 开发者工具
     bindEvent('btn-dev-tools', 'click', showDevTools);
     bindEvent('btn-close-devtools', 'click', hideDevTools);
@@ -178,6 +191,9 @@ function bindNavEvents() {
     });
     bindEvent('devtools-modal', 'click', function (e) {
         if (e.target === document.getElementById('devtools-modal')) hideDevTools();
+    });
+    bindEvent('exchange-modal', 'click', function (e) {
+        if (e.target === document.getElementById('exchange-modal')) hideExchange();
     });
 
     console.log('✅ 导航栏事件绑定完成');
@@ -420,11 +436,17 @@ function renderPackList() {
         // OCG 卡包显示卡牌数量（优先使用 totalCards 字段，兼容旧的 cardIds 方式）
         const cardCountInfo = pack.totalCards ? ` | ${pack.totalCards} 种卡` : (pack.cardIds ? ` | ${pack.cardIds.length} 种卡` : '');
 
+        // 价格信息
+        const currencyDef = CurrencySystem.getCurrencyDef(pack.currency || 'gold');
+        const priceIcon = currencyDef ? currencyDef.icon : '🪙';
+        const priceValue = pack.price || 0;
+
         packCard.innerHTML = `
             <span class="pack-icon">🎴</span>
             <div class="pack-name">${pack.packName}</div>
             <div class="pack-code">${displayCode}${pack.releaseDate ? ' (' + pack.releaseDate + ')' : ''}</div>
             <div class="pack-count">每包 ${pack.cardsPerPack} 张${cardCountInfo} | ${pack.guaranteedRareSlot ? '保底R以上' : '纯随机'} ${modeIcon}</div>
+            <div class="pack-price"><span class="pack-price-icon">${priceIcon}</span> ${priceValue}</div>
         `;
         packCard.addEventListener('click', function () {
             selectPack(pack);
@@ -475,6 +497,9 @@ async function selectPack(pack) {
         const displayCode = pack.packCode || pack.setCode || pack.packId;
         document.getElementById('current-pack-desc').textContent =
             `${displayCode} | 共 ${currentPackCards.length} 种卡牌 | 每包抽取 ${pack.cardsPerPack} 张 | 数据: ${dataSourceName}${setData.isOfflineData ? '\n⚠️ 当前使用离线备用数据' : ''}`;
+
+        // 显示开包价格信息
+        updateOpenPackPriceInfo();
 
         hideLoadingState();
         switchSection('open-pack-section');
@@ -527,21 +552,41 @@ function switchSection(sectionId) {
 /**
  * 开包！这是游戏的核心功能
  * 步骤：
- * 1. 播放开包动画
- * 2. 根据稀有度权重随机抽取卡牌
- * 3. 展示抽到的卡牌（含卡图）
+ * 1. 检查货币余额是否足够
+ * 2. 扣除货币
+ * 3. 播放开包动画
+ * 4. 根据稀有度权重随机抽取卡牌
+ * 5. 展示抽到的卡牌（含卡图）
  */
 async function openPack() {
     if (!currentPack || !currentPackCards) return;
 
-    // 1. 播放开包动画
+    // 1. 检查货币余额
+    const currency = currentPack.currency || 'gold';
+    const price = currentPack.price || 0;
+
+    if (price > 0 && !CurrencySystem.canAfford(currency, price)) {
+        const currDef = CurrencySystem.getCurrencyDef(currency);
+        alert(`${currDef.icon} ${currDef.name}不足！\n\n开包需要 ${price} ${currDef.icon}${currDef.name}，当前只有 ${CurrencySystem.getBalance(currency)} ${currDef.icon}。\n\n点击顶部货币栏可以进行兑换。`);
+        return;
+    }
+
+    // 2. 扣除货币
+    if (price > 0) {
+        CurrencySystem.spendBalance(currency, price);
+    }
+
+    // 3. 播放开包动画
     await playOpeningAnimation();
 
-    // 2. 抽取卡牌
+    // 4. 抽取卡牌
     const drawnCards = drawCards(currentPack, currentPackCards);
 
-    // 3. 展示结果
+    // 5. 展示结果
     await showResults(drawnCards);
+
+    // 更新价格信息（余额可能变化）
+    updateOpenPackPriceInfo();
 }
 
 /**
@@ -850,6 +895,203 @@ async function handleClearCache() {
         showCacheManage(); // 刷新显示
     } else {
         alert('❌ 清除缓存失败，请重试。');
+    }
+}
+
+// ============================================
+// 货币兑换弹窗
+// ============================================
+
+/** 显示货币兑换弹窗 */
+function showExchange() {
+    const container = document.getElementById('exchange-content');
+    const defs = CurrencySystem.getCurrencyDefs();
+    const rates = CurrencySystem.getAllExchangeRates();
+
+    let html = '';
+
+    // 当前余额展示
+    html += '<div class="exchange-balance-display">';
+    Object.keys(defs).forEach(function (id) {
+        const def = defs[id];
+        html += '<div class="exchange-balance-item">';
+        html += `<span class="exchange-balance-icon">${def.icon}</span>`;
+        html += `<span class="exchange-balance-value" id="exchange-display-${id}">${CurrencySystem.getBalance(id)}</span>`;
+        html += `<span class="exchange-balance-name">${def.name}</span>`;
+        html += '</div>';
+    });
+    html += '</div>';
+
+    // 兑换操作区（为每种兑换方向生成一个区域）
+    Object.keys(rates).forEach(function (rateKey) {
+        const rate = rates[rateKey];
+        const parts = rateKey.split('_');
+        const fromId = parts[0];
+        const toId = parts[1];
+        const fromDef = defs[fromId];
+        const toDef = defs[toId];
+
+        if (!fromDef || !toDef) return;
+
+        html += '<div class="exchange-section">';
+        html += `<div class="exchange-section-title">${fromDef.icon} ${fromDef.name} → ${toDef.icon} ${toDef.name}</div>`;
+        html += `<div class="exchange-rate-info">兑换比例: ${rate.from} ${fromDef.icon} = ${rate.to} ${toDef.icon}</div>`;
+        html += '<div class="exchange-controls">';
+        html += '<div class="exchange-input-group">';
+        html += `<label>兑换次数:</label>`;
+        html += `<input type="number" class="exchange-input" id="exchange-times-${rateKey}" value="1" min="1" max="9999" />`;
+        html += '</div>';
+        html += `<div class="exchange-preview" id="exchange-preview-${rateKey}">消耗 ${rate.from} ${fromDef.icon} → 获得 ${rate.to} ${toDef.icon}</div>`;
+        html += '</div>';
+        html += '<div class="exchange-btn-group">';
+        html += `<button class="btn-exchange" id="exchange-btn-${rateKey}" data-rate-key="${rateKey}">确认兑换</button>`;
+        html += `<button class="btn-exchange-max" id="exchange-max-${rateKey}" data-rate-key="${rateKey}">全部兑换</button>`;
+        html += '</div>';
+        html += `<div id="exchange-result-${rateKey}"></div>`;
+        html += '</div>';
+    });
+
+    container.innerHTML = html;
+
+    // 绑定兑换事件
+    Object.keys(rates).forEach(function (rateKey) {
+        const rate = rates[rateKey];
+        const parts = rateKey.split('_');
+        const fromId = parts[0];
+        const toId = parts[1];
+        const fromDef = defs[fromId];
+        const toDef = defs[toId];
+
+        const timesInput = document.getElementById(`exchange-times-${rateKey}`);
+        const previewEl = document.getElementById(`exchange-preview-${rateKey}`);
+        const exchangeBtn = document.getElementById(`exchange-btn-${rateKey}`);
+        const maxBtn = document.getElementById(`exchange-max-${rateKey}`);
+        const resultEl = document.getElementById(`exchange-result-${rateKey}`);
+
+        // 输入时实时预览
+        if (timesInput) {
+            timesInput.addEventListener('input', function () {
+                const times = parseInt(timesInput.value) || 0;
+                if (times > 0) {
+                    previewEl.textContent = `消耗 ${rate.from * times} ${fromDef.icon} → 获得 ${rate.to * times} ${toDef.icon}`;
+                } else {
+                    previewEl.textContent = '请输入兑换次数';
+                }
+            });
+        }
+
+        // 确认兑换按钮
+        if (exchangeBtn) {
+            exchangeBtn.addEventListener('click', function () {
+                const times = parseInt(timesInput.value) || 0;
+                if (times <= 0) {
+                    resultEl.innerHTML = '<div class="exchange-result error">请输入有效的兑换次数</div>';
+                    return;
+                }
+                const result = CurrencySystem.exchange(fromId, toId, times);
+                if (result.success) {
+                    resultEl.innerHTML = `<div class="exchange-result success">✅ ${result.message}</div>`;
+                    // 更新弹窗内的余额显示
+                    updateExchangeBalanceDisplay();
+                } else {
+                    resultEl.innerHTML = `<div class="exchange-result error">❌ ${result.message}</div>`;
+                }
+            });
+        }
+
+        // 全部兑换按钮
+        if (maxBtn) {
+            maxBtn.addEventListener('click', function () {
+                const maxTimes = CurrencySystem.getMaxExchangeTimes(fromId, toId);
+                if (maxTimes <= 0) {
+                    resultEl.innerHTML = `<div class="exchange-result error">❌ ${fromDef.name}不足，无法兑换</div>`;
+                    return;
+                }
+                timesInput.value = maxTimes;
+                // 触发预览更新
+                timesInput.dispatchEvent(new Event('input'));
+            });
+        }
+    });
+
+    document.getElementById('exchange-modal').classList.add('active');
+}
+
+/** 关闭货币兑换弹窗 */
+function hideExchange() {
+    document.getElementById('exchange-modal').classList.remove('active');
+}
+
+/** 更新兑换弹窗内的余额显示 */
+function updateExchangeBalanceDisplay() {
+    const defs = CurrencySystem.getCurrencyDefs();
+    Object.keys(defs).forEach(function (id) {
+        const el = document.getElementById(`exchange-display-${id}`);
+        if (el) {
+            el.textContent = CurrencySystem.getBalance(id);
+        }
+    });
+}
+
+// ============================================
+// 开包区域价格信息更新
+// ============================================
+
+/**
+ * 更新开包区域的价格和余额信息
+ * 在进入开包界面和每次开包后调用
+ */
+function updateOpenPackPriceInfo() {
+    if (!currentPack) return;
+
+    const currency = currentPack.currency || 'gold';
+    const price = currentPack.price || 0;
+    const currDef = CurrencySystem.getCurrencyDef(currency);
+    const balance = CurrencySystem.getBalance(currency);
+    const canAfford = price <= 0 || CurrencySystem.canAfford(currency, price);
+
+    // 更新开包按钮区域的价格提示
+    let priceInfoEl = document.getElementById('open-pack-price-info');
+    if (!priceInfoEl) {
+        // 如果元素不存在，动态创建并插入到开包按钮之前
+        priceInfoEl = document.createElement('div');
+        priceInfoEl.id = 'open-pack-price-info';
+        priceInfoEl.className = 'open-pack-price-info';
+        const btnContainer = document.querySelector('.open-btn-container');
+        if (btnContainer) {
+            btnContainer.parentElement.insertBefore(priceInfoEl, btnContainer);
+        }
+    }
+
+    if (price > 0 && currDef) {
+        priceInfoEl.innerHTML = `开包花费: ${currDef.icon} ${price} ${currDef.name} | 当前余额: ${currDef.icon} ${balance}`;
+        priceInfoEl.style.display = 'block';
+    } else {
+        priceInfoEl.style.display = 'none';
+    }
+
+    // 更新开包按钮的可用状态
+    const openBtn = document.getElementById('btn-open-pack');
+    const openAgainBtn = document.getElementById('btn-open-again');
+
+    if (openBtn) {
+        if (!canAfford) {
+            openBtn.classList.add('insufficient');
+            openBtn.textContent = `🪙 余额不足 (需要 ${price} ${currDef.icon})`;
+        } else {
+            openBtn.classList.remove('insufficient');
+            openBtn.textContent = price > 0 ? `🎴 开启卡包 (${currDef.icon} ${price})` : '🎴 开启卡包';
+        }
+    }
+
+    if (openAgainBtn) {
+        if (!canAfford) {
+            openAgainBtn.classList.add('insufficient');
+            openAgainBtn.textContent = `🪙 余额不足 (需要 ${price} ${currDef.icon})`;
+        } else {
+            openAgainBtn.classList.remove('insufficient');
+            openAgainBtn.textContent = price > 0 ? `🎴 再开一包 (${currDef.icon} ${price})` : '🎴 再开一包';
+        }
     }
 }
 
