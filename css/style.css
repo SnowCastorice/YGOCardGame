@@ -884,14 +884,61 @@ body {
     flex-wrap: wrap;
 }
 
-/* 重置游戏按钮：更醒目的警告样式 */
-.btn-reset-game {
-    background: var(--accent-red) !important;
-    color: #fff !important;
-    border-color: var(--accent-red) !important;
+/* ============================================
+   开发者工具：快捷操作区
+   ============================================ */
+.devtools-actions-area {
+    margin-bottom: 12px;
 }
 
-.btn-reset-game:hover {
+.devtools-section-title {
+    font-size: 0.95rem;
+    margin: 0 0 10px 0;
+    color: var(--text-primary);
+}
+
+.devtools-actions-btns {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.devtools-note {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.devtools-divider {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 14px 0;
+}
+
+/* 添加金币按钮 */
+.btn-dev-gold {
+    background: linear-gradient(135deg, #f6a623, #e8960f) !important;
+    color: #fff !important;
+    border: none !important;
+    font-weight: 600;
+}
+
+.btn-dev-gold:hover {
+    background: linear-gradient(135deg, #e8960f, #d4850a) !important;
+    box-shadow: 0 0 12px rgba(246, 166, 35, 0.4);
+}
+
+/* 重置游戏按钮 */
+.btn-dev-reset {
+    background: var(--accent-red) !important;
+    color: #fff !important;
+    border: none !important;
+    font-weight: 600;
+}
+
+.btn-dev-reset:hover {
     background: #e0313e !important;
     box-shadow: 0 0 12px rgba(255, 71, 87, 0.4);
 }

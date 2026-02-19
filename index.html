@@ -117,7 +117,6 @@
             </div>
             <div class="modal-footer">
                 <button id="btn-clear-cache" class="btn-danger">🗑️ 清除所有缓存</button>
-                <button id="btn-reset-game" class="btn-danger btn-reset-game">🔄 重置货币</button>
             </div>
         </div>
     </div>
@@ -130,6 +129,16 @@
                 <button id="btn-close-devtools" class="modal-close">&times;</button>
             </div>
             <div class="modal-body devtools-body">
+                <!-- 开发者操作区 -->
+                <div class="devtools-actions-area">
+                    <h3 class="devtools-section-title">🛠️ 快捷操作</h3>
+                    <div class="devtools-actions-btns">
+                        <button id="btn-dev-add-gold" class="btn-devtools-action btn-dev-gold">🪙 添加 10000 金币</button>
+                        <button id="btn-dev-reset-game" class="btn-devtools-action btn-dev-reset">🔄 重置游戏</button>
+                    </div>
+                    <p class="devtools-note">💡 重置游戏：重置货币余额至初始值，不清除缓存。若需清除缓存，请前往「💾 缓存管理」。</p>
+                </div>
+                <hr class="devtools-divider">
                 <!-- 卡片ID输入区 -->
                 <div class="devtools-input-area">
                     <label for="devtools-card-id">卡片ID：</label>

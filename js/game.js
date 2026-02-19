@@ -167,7 +167,6 @@ function bindNavEvents() {
     bindEvent('btn-cache-manage', 'click', showCacheManage);
     bindEvent('btn-close-cache', 'click', hideCacheManage);
     bindEvent('btn-clear-cache', 'click', handleClearCache);
-    bindEvent('btn-reset-game', 'click', handleResetGame);
 
     // OCG / TCG 模式切换按钮
     bindEvent('btn-mode-ocg', 'click', function () { switchGameMode('ocg'); });
@@ -900,33 +899,38 @@ async function handleClearCache() {
 }
 
 /**
- * 重置货币：将金币和钻石余额恢复到初始值
+ * 开发者工具：添加 10000 金币
  */
-function handleResetGame() {
-    if (!confirm('❗ 确定要重置游戏吗？\n\n这将重置你的货币余额：\n• 🪙 金币恢复为初始值\n• � 钻石恢复为初始值\n\n重置后会自动刷新页面。')) {
-        return;
+function devAddGold() {
+    try {
+        CurrencySystem.addBalance('gold', 10000);
+        CurrencySystem.updateUI();
+        alert('✅ 已添加 10000 🪙 金币！');
+        console.log('🛠️ [开发者工具] 添加 10000 金币');
+    } catch (error) {
+        console.error('❌ 添加金币失败:', error);
+        alert('❌ 添加金币失败：' + error.message);
     }
+}
 
-    // 二次确认，防止误操作
-    if (!confirm('⚠️ 再次确认：此操作不可撤销！\n\n确定要重置吗？')) {
+/**
+ * 开发者工具：重置游戏（重置货币余额至初始值，不清除缓存）
+ */
+function devResetGame() {
+    if (!confirm('❗ 确定要重置游戏吗？\n\n这将重置你的货币余额：\n• 🪙 金币恢复为初始值\n• 💎 钻石恢复为初始值\n\n⚠️ 不会清除缓存数据。若需清除缓存，请前往「💾 缓存管理」。')) {
         return;
     }
 
     try {
-        // 重置货币系统（金币和钻石恢复初始值）
         CurrencySystem.resetAll();
-        console.log('✅ 货币系统已重置');
-
-        alert('✅ 货币已重置！页面即将刷新...');
-
-        // 刷新页面
-        location.reload();
+        CurrencySystem.updateUI();
+        alert('✅ 游戏已重置！货币已恢复为初始值。');
+        console.log('🛠️ [开发者工具] 游戏已重置');
     } catch (error) {
-        console.error('❌ 重置失败:', error);
-        alert('❌ 重置失败，请重试。\n\n错误信息: ' + error.message);
+        console.error('❌ 重置游戏失败:', error);
+        alert('❌ 重置失败：' + error.message);
     }
 }
-
 // ============================================
 // 货币兑换弹窗
 // ============================================
@@ -1217,6 +1221,12 @@ function showDevTools() {
     const modeText = currentGameMode === 'ocg' ? 'OCG（使用 YGOCDB CDN 卡图）' : 'TCG（使用 YGOProDeck CDN 卡图）';
     modeInfo.textContent = `当前模式：${modeText}`;
     modeInfo.classList.add('visible');
+
+    // 绑定开发者快捷操作按钮
+    const addGoldBtn = document.getElementById('btn-dev-add-gold');
+    const resetGameBtn = document.getElementById('btn-dev-reset-game');
+    if (addGoldBtn) addGoldBtn.onclick = devAddGold;
+    if (resetGameBtn) resetGameBtn.onclick = devResetGame;
 
     // 绑定按钮事件（仅首次）
     const loadBtn = document.getElementById('btn-devtools-load');
