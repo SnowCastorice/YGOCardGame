@@ -167,6 +167,7 @@ function bindNavEvents() {
     bindEvent('btn-cache-manage', 'click', showCacheManage);
     bindEvent('btn-close-cache', 'click', hideCacheManage);
     bindEvent('btn-clear-cache', 'click', handleClearCache);
+    bindEvent('btn-reset-game', 'click', handleResetGame);
 
     // OCG / TCG 模式切换按钮
     bindEvent('btn-mode-ocg', 'click', function () { switchGameMode('ocg'); });
@@ -895,6 +896,43 @@ async function handleClearCache() {
         showCacheManage(); // 刷新显示
     } else {
         alert('❌ 清除缓存失败，请重试。');
+    }
+}
+
+/**
+ * 重置游戏：清除所有本地数据，恢复到初始状态
+ * 包括：货币余额、API 缓存、游戏模式设置等
+ */
+async function handleResetGame() {
+    if (!confirm('❗ 确定要重置游戏吗？\n\n这将清除所有本地数据，包括：\n• 🪙 金币和钻石余额\n• 💾 卡片缓存数据\n• ⚙️ 游戏模式设置\n\n重置后会自动刷新页面。')) {
+        return;
+    }
+
+    // 二次确认，防止误操作
+    if (!confirm('⚠️ 再次确认：此操作不可撤销！\n\n确定要重置吗？')) {
+        return;
+    }
+
+    try {
+        // 1. 重置货币系统
+        CurrencySystem.resetAll();
+        console.log('✅ 货币系统已重置');
+
+        // 2. 清除 API 缓存
+        await TCG_API.clearAllCache();
+        console.log('✅ API 缓存已清除');
+
+        // 3. 清除游戏模式设置
+        localStorage.removeItem('ygo_game_mode');
+        console.log('✅ 游戏模式设置已清除');
+
+        alert('✅ 游戏已重置！页面即将刷新...');
+
+        // 4. 刷新页面
+        location.reload();
+    } catch (error) {
+        console.error('❌ 重置游戏失败:', error);
+        alert('❌ 重置失败，请重试。\n\n错误信息: ' + error.message);
     }
 }
 

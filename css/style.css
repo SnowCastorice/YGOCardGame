@@ -878,7 +878,22 @@ body {
 .modal-footer {
     padding: 16px 24px;
     border-top: 1px solid var(--border-color);
-    text-align: right;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+/* 重置游戏按钮：更醒目的警告样式 */
+.btn-reset-game {
+    background: var(--accent-red) !important;
+    color: #fff !important;
+    border-color: var(--accent-red) !important;
+}
+
+.btn-reset-game:hover {
+    background: #e0313e !important;
+    box-shadow: 0 0 12px rgba(255, 71, 87, 0.4);
 }
 
 /* ============================================
