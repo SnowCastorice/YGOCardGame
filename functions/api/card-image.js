@@ -110,7 +110,10 @@ async function handleCardImage(request) {
 
     // 获取图片数据
     const imageData = await konamiResponse.arrayBuffer();
-    const contentType = konamiResponse.headers.get('Content-Type') || 'image/jpeg';
+
+    // KONAMI 返回的 Content-Type 通常是 application/octet-stream（不准确），
+    // 需要根据文件头魔术字节检测真实图片类型
+    const contentType = detectImageType(imageData);
 
     // 返回图片给浏览器，附带 CORS 头和缓存策略
     return new Response(imageData, {
@@ -118,6 +121,7 @@ async function handleCardImage(request) {
       headers: {
         'Content-Type': contentType,
         'Cache-Control': `public, max-age=${CACHE_MAX_AGE}`,
+        'Content-Disposition': `inline; filename="card-${cid}.${contentType === 'image/png' ? 'png' : 'jpg'}"`,
         ...getCORSHeaders(origin),
       }
     });
@@ -134,6 +138,45 @@ async function handleCardImage(request) {
       }
     });
   }
+}
+
+// ============================================
+// 图片类型检测
+// ============================================
+
+/**
+ * 根据文件头魔术字节检测图片类型
+ * KONAMI 返回的 Content-Type 通常是 application/octet-stream（不可靠），
+ * 所以需要通过文件内容自行判断
+ * 
+ * @param {ArrayBuffer} buffer - 图片二进制数据
+ * @returns {string} 正确的 MIME 类型
+ */
+function detectImageType(buffer) {
+  const bytes = new Uint8Array(buffer.slice(0, 8));
+
+  // PNG: 89 50 4E 47 (即 \x89PNG)
+  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) {
+    return 'image/png';
+  }
+
+  // JPEG: FF D8 FF
+  if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
+    return 'image/jpeg';
+  }
+
+  // WebP: 52 49 46 46 ... 57 45 42 50 (RIFF....WEBP)
+  if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46) {
+    return 'image/webp';
+  }
+
+  // GIF: 47 49 46 38 (GIF8)
+  if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x38) {
+    return 'image/gif';
+  }
+
+  // 默认返回 JPEG
+  return 'image/jpeg';
 }
 
 // ============================================
