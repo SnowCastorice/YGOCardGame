@@ -1,0 +1,1191 @@
+{
+  "_说明": "YugiohMeta 卡图映射表 —— 卡牌密码(password) → S3 CDN 图片ID",
+  "_图片URL格式": "https://s3.duellinksmeta.com/cards/{_id}_w{尺寸}.webp",
+  "_可用尺寸": "w100, w140, w200, w260, w360, w420",
+  "_更新方式": "运行 python fetch_yugiohmeta.py build-all",
+  "_更新时间": "2026-02-19 19:41:51",
+  "cards": {
+    "48469380": {
+      "id": "68c59bf4e46af851cdfdb508",
+      "name": "Archfiend Emperor",
+      "alts": {}
+    },
+    "87985506": {
+      "id": "68c59cc9d88930f0ebc10cc3",
+      "name": "Archfiend Playtime",
+      "alts": {}
+    },
+    "90764871": {
+      "id": "68c59c8ad88930f0ebc104be",
+      "name": "Archfiend Strategy",
+      "alts": {}
+    },
+    "13379114": {
+      "id": "68c59cdad88930f0ebc10ebc",
+      "name": "Archfiend's Fervor",
+      "alts": {}
+    },
+    "49652661": {
+      "id": "68ef9725323e8f78172ec1a3",
+      "name": "Arsenal Audit",
+      "alts": {}
+    },
+    "74631897": {
+      "id": "68f4d8b649a7a79e220ce3e1",
+      "name": "Artmage Non-Finito",
+      "alts": {}
+    },
+    "86098176": {
+      "id": "68e8d5261f4a0fd922490669",
+      "name": "Assault Lich",
+      "alts": {}
+    },
+    "86762958": {
+      "id": "68e49edc1a04476850f5f04f",
+      "name": "Assist★Yummy!",
+      "alts": {}
+    },
+    "5121528": {
+      "id": "68f23c923aa26f4b381bc641",
+      "name": "B.E.S. Derringer Core",
+      "alts": {}
+    },
+    "87607094": {
+      "id": "689ea4dd21947c637721db07",
+      "name": "Borrel Reboot",
+      "alts": {}
+    },
+    "84464389": {
+      "id": "689ea4276754a3753a4b5968",
+      "name": "Borreload Fatalflare Dragon",
+      "alts": {}
+    },
+    "66452432": {
+      "id": "689ea4846754a3753a4b60c7",
+      "name": "Borrelshroud Dragon",
+      "alts": {}
+    },
+    "4909946": {
+      "id": "68f23cad025c8b57b437dfb4",
+      "name": "Boss on Parade",
+      "alts": {}
+    },
+    "44839512": {
+      "id": "67fb7227df35906b6e60c543",
+      "name": "Conduction Warrior Linear Magnum Plus Minus",
+      "alts": {}
+    },
+    "47247792": {
+      "id": "68f36aba5d7060ecef61157a",
+      "name": "Conduction Warrior Plasma Magnum",
+      "alts": {}
+    },
+    "50604072": {
+      "id": "68e8d5001f4a0fd922490385",
+      "name": "Crimson Blader/Assault Mode",
+      "alts": {}
+    },
+    "11852093": {
+      "id": "68e1971044a4696278a4ae6a",
+      "name": "D/D/D Alfred the Divine Sage King",
+      "alts": {}
+    },
+    "99941223": {
+      "id": "68c59cb8d88930f0ebc10b8a",
+      "name": "Darklord Dance",
+      "alts": {}
+    },
+    "10426067": {
+      "id": "68c59b2ce46af851cdfda5e6",
+      "name": "Darklord Djehuty",
+      "alts": {}
+    },
+    "10136446": {
+      "id": "68c59c25d88930f0ebc0f621",
+      "name": "Darklord Eveningstar",
+      "alts": {}
+    },
+    "84031359": {
+      "id": "68c59b0fe46af851cdfda39d",
+      "name": "Darklord Gulgolet",
+      "alts": {}
+    },
+    "46708514": {
+      "id": "68faeef77e9729f4a6b2d17c",
+      "name": "Derk, Longing for the Blue Skies",
+      "alts": {}
+    },
+    "38007649": {
+      "id": "68e8d707168ab56f57fe3a9a",
+      "name": "DoomZ Change",
+      "alts": {}
+    },
+    "38129297": {
+      "id": "689ea4cc6754a3753a4b69a7",
+      "name": "Double Interlock",
+      "alts": {}
+    },
+    "42125140": {
+      "id": "68e49d91e11fcd9481c18b60",
+      "name": "Dracotail Shaulas",
+      "alts": {}
+    },
+    "91002901": {
+      "id": "68e8d6f4168ab56f57fe38f2",
+      "name": "Duel Evolution - Assault Zone",
+      "alts": {}
+    },
+    "85154941": {
+      "id": "68c59a57d88930f0ebc0d0ce",
+      "name": "Duke Archfiend",
+      "alts": {}
+    },
+    "78397661": {
+      "id": "68f8dabd1a9f20c2da52a3aa",
+      "name": "Ecclesia and the Dark Dragon",
+      "alts": {}
+    },
+    "85976588": {
+      "id": "68e8d589c63cd1f82e72a237",
+      "name": "Elfnote Fortuna",
+      "alts": {}
+    },
+    "13597785": {
+      "id": "68e8d54c168ab56f57fe15e7",
+      "name": "Elfnote Lucina",
+      "alts": {}
+    },
+    "12375297": {
+      "id": "68e8d5bf0de0baf223b692b5",
+      "name": "Elfnote Power Patron",
+      "alts": {}
+    },
+    "42302563": {
+      "id": "68e8d6cd0de0baf223b6a46e",
+      "name": "Elfnote Seraphim Strelitzia",
+      "alts": {}
+    },
+    "90880453": {
+      "id": "68e8d73b0de0baf223b6acb2",
+      "name": "Elfnotes: A Plea for Help",
+      "alts": {}
+    },
+    "50590801": {
+      "id": "68e8d75dc63cd1f82e72c222",
+      "name": "Elfnotes: Aristeia of Trust",
+      "alts": {}
+    },
+    "24092792": {
+      "id": "68e8d776168ab56f57fe41b2",
+      "name": "Elfnotes: Rhapsodia of Madness",
+      "alts": {}
+    },
+    "64491754": {
+      "id": "68e8d7281f4a0fd922492a44",
+      "name": "Elfnotes: Welcome Home",
+      "alts": {}
+    },
+    "52335937": {
+      "id": "68f62ebc482e3d62994ff92a",
+      "name": "Exosister Betrayal",
+      "alts": {}
+    },
+    "77675029": {
+      "id": "68f62e74ff1da39ad20a06ba",
+      "name": "Exosister Karmael",
+      "alts": {}
+    },
+    "73819701": {
+      "id": "68f8da861a9f20c2da529cb0",
+      "name": "Fallen of the White Dragon",
+      "alts": {}
+    },
+    "26162470": {
+      "id": "68c59c98e46af851cdfdc630",
+      "name": "Fandora, the Flying Fighting Furtress",
+      "alts": {}
+    },
+    "12975671": {
+      "id": "68faf0abbfbef55c1539d7a6",
+      "name": "First Penguin",
+      "alts": {}
+    },
+    "49181828": {
+      "id": "68dcebec8736bae4a4110500",
+      "name": "Fist Armed Dragon",
+      "alts": {}
+    },
+    "21861412": {
+      "id": "6974e4952d1c483fadb1f0b4",
+      "name": "Flux Ochsenfeld",
+      "alts": {}
+    },
+    "98829635": {
+      "id": "68dd41a53c6db17f93d6e62a",
+      "name": "Forbidden Crown",
+      "alts": {}
+    },
+    "12157563": {
+      "id": "68faf0f37e9729f4a6b2f429",
+      "name": "Forbidden Ritual Art",
+      "alts": {}
+    },
+    "59374259": {
+      "id": "68c59ce8d88930f0ebc10f74",
+      "name": "Furtive Techniques Fur Hire, Fur All Your Ultimate Moves",
+      "alts": {}
+    },
+    "4079728": {
+      "id": "68f36a4e13a89be5acd2b6a5",
+      "name": "Gung-ho! Springans!",
+      "alts": {}
+    },
+    "11248645": {
+      "id": "68c59a75d88930f0ebc0d2ec",
+      "name": "Highness Archfiend",
+      "alts": {}
+    },
+    "51548207": {
+      "id": "689ea3e56754a3753a4b5547",
+      "name": "Hollowrokket Dragon",
+      "alts": {}
+    },
+    "38423248": {
+      "id": "67c980d9c58d551d9fde3f56",
+      "name": "Invoked Magistus Omega",
+      "alts": {}
+    },
+    "23219323": {
+      "id": "68e8d4d51f4a0fd922490090",
+      "name": "Junk Warrior/Assault Mode",
+      "alts": {}
+    },
+    "5914858": {
+      "id": "68e8d6761f4a0fd922491ec7",
+      "name": "Junora the Power Patron of Tuning",
+      "alts": {}
+    },
+    "31286915": {
+      "id": "68e49dffe11fcd9481c190f4",
+      "name": "K9-X \"Ripper/M\"",
+      "alts": {}
+    },
+    "66736884": {
+      "id": "68c59c58d88930f0ebc0f9bb",
+      "name": "Keel, Shipwright Fur Hire",
+      "alts": {}
+    },
+    "65514302": {
+      "id": "68f36acc0794aefd0195b433",
+      "name": "Magnet Bonding",
+      "alts": {}
+    },
+    "87814728": {
+      "id": "68f36aa602307c2acb1cfad1",
+      "name": "Magnet Warrior Sigma Minus",
+      "alts": {}
+    },
+    "51826619": {
+      "id": "68f36a9813a89be5acd2bde4",
+      "name": "Magnet Warrior Sigma Plus",
+      "alts": {}
+    },
+    "25224340": {
+      "id": "68eb9bf8d93bd95f6a432106",
+      "name": "Nightmare Hands",
+      "alts": {}
+    },
+    "79519259": {
+      "id": "68e8d64b168ab56f57fe2ac5",
+      "name": "Nightwinged Cleric",
+      "alts": {}
+    },
+    "25940932": {
+      "id": "68e49ebf9e49e698148ae737",
+      "name": "Radiant Typhoon Ascendance",
+      "alts": {}
+    },
+    "39341885": {
+      "id": "68e49e65e11fcd9481c1986d",
+      "name": "Radiant Typhoon Varuroon, the Marine Eidolon",
+      "alts": {}
+    },
+    "2725599": {
+      "id": "68f795662032125868056c7f",
+      "name": "Rescue-ACE Arbitrator",
+      "alts": {}
+    },
+    "47425162": {
+      "id": "68f794ff243d2e7f8ca09c8e",
+      "name": "Rescue-ACE Quick Attacker",
+      "alts": {}
+    },
+    "47647354": {
+      "id": "68c59adad88930f0ebc0de32",
+      "name": "Rex, Ride Fur Hire",
+      "alts": {}
+    },
+    "51612489": {
+      "id": "68ea5544b33d1e4627019058",
+      "name": "Riot's Reason",
+      "alts": {}
+    },
+    "98937206": {
+      "id": "689ea4016754a3753a4b5715",
+      "name": "Rokket Detonator",
+      "alts": {}
+    },
+    "25554552": {
+      "id": "689ea3c66754a3753a4b53c8",
+      "name": "Rokket Loader",
+      "alts": {}
+    },
+    "58769832": {
+      "id": "68c59a34e46af851cdfd93aa",
+      "name": "Royal Archfiend",
+      "alts": {}
+    },
+    "11035075": {
+      "id": "68faf12a7e9729f4a6b2f6ff",
+      "name": "Shichi-Go-San",
+      "alts": {}
+    },
+    "12197223": {
+      "id": "68f39379b80e61d2485a21b0",
+      "name": "Shiina, Twin Tempests of Celestial Thunder",
+      "alts": {}
+    },
+    "42544773": {
+      "id": "66ef02d26667a37b1a0651f7",
+      "name": "Spenta, the Magistus Sealer",
+      "alts": {}
+    },
+    "61257789": {
+      "id": "60c2b3aca0e24f2d54a537a3",
+      "name": "Stardust Dragon/Assault Mode",
+      "alts": {
+        "Burst Protocol": "68f3007b56339ca34b4269b6"
+      }
+    },
+    "41516133": {
+      "id": "68f23c9f025c8b57b437dd81",
+      "name": "Super B.E.S. Metal Slave",
+      "alts": {}
+    },
+    "24431911": {
+      "id": "68f36a83b63a3219bffc5a63",
+      "name": "Tellusrion the Magna Warrior",
+      "alts": {}
+    },
+    "27285068": {
+      "id": "68e8d74f1f4a0fd922492d37",
+      "name": "Theorealize Liberation",
+      "alts": {}
+    },
+    "63679166": {
+      "id": "68c59c75d88930f0ebc10020",
+      "name": "Throne of the Archfiends",
+      "alts": {}
+    },
+    "85640370": {
+      "id": "68faf10fbfbef55c1539dc3c",
+      "name": "Tip of the Tinying Tongue",
+      "alts": {}
+    },
+    "30064423": {
+      "id": "68f36a2502307c2acb1cf443",
+      "name": "Topologic Blaster Dragon",
+      "alts": {}
+    },
+    "19304410": {
+      "id": "68f36a65b63a3219bffc5881",
+      "name": "Tri-Brigade Springans Kitt",
+      "alts": {}
+    },
+    "3957130": {
+      "id": "689ea4ad21947c637721d63c",
+      "name": "Trisborrel Dragon",
+      "alts": {}
+    },
+    "78910832": {
+      "id": "68f23c81025c8b57b437da3a",
+      "name": "Vic Viper Type-L",
+      "alts": {}
+    },
+    "85586937": {
+      "id": "68e8d62a0de0baf223b698ca",
+      "name": "WAKE CUP! Earl",
+      "alts": {}
+    },
+    "53557529": {
+      "id": "68c59ca9e46af851cdfdc8d6",
+      "name": "Whirlwind Fur Hire",
+      "alts": {}
+    },
+    "4891376": {
+      "id": "68ecf3bcac769db34c163f8a",
+      "name": "Zalen the Shackled Dragon",
+      "alts": {}
+    },
+    "45586855": {
+      "id": "60c2b3a9a0e24f2d54a5140b",
+      "name": "Ally of Justice Cyclone Creator",
+      "alts": {}
+    },
+    "40048324": {
+      "id": "60c2b3a9a0e24f2d54a51529",
+      "name": "Arcane Apprentice",
+      "alts": {}
+    },
+    "71453557": {
+      "id": "60c2b3a9a0e24f2d54a515eb",
+      "name": "Autonomous Action Unit",
+      "alts": {}
+    },
+    "38699854": {
+      "id": "60c2b3a9a0e24f2d54a517bb",
+      "name": "Book of Taiyou",
+      "alts": {}
+    },
+    "4031928": {
+      "id": "60c2b3aaa0e24f2d54a51909",
+      "name": "Change of Heart",
+      "alts": {}
+    },
+    "36975314": {
+      "id": "60c2b3aaa0e24f2d54a51a3f",
+      "name": "Crackdown",
+      "alts": {}
+    },
+    "50954680": {
+      "id": "60c2b3aaa0e24f2d54a51a9c",
+      "name": "Crystal Wing Synchro Dragon",
+      "alts": {}
+    },
+    "30748475": {
+      "id": "63c4de0c497611dedaa7e679",
+      "name": "Destructive Daruma Karma Cannon",
+      "alts": {}
+    },
+    "72323266": {
+      "id": "645b57c9e24dc4d749515c51",
+      "name": "Earthbound Prisoner Stone Sweeper",
+      "alts": {}
+    },
+    "23446369": {
+      "id": "645c631a9ecdfaa3b6963bff",
+      "name": "Eye of Illusion",
+      "alts": {}
+    },
+    "19642774": {
+      "id": "60c2b3aaa0e24f2d54a52194",
+      "name": "Fleur Synchron",
+      "alts": {}
+    },
+    "73642296": {
+      "id": "60c2b3aaa0e24f2d54a52373",
+      "name": "Ghost Belle & Haunted Mansion",
+      "alts": {
+        "Limited Pack: Stamp Edition": "68b549bf82de245d2a67884a"
+      }
+    },
+    "9742784": {
+      "id": "60c2b3aba0e24f2d54a527bc",
+      "name": "Jet Synchron",
+      "alts": {}
+    },
+    "14442329": {
+      "id": "689cc8c7145f91ea5e661126",
+      "name": "JJ \"Kewl Tune\"",
+      "alts": {}
+    },
+    "43904702": {
+      "id": "689cc80350fb22a525ac659d",
+      "name": "Kewl Tune Clip",
+      "alts": {}
+    },
+    "16387555": {
+      "id": "68a5bf4cbf468595b81f9cb9",
+      "name": "Kewl Tune Cue",
+      "alts": {}
+    },
+    "41069676": {
+      "id": "689cc8a05e2222b8e4cf1596",
+      "name": "Kewl Tune Loudness War",
+      "alts": {}
+    },
+    "16509007": {
+      "id": "689cc7e750fb22a525ac6374",
+      "name": "Kewl Tune Mix",
+      "alts": {}
+    },
+    "40847034": {
+      "id": "689cc8d750fb22a525ac727b",
+      "name": "Kewl Tune Playlist",
+      "alts": {}
+    },
+    "89392810": {
+      "id": "689cc82d50fb22a525ac6872",
+      "name": "Kewl Tune Reco",
+      "alts": {}
+    },
+    "88170262": {
+      "id": "689cc86c5e2222b8e4cf127c",
+      "name": "Kewl Tune Remix",
+      "alts": {}
+    },
+    "15665977": {
+      "id": "689cc887152bd945d994e175",
+      "name": "Kewl Tune RS",
+      "alts": {}
+    },
+    "78058681": {
+      "id": "689cc8b8152bd945d994e4a6",
+      "name": "Kewl Tune Synchro",
+      "alts": {}
+    },
+    "42781164": {
+      "id": "689cc84fc1dc5d9d36b6c288",
+      "name": "Kewl Tune Track Maker",
+      "alts": {}
+    },
+    "34541543": {
+      "id": "64baaa335694bb6206e52df6",
+      "name": "Master Tao the Chanter",
+      "alts": {}
+    },
+    "80117527": {
+      "id": "60c2b3aba0e24f2d54a52e82",
+      "name": "Number 11: Big Eye",
+      "alts": {}
+    },
+    "17322533": {
+      "id": "60c2b3aca0e24f2d54a5311b",
+      "name": "Pinpoint Landing",
+      "alts": {}
+    },
+    "91501248": {
+      "id": "60c2b3aca0e24f2d54a53154",
+      "name": "Pot of The Forbidden",
+      "alts": {}
+    },
+    "45986603": {
+      "id": "60c2b3aca0e24f2d54a53679",
+      "name": "Snatch Steal",
+      "alts": {}
+    },
+    "19739265": {
+      "id": "6265e6b63ecc89b0e4f30328",
+      "name": "Sol and Luna",
+      "alts": {}
+    },
+    "26517393": {
+      "id": "60c2b3aca0e24f2d54a53753",
+      "name": "Spirit of the Fall Wind",
+      "alts": {}
+    },
+    "42510430": {
+      "id": "65b3e1ea31b20196a8caca1d",
+      "name": "Sunset Beat",
+      "alts": {}
+    },
+    "99243014": {
+      "id": "60c2b3aca0e24f2d54a5392c",
+      "name": "Synchro Overtake",
+      "alts": {}
+    },
+    "35817848": {
+      "id": "60c2b3aca0e24f2d54a53931",
+      "name": "Synchro Transmission",
+      "alts": {}
+    },
+    "6589707": {
+      "id": "62ddd693d4d4b99dbbc9568f",
+      "name": "Terrors in the Hidden City",
+      "alts": {}
+    },
+    "86346363": {
+      "id": "653b5ea76cce462b77c27e91",
+      "name": "Time Reloader",
+      "alts": {}
+    },
+    "98777036": {
+      "id": "60c2b3aca0e24f2d54a53b43",
+      "name": "Tragoedia",
+      "alts": {}
+    },
+    "67748760": {
+      "id": "60c2b3a9a0e24f2d54a51372",
+      "name": "Absorouter Dragon",
+      "alts": {}
+    },
+    "11302671": {
+      "id": "60c2b3a9a0e24f2d54a513a9",
+      "name": "Adamancipator Analyzer",
+      "alts": {}
+    },
+    "48519867": {
+      "id": "60c2b3a9a0e24f2d54a513b5",
+      "name": "Adamancipator Seeker",
+      "alts": {}
+    },
+    "38811586": {
+      "id": "63ad8f0566624b8b71aea3ff",
+      "name": "Albion the Sanctifire Dragon",
+      "alts": {}
+    },
+    "42023223": {
+      "id": "60c2b3a9a0e24f2d54a5141d",
+      "name": "Alpha The Electromagnet Warrior",
+      "alts": {}
+    },
+    "66540884": {
+      "id": "60c2b3a9a0e24f2d54a51536",
+      "name": "Archfiend Heiress",
+      "alts": {
+        "Maze of Muertos": "698b19186aed63e1c4ef9a6a"
+      }
+    },
+    "40725446": {
+      "id": "686bce6402cf12d28718bb3c",
+      "name": "Arequus the Shining Mars Saint",
+      "alts": {}
+    },
+    "59464593": {
+      "id": "60c2b3a9a0e24f2d54a51558",
+      "name": "Armed Dragon LV10",
+      "alts": {
+        "Maze of Muertos": "698b18ed7f0b0800080af656"
+      }
+    },
+    "980973": {
+      "id": "60c2b3a9a0e24f2d54a5155a",
+      "name": "Armed Dragon LV3",
+      "alts": {
+        "Maze of Muertos": "698b18e24df2ab375cd22a27"
+      }
+    },
+    "975299": {
+      "id": "60c2b3a9a0e24f2d54a51604",
+      "name": "B.E.F. Zelos",
+      "alts": {}
+    },
+    "87112784": {
+      "id": "60c2b3a9a0e24f2d54a51632",
+      "name": "Banishment of the Darklords",
+      "alts": {}
+    },
+    "93850652": {
+      "id": "60c2b3a9a0e24f2d54a516a1",
+      "name": "Beat, Bladesman Fur Hire",
+      "alts": {}
+    },
+    "79418928": {
+      "id": "60c2b3a9a0e24f2d54a516c4",
+      "name": "Beta The Electromagnet Warrior",
+      "alts": {}
+    },
+    "92892239": {
+      "id": "60c2b3a9a0e24f2d54a517cf",
+      "name": "Borreload Furious Dragon",
+      "alts": {}
+    },
+    "89974735": {
+      "id": "648d8efec7b7d3b6d63edef2",
+      "name": "Burgundy the Magic Elf",
+      "alts": {}
+    },
+    "97077563": {
+      "id": "60c2b3aaa0e24f2d54a51896",
+      "name": "Call of the Haunted",
+      "alts": {}
+    },
+    "76352503": {
+      "id": "6265e6863ecc89b0e4f300bd",
+      "name": "Changshi the Spiridao",
+      "alts": {}
+    },
+    "6500778": {
+      "id": "67fb7330c7a477cef3d7121e",
+      "name": "Chaos Distill",
+      "alts": {}
+    },
+    "54878729": {
+      "id": "6265e6863ecc89b0e4f300be",
+      "name": "Chronicle Sorceress",
+      "alts": {}
+    },
+    "35306215": {
+      "id": "60c2b3aaa0e24f2d54a519e0",
+      "name": "Condemned Darklord",
+      "alts": {}
+    },
+    "47222536": {
+      "id": "60c2b3aaa0e24f2d54a51c2c",
+      "name": "Dark Magical Circle",
+      "alts": {
+        "Tactical-Try Pack: Dark Magic / HERO / Mikanko": "6849775ae4cc2c4bfc6d8cdf",
+        "Maze of Muertos": "6849775ae4cc2c4bfc6d8cdf"
+      }
+    },
+    "59400890": {
+      "id": "681c2cc1b75e19e32d1378b3",
+      "name": "Dark Magician of Destruction",
+      "alts": {}
+    },
+    "51728779": {
+      "id": "60c2b3aaa0e24f2d54a51c88",
+      "name": "Darklord Amdusc",
+      "alts": {}
+    },
+    "14517422": {
+      "id": "60c2b3aaa0e24f2d54a51c8a",
+      "name": "Darklord Contact",
+      "alts": {}
+    },
+    "87990236": {
+      "id": "60c2b3aaa0e24f2d54a51c8e",
+      "name": "Darklord Enchantment",
+      "alts": {}
+    },
+    "25451652": {
+      "id": "60c2b3aaa0e24f2d54a51c91",
+      "name": "Darklord Morningstar",
+      "alts": {}
+    },
+    "50501121": {
+      "id": "60c2b3aaa0e24f2d54a51c95",
+      "name": "Darklord Rebellion",
+      "alts": {}
+    },
+    "92807548": {
+      "id": "60c2b3aaa0e24f2d54a51c98",
+      "name": "Darklord Ukoback",
+      "alts": {}
+    },
+    "1035143": {
+      "id": "67ca66aa5521a02cb1d7c410",
+      "name": "Darkuriboh",
+      "alts": {}
+    },
+    "12262393": {
+      "id": "60c2b3aaa0e24f2d54a51ce4",
+      "name": "Delta The Magnet Warrior",
+      "alts": {}
+    },
+    "69579761": {
+      "id": "60c2b3aaa0e24f2d54a51cf5",
+      "name": "Des Koala",
+      "alts": {
+        "Maze of Muertos": "698b1921238352c8c92cc186"
+      }
+    },
+    "32302078": {
+      "id": "60c2b3aaa0e24f2d54a51d4e",
+      "name": "Dhampir Vampire Sheridan",
+      "alts": {}
+    },
+    "30394645": {
+      "id": "68946708ebb84fba8a3183d6",
+      "name": "Dogmatika Lawbringer",
+      "alts": {}
+    },
+    "40366667": {
+      "id": "6693a52b559deed8eb6f212d",
+      "name": "Dominus Impulse",
+      "alts": {}
+    },
+    "97045737": {
+      "id": "6627a65d0d3fa91151e34605",
+      "name": "Dominus Purge",
+      "alts": {}
+    },
+    "55226153": {
+      "id": "60c2b3aaa0e24f2d54a51ddf",
+      "name": "DoSolfachord Cutia",
+      "alts": {}
+    },
+    "3837261": {
+      "id": "682b2e988744dabb51db2ba5",
+      "name": "Dragonic Warrior",
+      "alts": {}
+    },
+    "46221535": {
+      "id": "681c29ee4043dc0d62398aa6",
+      "name": "Drill Armed Dragon",
+      "alts": {}
+    },
+    "88039509": {
+      "id": "682b2eef59d8b9ce34f56089",
+      "name": "Einroid",
+      "alts": {}
+    },
+    "20721928": {
+      "id": "60c2b3aaa0e24f2d54a51faa",
+      "name": "Elemental HERO Sparkman",
+      "alts": {}
+    },
+    "19222426": {
+      "id": "681c29c7b9d70121dfec9b84",
+      "name": "Elemental HERO Thunder Giant - Voltic Thunder",
+      "alts": {}
+    },
+    "71228611": {
+      "id": "6804dcf5791cd346d083b1e2",
+      "name": "Eucalyptus Mole",
+      "alts": {}
+    },
+    "6696168": {
+      "id": "6732f11eddb2abfd98e76fb1",
+      "name": "Festiballoon",
+      "alts": {}
+    },
+    "80978111": {
+      "id": "60c2b3aaa0e24f2d54a521ce",
+      "name": "Flying \"C\"",
+      "alts": {}
+    },
+    "6368038": {
+      "id": "60c2b3aaa0e24f2d54a5229c",
+      "name": "Gaia The Fierce Knight",
+      "alts": {}
+    },
+    "15502037": {
+      "id": "60c2b3aaa0e24f2d54a522ca",
+      "name": "Gamma The Electromagnet Warrior",
+      "alts": {}
+    },
+    "58655504": {
+      "id": "60c2b3aba0e24f2d54a5243a",
+      "name": "Gnomaterial",
+      "alts": {}
+    },
+    "33995387": {
+      "id": "67fb7354c7a477cef3d71625",
+      "name": "Hero's Rule 1: Five Freedoms",
+      "alts": {}
+    },
+    "6327734": {
+      "id": "684c7da8859eaea659c58dfc",
+      "name": "Hu-Li the Jewel Mikanko",
+      "alts": {}
+    },
+    "70595331": {
+      "id": "60c2b3aba0e24f2d54a526c5",
+      "name": "Il Blud",
+      "alts": {}
+    },
+    "33017964": {
+      "id": "68121608783e6548675fce23",
+      "name": "Illusion Gate",
+      "alts": {}
+    },
+    "9995766": {
+      "id": "60c2b3aba0e24f2d54a526da",
+      "name": "Imperial Custom",
+      "alts": {}
+    },
+    "53246495": {
+      "id": "65fb6bdad600234b3ed501d5",
+      "name": "Infernity Queen",
+      "alts": {}
+    },
+    "39520293": {
+      "id": "66083a2ab391962f3ac8c3ed",
+      "name": "Junk Mail",
+      "alts": {}
+    },
+    "82616239": {
+      "id": "681c2a1b4043dc0d62398e8c",
+      "name": "Light Water Dragon",
+      "alts": {}
+    },
+    "14532163": {
+      "id": "67af3d11cec6df41a3627991",
+      "name": "Lightning Storm",
+      "alts": {}
+    },
+    "1073952": {
+      "id": "60c2b3aba0e24f2d54a52a7c",
+      "name": "Magic Planter",
+      "alts": {}
+    },
+    "77133792": {
+      "id": "60c2b3aba0e24f2d54a52ad5",
+      "name": "Magnet Conversion",
+      "alts": {}
+    },
+    "86289475": {
+      "id": "68e49ce7e11fcd9481c18259",
+      "name": "Magnet Warrior Omega Plus",
+      "alts": {}
+    },
+    "4740489": {
+      "id": "60c2b3aba0e24f2d54a52ad8",
+      "name": "Magnetic Field",
+      "alts": {}
+    },
+    "8445808": {
+      "id": "6804dcc96421a2b61e8cffaa",
+      "name": "Maiden in Love",
+      "alts": {}
+    },
+    "21143940": {
+      "id": "60c2b3aba0e24f2d54a52b5c",
+      "name": "Mask Change",
+      "alts": {
+        "Tactical-Try Pack: Dark Magic / HERO / Mikanko": "685e9b3655bd20bea4908d9a",
+        "Maze of Muertos": "685e9b3655bd20bea4908d9a"
+      }
+    },
+    "85672957": {
+      "id": "684c7d09859eaea659c57f27",
+      "name": "Masked HERO Atomic",
+      "alts": {}
+    },
+    "58481572": {
+      "id": "60c2b3aba0e24f2d54a52b6d",
+      "name": "Masked HERO Dark Law",
+      "alts": {
+        "Tactical-Try Pack: Dark Magic / HERO / Mikanko": "684c7d2e859eaea659c581cf",
+        "Maze of Muertos": "684c7d2e859eaea659c581cf"
+      }
+    },
+    "10808715": {
+      "id": "684c7cd2859eaea659c57a8b",
+      "name": "Masked HERO Dusk Crow",
+      "alts": {}
+    },
+    "58288218": {
+      "id": "684c7cedc9432706b34b4e9f",
+      "name": "Masked HERO Furnace",
+      "alts": {}
+    },
+    "7622360": {
+      "id": "67fb726bdf35906b6e60cb17",
+      "name": "Matador Archfiend",
+      "alts": {}
+    },
+    "91405870": {
+      "id": "60c2b3aba0e24f2d54a52ba4",
+      "name": "Mayhem Fur Hire",
+      "alts": {}
+    },
+    "9940036": {
+      "id": "62e02d945f0fd2a1fe36ffb1",
+      "name": "Mereologic Aggregator",
+      "alts": {}
+    },
+    "66570171": {
+      "id": "60c2b3aba0e24f2d54a52dd4",
+      "name": "Necroworld Banshee",
+      "alts": {}
+    },
+    "65676461": {
+      "id": "60c2b3aba0e24f2d54a52e99",
+      "name": "Number 32: Shark Drake",
+      "alts": {
+        "Maze of Muertos": "6994dc3c577cce19cdc74b1c"
+      }
+    },
+    "60681372": {
+      "id": "682b2ec89d21a5a3c5e699bd",
+      "name": "Nurikabe",
+      "alts": {}
+    },
+    "81260679": {
+      "id": "685be7cae844448754819fb3",
+      "name": "Ohime the Manifested Mikanko",
+      "alts": {}
+    },
+    "33099732": {
+      "id": "64806458cca2dcbbeebcf8c5",
+      "name": "Overload Future Fusion",
+      "alts": {}
+    },
+    "45742626": {
+      "id": "60c2b3aca0e24f2d54a53113",
+      "name": "Pilgrim Reaper",
+      "alts": {}
+    },
+    "2507443": {
+      "id": "67fb739679467e0e7600cd40",
+      "name": "Prima Light",
+      "alts": {}
+    },
+    "29155212": {
+      "id": "60c2b3aca0e24f2d54a53204",
+      "name": "Pumpking the King of Ghosts",
+      "alts": {
+        "Maze of Muertos": "698b18f9036fb95e6471944d"
+      }
+    },
+    "29296344": {
+      "id": "60c2b3aca0e24f2d54a5322c",
+      "name": "Quadborrel Dragon",
+      "alts": {}
+    },
+    "19299793": {
+      "id": "655c76ba35edce8b14df9b9b",
+      "name": "Red Lotus King, Flame Crime",
+      "alts": {}
+    },
+    "38339996": {
+      "id": "62e0316e5f0fd2a1fe373783",
+      "name": "Rescue-ACE Impulse",
+      "alts": {}
+    },
+    "70105073": {
+      "id": "67fb7379597f5fa6aa3f4623",
+      "name": "Ritual of the Matador",
+      "alts": {}
+    },
+    "11161666": {
+      "id": "684c7d58c9432706b34b5709",
+      "name": "Sanaki the Mikanko Devotee",
+      "alts": {}
+    },
+    "46565218": {
+      "id": "60c2b3aca0e24f2d54a534b7",
+      "name": "Santa Claws",
+      "alts": {}
+    },
+    "59514116": {
+      "id": "60c2b3aca0e24f2d54a53533",
+      "name": "Secrets of Dark Magic",
+      "alts": {
+        "Tactical-Try Pack: Dark Magic / HERO / Mikanko": "681c2b55a1f3a90619b46dca",
+        "Maze of Muertos": "681c2b55a1f3a90619b46dca"
+      }
+    },
+    "5574510": {
+      "id": "6732f0f1ddb2abfd98e769bc",
+      "name": "Shateki",
+      "alts": {}
+    },
+    "92512625": {
+      "id": "60c2b3aca0e24f2d54a53692",
+      "name": "Solemn Scolding",
+      "alts": {}
+    },
+    "91598270": {
+      "id": "60c2b3aca0e24f2d54a53689",
+      "name": "SolSolfachord Gracia",
+      "alts": {}
+    },
+    "69389481": {
+      "id": "6804dd246421a2b61e8d0756",
+      "name": "Soul Union",
+      "alts": {}
+    },
+    "24514503": {
+      "id": "67a582b9bcbc65ced3d390ae",
+      "name": "Soulicer Crystal",
+      "alts": {}
+    },
+    "37720300": {
+      "id": "67dc4a78e5583603b9e85218",
+      "name": "Starship Adjust Plane",
+      "alts": {}
+    },
+    "57649113": {
+      "id": "67dc4a2ce5583603b9e84d4d",
+      "name": "Stinger the Electric Expeller",
+      "alts": {}
+    },
+    "4167084": {
+      "id": "60c2b3aca0e24f2d54a539ec",
+      "name": "The First Darklord",
+      "alts": {}
+    },
+    "22283204": {
+      "id": "681c2c5014a50a8cb7d91c96",
+      "name": "The Gaze of Timaeus",
+      "alts": {}
+    },
+    "85899505": {
+      "id": "681c2c9714a50a8cb7d9232b",
+      "name": "Timaeus the United Magical Dragon",
+      "alts": {}
+    },
+    "71625222": {
+      "id": "60c2b3aca0e24f2d54a53ad9",
+      "name": "Time Wizard",
+      "alts": {
+        "Maze of Muertos": "698b19041976f19111c7091b"
+      }
+    },
+    "53582587": {
+      "id": "60c2b3aca0e24f2d54a53b2c",
+      "name": "Torrential Tribute",
+      "alts": {}
+    },
+    "84824728": {
+      "id": "68bd0d46d90cdd5843b233c9",
+      "name": "Treasure Panther",
+      "alts": {}
+    },
+    "2263869": {
+      "id": "62e034bf5f0fd2a1fe376deb",
+      "name": "Ultimate Slayer",
+      "alts": {}
+    },
+    "6007213": {
+      "id": "60c2b3aca0e24f2d54a53c95",
+      "name": "Uria, Lord of Searing Flames",
+      "alts": {
+        "Limited Pack GX: Slifer Red": "68123f6e2d7e103a25f9d2ea",
+        "Maze of Muertos": "68123f6e2d7e103a25f9d2ea"
+      }
+    },
+    "57566760": {
+      "id": "684c7d71859eaea659c586b1",
+      "name": "Uzuhime the Manifested Mikanko",
+      "alts": {}
+    },
+    "79523365": {
+      "id": "60c2b3aca0e24f2d54a53cd0",
+      "name": "Vampire Scarlet Scourge",
+      "alts": {}
+    },
+    "37129797": {
+      "id": "60c2b3aca0e24f2d54a53cd2",
+      "name": "Vampire Sucker",
+      "alts": {}
+    },
+    "613013": {
+      "id": "67a4bb885bebfe24f94cc2ec",
+      "name": "Veiss Shark",
+      "alts": {}
+    },
+    "57116033": {
+      "id": "60c2b3ada0e24f2d54a53e3c",
+      "name": "Winged Kuriboh",
+      "alts": {}
+    },
+    "45935145": {
+      "id": "62e034bf5f0fd2a1fe376df1",
+      "name": "Wollow, Founder of the Drudge Dragons",
+      "alts": {}
+    },
+    "4064256": {
+      "id": "60c2b3ada0e24f2d54a53f94",
+      "name": "Zombie World",
+      "alts": {}
+    },
+    "36099130": {
+      "id": "60c2b3ada0e24f2d54a53fa9",
+      "name": "Zoroa, the Magistus of Flame",
+      "alts": {}
+    }
+  },
+  "stats": {
+    "totalCards": 228,
+    "totalPacks": 3,
+    "packList": [
+      "Burst Protocol",
+      "Phantom Revenge",
+      "Maze of Muertos"
+    ]
+  }
+}

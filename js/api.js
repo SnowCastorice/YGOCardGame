@@ -38,6 +38,16 @@ const API_CONFIG = {
         IMAGE_URL: 'https://cdn.233.momobako.com/ygopro/pics'
     },
 
+    // === YugiohMeta 卡图源（TCG 英文卡图，S3 CDN，无 WAF 拦截） ===
+    YUGIOHMETA: {
+        CDN_BASE: 'https://s3.duellinksmeta.com/cards',
+        // 映射表路径（预构建的 password → _id 映射）
+        MAP_URL: 'data/tcg/yugiohmeta_map.json',
+        // 默认图片尺寸后缀
+        SIZE_SMALL: '_w200',   // 小图 ~17KB
+        SIZE_LARGE: '_w420'    // 大图 ~59KB
+    },
+
     // === 语言配置 ===
     // 【扩展指南】如需新增语言，只需在此添加新条目：
     //   1. 添加语言代码（如 'zh'）
@@ -118,6 +128,76 @@ const API_CONFIG = {
     // OCG 批量查询每批最大 ID 数（YGOProDeck 支持逗号分隔多个 ID）
     BATCH_SIZE: 20
 };
+
+// ====== YugiohMeta 映射表管理 ======
+
+/** 
+ * YugiohMeta 卡图映射表缓存
+ * 加载后存储在内存中，避免重复请求
+ */
+let _yugiohmetaMap = null;
+let _yugiohmetaMapLoading = false;
+
+/**
+ * 加载 YugiohMeta 卡图映射表
+ * 映射表是通过 fetch_yugiohmeta.py 脚本预构建的 JSON 文件
+ * 包含 password → S3 CDN _id 的映射
+ * 
+ * @returns {object|null} 映射表数据，加载失败返回 null
+ */
+async function loadYugiohMetaMap() {
+    // 已加载过，直接返回
+    if (_yugiohmetaMap) return _yugiohmetaMap;
+    
+    // 防止并发重复加载
+    if (_yugiohmetaMapLoading) {
+        // 等待其他加载完成
+        while (_yugiohmetaMapLoading) {
+            await delay(50);
+        }
+        return _yugiohmetaMap;
+    }
+    
+    _yugiohmetaMapLoading = true;
+    
+    try {
+        const response = await fetch(API_CONFIG.YUGIOHMETA.MAP_URL);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        _yugiohmetaMap = await response.json();
+        console.log(`🗺️ YugiohMeta 映射表已加载，共 ${Object.keys(_yugiohmetaMap.cards || {}).length} 张卡的映射`);
+        return _yugiohmetaMap;
+    } catch (error) {
+        console.warn('⚠️ YugiohMeta 映射表加载失败，将使用 YGOProDeck CDN 作为 TCG 卡图源:', error.message);
+        _yugiohmetaMap = null;
+        return null;
+    } finally {
+        _yugiohmetaMapLoading = false;
+    }
+}
+
+/**
+ * 从 YugiohMeta 映射表中查询卡图 URL
+ * 
+ * @param {number|string} password - 卡牌密码
+ * @returns {object|null} { imageUrl, imageLargeUrl } 或 null（未找到映射）
+ */
+function getYugiohMetaImageUrl(password) {
+    if (!_yugiohmetaMap || !_yugiohmetaMap.cards) return null;
+    
+    const cardMap = _yugiohmetaMap.cards[String(password)];
+    if (!cardMap || !cardMap.id) return null;
+    
+    const cdnBase = API_CONFIG.YUGIOHMETA.CDN_BASE;
+    const sizeSmall = API_CONFIG.YUGIOHMETA.SIZE_SMALL;
+    const sizeLarge = API_CONFIG.YUGIOHMETA.SIZE_LARGE;
+    
+    return {
+        imageUrl: `${cdnBase}/${cardMap.id}${sizeSmall}.webp`,
+        imageLargeUrl: `${cdnBase}/${cardMap.id}${sizeLarge}.webp`
+    };
+}
 
 // ====== IndexedDB 数据库管理 ======
 
@@ -560,20 +640,27 @@ function convertYGOProDeckCard(card, rarityCode, setCode, mode) {
 
     // 根据模式选择卡图源：
     // OCG → YGOCDB CDN（日文版卡图）
-    // TCG → YGOProDeck CDN（英文版卡图，默认）
+    // TCG → 优先 YugiohMeta S3 CDN（英文卡图 WebP），fallback 到 YGOProDeck CDN
     let imageUrl, imageLargeUrl;
     if (mode === 'ocg') {
         // OCG 使用日文版卡图（YGOCDB CDN / YGOPro 数据库图片）
         imageUrl = `${API_CONFIG.YGOCDB.IMAGE_URL}/${card.id}.jpg`;
         imageLargeUrl = `${API_CONFIG.YGOCDB.IMAGE_URL}/${card.id}.jpg`;
     } else {
-        // TCG 使用英文版卡图（YGOProDeck CDN）
-        imageUrl = card.card_images && card.card_images[0]
-            ? card.card_images[0].image_url_small
-            : `${API_CONFIG.YGOPRODECK.IMAGE_SMALL_URL}/${card.id}.jpg`;
-        imageLargeUrl = card.card_images && card.card_images[0]
-            ? card.card_images[0].image_url
-            : `${API_CONFIG.YGOPRODECK.IMAGE_LARGE_URL}/${card.id}.jpg`;
+        // TCG：优先使用 YugiohMeta S3 CDN 卡图（预构建映射表）
+        const metaUrls = getYugiohMetaImageUrl(card.id);
+        if (metaUrls) {
+            imageUrl = metaUrls.imageUrl;
+            imageLargeUrl = metaUrls.imageLargeUrl;
+        } else {
+            // Fallback: YGOProDeck CDN（映射表中没有该卡）
+            imageUrl = card.card_images && card.card_images[0]
+                ? card.card_images[0].image_url_small
+                : `${API_CONFIG.YGOPRODECK.IMAGE_SMALL_URL}/${card.id}.jpg`;
+            imageLargeUrl = card.card_images && card.card_images[0]
+                ? card.card_images[0].image_url
+                : `${API_CONFIG.YGOPRODECK.IMAGE_LARGE_URL}/${card.id}.jpg`;
+        }
     }
 
     return {
@@ -911,6 +998,24 @@ async function getTCGCardSetData(setCode) {
                 // 更新缓存
                 await dbPut('cardSets', cached);
             }
+            // 尝试用 YugiohMeta 映射表替换缓存中的旧版卡图 URL
+            await loadYugiohMetaMap();
+            if (_yugiohmetaMap) {
+                let upgraded = 0;
+                cached.cards.forEach(function (card) {
+                    const metaUrls = getYugiohMetaImageUrl(card.id);
+                    if (metaUrls && !card.imageUrl.includes('s3.duellinksmeta.com')) {
+                        card.imageUrl = metaUrls.imageUrl;
+                        card.imageLargeUrl = metaUrls.imageLargeUrl;
+                        upgraded++;
+                    }
+                });
+                if (upgraded > 0) {
+                    console.log(`🔄 已将 ${upgraded} 张卡的图源升级为 YugiohMeta S3 CDN`);
+                    await dbPut('cardSets', cached);
+                }
+            }
+
             console.log(`📦 从缓存加载 TCG 卡包 [${setCode}]，共 ${cached.cards.length} 张卡`);
             return cached;
         }
@@ -918,6 +1023,9 @@ async function getTCGCardSetData(setCode) {
 
     // 2. 从 YGOProDeck API 获取（TCG 默认英文，不传 language 参数）
     console.log(`🌐 从 YGOProDeck 加载 TCG 卡包 [${setCode}]...`);
+
+    // 预加载 YugiohMeta 映射表（后续 convertYGOProDeckCard 中使用）
+    await loadYugiohMetaMap();
 
     try {
         const apiData = await apiRequestYGOProDeck(

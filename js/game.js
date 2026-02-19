@@ -889,8 +889,8 @@ const CDN_SOURCES = [
         name: 'YGOProDeck (small)',
         urlTemplate: 'https://images.ygoprodeck.com/images/cards_small/{id}.jpg',
         format: 'JPEG',
-        desc: 'YGOProDeck 小图（当前 TCG 使用）',
-        usedBy: 'tcg'
+        desc: 'YGOProDeck 小图（TCG 备用图源）',
+        usedBy: null
     },
     {
         id: 'ygoprodeck_large',
@@ -908,6 +908,15 @@ const CDN_SOURCES = [
         desc: 'KONAMI 游戏王官方数据库（通过 Pages Function 代理，需要 cid 映射，图片较小 200×290）',
         usedBy: null,
         needsCid: true  // 标记此源需要 cid 而非卡片密码
+    },
+    {
+        id: 'yugiohmeta_s3',
+        name: 'YugiohMeta S3 CDN',
+        urlTemplate: 'https://s3.duellinksmeta.com/cards/{metaId}_w420.webp',
+        format: 'WebP',
+        desc: 'YugiohMeta 英文卡图（当前 TCG 使用，需要映射表）',
+        usedBy: 'tcg',
+        needsMetaMap: true  // 标记此源需要 YugiohMeta 映射表
     }
 ];
 
