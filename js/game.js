@@ -441,18 +441,125 @@ function renderPackList() {
         const priceIcon = currencyDef ? currencyDef.icon : '🪙';
         const priceValue = pack.price || 0;
 
+        // ——— 卡包封面图逻辑 ———
+        // 优先级：packs.json 中的 coverImage > YGOProDeck set_image > 卡包首卡卡图 > emoji fallback
+        const packCode = pack.packCode || pack.setCode || '';
+        const coverImageUrl = getPackCoverImageUrl(pack, packCode);
+
         packCard.innerHTML = `
-            <span class="pack-icon">🎴</span>
+            <div class="pack-cover-container">
+                <img class="pack-cover-img" src="${coverImageUrl}" alt="${pack.packName}" loading="lazy"
+                     onerror="handlePackCoverError(this);" />
+                <span class="pack-icon pack-icon-fallback" style="display:none;">🎴</span>
+            </div>
             <div class="pack-name">${pack.packName}</div>
             <div class="pack-code">${displayCode}${pack.releaseDate ? ' (' + pack.releaseDate + ')' : ''}</div>
             <div class="pack-count">每包 ${pack.cardsPerPack} 张${cardCountInfo} | ${pack.guaranteedRareSlot ? '保底R以上' : '纯随机'} ${modeIcon}</div>
             <div class="pack-price"><span class="pack-price-icon">${priceIcon}</span> ${priceValue}</div>
         `;
+
+        // 将 pack 数据绑定到 DOM 元素上，供 onerror 回调使用
+        const imgEl = packCard.querySelector('.pack-cover-img');
+        if (imgEl) imgEl._packData = pack;
+
         packCard.addEventListener('click', function () {
             selectPack(pack);
         });
         packListEl.appendChild(packCard);
+
+        // OCG 卡包：预加载 cardFile 获取首卡 ID，缓存到 pack 对象上（Promise 供 onerror 回调等待）
+        if (currentGameMode === 'ocg' && !pack.coverCardId && pack.cardFile) {
+            pack._coverCardIdPromise = preloadOcgCoverCardId(pack);
+        }
     });
+}
+
+/**
+ * 获取卡包封面图 URL
+ * 优先级：coverImage > coverCardId 卡图 > YGOProDeck set_image > 空占位
+ */
+function getPackCoverImageUrl(pack, packCode) {
+    // 1. 如果 packs.json 中手动配置了 coverImage，直接使用
+    if (pack.coverImage) {
+        return pack.coverImage;
+    }
+
+    // 2. 如果配置了 coverCardId，使用该卡的卡图作为封面
+    if (pack.coverCardId) {
+        if (currentGameMode === 'ocg') {
+            return `https://cdn.233.momobako.com/ygopro/pics/${pack.coverCardId}.jpg`;
+        } else {
+            return `https://images.ygoprodeck.com/images/cards_small/${pack.coverCardId}.jpg`;
+        }
+    }
+
+    // 3. TCG 卡包：使用 YGOProDeck 官方卡包封面图（根据 packCode 拼接）
+    if (currentGameMode === 'tcg' && packCode) {
+        return `https://images.ygoprodeck.com/images/sets/${packCode}.jpg`;
+    }
+
+    // 4. OCG 卡包：暂时返回空，后续由 loadOcgPackCoverCard 异步填充
+    // 先返回一个 YGOProDeck set_image 尝试（部分 OCG 卡包有 TCG 同版）
+    if (packCode) {
+        return `https://images.ygoprodeck.com/images/sets/${packCode}.jpg`;
+    }
+
+    return '';
+}
+
+/**
+ * 卡包封面图加载失败时的处理函数
+ * 如果 pack 有异步预加载 Promise（OCG 卡包），等待其完成后用首卡卡图替代
+ * 否则直接显示 emoji fallback
+ */
+async function handlePackCoverError(imgEl) {
+    const pack = imgEl._packData;
+    const fallbackIcon = imgEl.nextElementSibling;
+
+    // 如果有正在进行的预加载 Promise，等待其完成
+    if (pack && pack._coverCardIdPromise) {
+        await pack._coverCardIdPromise;
+        pack._coverCardIdPromise = null; // 防止重复等待
+    }
+
+    // 如果已有缓存的首卡 ID，尝试用首卡卡图替代
+    if (pack && pack._coverCardId) {
+        const cardImgUrl = currentGameMode === 'ocg'
+            ? `https://cdn.233.momobako.com/ygopro/pics/${pack._coverCardId}.jpg`
+            : `https://images.ygoprodeck.com/images/cards_small/${pack._coverCardId}.jpg`;
+        imgEl.src = cardImgUrl;
+        // 下次失败就直接显示 emoji
+        imgEl.onerror = function () {
+            imgEl.style.display = 'none';
+            if (fallbackIcon) fallbackIcon.style.display = 'block';
+        };
+        // 清除 _coverCardId 防止无限循环
+        pack._coverCardId = null;
+        return;
+    }
+
+    // 没有备选图源，显示 emoji fallback
+    imgEl.style.display = 'none';
+    if (fallbackIcon) fallbackIcon.style.display = 'block';
+}
+
+/**
+ * OCG 卡包：预加载 cardFile，获取首张卡 ID 并缓存到 pack 对象上
+ * 当 YGOProDeck set_image 加载失败触发 onerror 时，handlePackCoverError 可使用此 ID
+ */
+async function preloadOcgCoverCardId(pack) {
+    try {
+        const cardFileUrl = `data/ocg/cards/${pack.cardFile}`;
+        const response = await fetch(cardFileUrl);
+        if (!response.ok) return;
+        const cardFileData = await response.json();
+        if (cardFileData.cardIds && cardFileData.cardIds.length > 0) {
+            // 将首卡 ID 缓存到 pack 对象上
+            pack._coverCardId = cardFileData.cardIds[0].id || cardFileData.cardIds[0];
+        }
+    } catch (e) {
+        console.warn(`⚠️ 预加载 OCG 卡包 ${pack.packId} 首卡ID失败:`, e);
+    }
 }
 
 // ============================================

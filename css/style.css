@@ -503,6 +503,36 @@ body {
     transform: translateY(-4px);
 }
 
+.pack-card .pack-cover-container {
+    width: 100%;
+    height: 160px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    position: relative;
+}
+
+.pack-card .pack-cover-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 6px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 1;
+}
+
+.pack-card:hover .pack-cover-img {
+    transform: scale(1.05);
+}
+
+.pack-card .pack-icon-fallback {
+    font-size: 4rem;
+}
+
 .pack-card .pack-icon {
     font-size: 4rem;
     margin-bottom: 12px;
@@ -1189,6 +1219,10 @@ body {
 
     .pack-list {
         grid-template-columns: 1fr;
+    }
+
+    .pack-card .pack-cover-container {
+        height: 180px;
     }
 
     .mode-switch-container {
