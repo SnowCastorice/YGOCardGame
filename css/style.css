@@ -885,36 +885,52 @@ body {
 }
 
 /* ============================================
-   开发者工具：快捷操作区
+   开发者工具：板块卡片样式
    ============================================ */
-.devtools-actions-area {
+.devtools-section-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 14px 16px;
     margin-bottom: 12px;
 }
 
+.devtools-section-card:last-child {
+    margin-bottom: 0;
+}
+
 .devtools-section-title {
-    font-size: 0.95rem;
-    margin: 0 0 10px 0;
+    font-size: 0.92rem;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     color: var(--text-primary);
 }
 
+/* 快捷操作按钮组 */
 .devtools-actions-btns {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .devtools-note {
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     color: var(--text-secondary);
     margin: 0;
     line-height: 1.5;
+    opacity: 0.8;
 }
 
-.devtools-divider {
-    border: none;
-    border-top: 1px solid var(--border-color);
-    margin: 14px 0;
+/* 卡图对比：输入区和操作按钮拆分为两行 */
+.devtools-input-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
 }
 
 /* 添加金币按钮 */
@@ -1379,7 +1395,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 0;
     flex-wrap: wrap;
 }
 
@@ -1434,7 +1450,7 @@ body {
     color: #000;
 }
 
-/* 当前模式信息 */
+/* 当前模式信息（移到卡图对比板块内，输入框上方） */
 .devtools-mode-info {
     padding: 8px 12px;
     background: rgba(255, 215, 0, 0.08);
@@ -1442,7 +1458,7 @@ body {
     border-radius: 6px;
     font-size: 0.8rem;
     color: var(--accent-gold);
-    margin-bottom: 16px;
+    margin-bottom: 10px;
     display: none;
 }
 
@@ -1672,6 +1688,19 @@ body {
         margin: 0 8px;
     }
 
+    .devtools-section-card {
+        padding: 12px;
+    }
+
+    .devtools-actions-btns {
+        flex-direction: column;
+    }
+
+    .devtools-actions-btns .btn-devtools-action {
+        width: 100%;
+        text-align: center;
+    }
+
     .devtools-input-area {
         flex-direction: column;
         align-items: stretch;
@@ -1679,6 +1708,15 @@ body {
 
     .devtools-input-area label {
         margin-bottom: -4px;
+    }
+
+    .devtools-input-actions {
+        flex-direction: column;
+    }
+
+    .devtools-input-actions .btn-devtools-action {
+        width: 100%;
+        text-align: center;
     }
 
     .devtools-cdn-body {
