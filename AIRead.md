@@ -134,6 +134,20 @@
 - **TCG** 只需一个 `setCode` 就能获取完整卡牌列表 + 稀有度（YGOProDeck 天然支持）
 - **OCG** 需要预定义 `cardIds` 数组（YGOProDeck 的 OCG 数据覆盖率低），通过 YGOCDB 获取卡牌列表
 
+### 卡包封面图来源（v1.0.1 新增）
+
+卡包列表中的封面图采用多级 fallback 策略，按优先级：
+
+| 优先级 | 来源 | 适用场景 |
+|--------|------|----------|
+| 1 | `packs.json` 中的 `coverImage` 字段 | 手动配置的自定义封面 URL |
+| 2 | `packs.json` 中的 `coverCardId` 字段 → 对应卡图 | 手动指定某张卡的卡图作为封面 |
+| 3 | YGOProDeck set_image：`images.ygoprodeck.com/images/sets/{packCode}.jpg` | TCG 卡包（官方封面图，✅ 自动获取） |
+| 4 | 异步加载 `cardFile` → 首张卡的 YGOCDB CDN 卡图 | OCG 卡包（YGOProDeck 无封面时的自动 fallback） |
+| 5 | emoji 🎴 | 所有图源均失败时的兜底 |
+
+**扩展方式**：在 `packs.json` 中给卡包添加 `"coverCardId": 卡牌密码`（数字），即可使用该卡的卡图作为封面。
+
 ## 🌐 服务端代理（Cloudflare Pages Functions）
 
 > **v0.9.2 架构变更：KONAMI 卡图代理从独立 Worker 迁移到 Pages Functions**
