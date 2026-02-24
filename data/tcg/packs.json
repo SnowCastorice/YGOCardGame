@@ -17,6 +17,7 @@
     {
       "packId": "pack_MZMU",
       "packName": "MAZE OF MUERTOS",
+      "packCode": "MZMU",
       "setCode": "Maze of Muertos",
       "cardsPerPack": 9,
       "rarityRates": {
@@ -32,6 +33,7 @@
     {
       "packId": "pack_BPRO",
       "packName": "BURST PROTOCOL",
+      "packCode": "BPRO",
       "setCode": "Burst Protocol",
       "cardsPerPack": 9,
       "rarityRates": {
@@ -47,6 +49,7 @@
     {
       "packId": "pack_PHRE",
       "packName": "Phantom Revenge",
+      "packCode": "PHRE",
       "setCode": "Phantom Revenge",
       "cardsPerPack": 9,
       "rarityRates": {

@@ -471,6 +471,10 @@ function renderPackList() {
         if (currentGameMode === 'ocg' && !pack.coverCardId && pack.cardFile) {
             pack._coverCardIdPromise = preloadOcgCoverCardId(pack);
         }
+        // TCG 卡包：预加载首卡 ID 作为封面图 fallback（通过 YGOProDeck API 获取首卡）
+        if (currentGameMode === 'tcg' && !pack.coverCardId && pack.setCode) {
+            pack._coverCardIdPromise = preloadTcgCoverCardId(pack);
+        }
     });
 }
 
@@ -493,15 +497,17 @@ function getPackCoverImageUrl(pack, packCode) {
         }
     }
 
-    // 3. TCG 卡包：使用 YGOProDeck 官方卡包封面图（根据 packCode 拼接）
-    if (currentGameMode === 'tcg' && packCode) {
-        return `https://images.ygoprodeck.com/images/sets/${packCode}.jpg`;
+    // 3. TCG 卡包：使用 YGOProDeck 官方卡包封面图（优先 packCode 短代码，fallback 编码后的 setCode）
+    if (currentGameMode === 'tcg') {
+        const tcgCode = pack.packCode || '';
+        if (tcgCode) {
+            return `https://images.ygoprodeck.com/images/sets/${encodeURIComponent(tcgCode)}.jpg`;
+        }
     }
 
-    // 4. OCG 卡包：暂时返回空，后续由 loadOcgPackCoverCard 异步填充
-    // 先返回一个 YGOProDeck set_image 尝试（部分 OCG 卡包有 TCG 同版）
+    // 4. OCG 卡包：先尝试 YGOProDeck set_image（部分 OCG 卡包有 TCG 同版）
     if (packCode) {
-        return `https://images.ygoprodeck.com/images/sets/${packCode}.jpg`;
+        return `https://images.ygoprodeck.com/images/sets/${encodeURIComponent(packCode)}.jpg`;
     }
 
     return '';
@@ -559,6 +565,34 @@ async function preloadOcgCoverCardId(pack) {
         }
     } catch (e) {
         console.warn(`⚠️ 预加载 OCG 卡包 ${pack.packId} 首卡ID失败:`, e);
+    }
+}
+
+/**
+ * TCG 卡包：通过 YGOProDeck API 获取首张卡 ID 并缓存到 pack 对象上
+ * 当 YGOProDeck set_image 加载失败时，handlePackCoverError 可使用此 ID 显示首卡卡图作为封面
+ * 使用 num=1 参数只获取一张卡，减少 API 负担
+ */
+async function preloadTcgCoverCardId(pack) {
+    try {
+        // 先检查 IndexedDB 缓存中是否已有该卡包数据（用户可能之前已打开过）
+        if (typeof TCG_API !== 'undefined' && TCG_API.getCachedSetData) {
+            const cached = await TCG_API.getCachedSetData(pack.setCode);
+            if (cached && cached.cards && cached.cards.length > 0) {
+                pack._coverCardId = cached.cards[0].id;
+                return;
+            }
+        }
+        // 无缓存时，发送轻量 API 请求只获取 1 张卡
+        const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?cardset=${encodeURIComponent(pack.setCode)}&num=1&offset=0`;
+        const response = await fetch(apiUrl);
+        if (!response.ok) return;
+        const data = await response.json();
+        if (data && data.data && data.data.length > 0) {
+            pack._coverCardId = data.data[0].id;
+        }
+    } catch (e) {
+        console.warn(`⚠️ 预加载 TCG 卡包 ${pack.packId} 首卡ID失败:`, e);
     }
 }
 

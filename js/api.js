@@ -1109,6 +1109,25 @@ async function getCardSetData(mode, packConfig, onProgress) {
 }
 
 /**
+ * 【纯缓存查询】获取 IndexedDB 中已缓存的卡包数据（不触发 API 请求）
+ * 用于卡包封面图预加载等场景，避免不必要的 API 调用
+ * 
+ * @param {string} setCode - 卡包编码
+ * @returns {object|null} 缓存的卡包数据，无缓存返回 null
+ */
+async function getCachedSetData(setCode) {
+    try {
+        const cached = await dbGet('cardSets', setCode);
+        if (cached && cached.cards && cached.cards.length > 0) {
+            return cached;
+        }
+    } catch (e) {
+        // 缓存查询失败不影响主流程
+    }
+    return null;
+}
+
+/**
  * 将 YGOProDeck 的稀有度名称映射为简短编码
  */
 function mapRarityToCode(rarityName) {
@@ -1285,6 +1304,9 @@ async function refreshCardSetCache(setCode) {
 window.TCG_API = {
     // 统一入口：获取卡包卡牌数据
     getCardSetData: getCardSetData,
+
+    // 获取缓存中的卡包数据（不触发 API 请求）
+    getCachedSetData: getCachedSetData,
 
     // 获取缓存的图片 URL
     getCachedImageUrl: getCachedImageUrl,
