@@ -15,9 +15,6 @@ node_modules/
 # 日志
 *.log
 
-# AI 协作文档（仅本地使用）
-AIRead.md
-
 # 工具脚本临时文件
 _temp_*.html
 _pack_*_output.json
