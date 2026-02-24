@@ -449,6 +449,7 @@ function renderPackList() {
         packCard.innerHTML = `
             <div class="pack-cover-container">
                 <img class="pack-cover-img" src="${coverImageUrl}" alt="${pack.packName}" loading="lazy"
+                     referrerpolicy="no-referrer" crossorigin="anonymous"
                      onerror="handlePackCoverError(this);" />
                 <span class="pack-icon pack-icon-fallback" style="display:none;">🎴</span>
             </div>
@@ -521,6 +522,9 @@ function getPackCoverImageUrl(pack, packCode) {
 async function handlePackCoverError(imgEl) {
     const pack = imgEl._packData;
     const fallbackIcon = imgEl.nextElementSibling;
+    const failedUrl = imgEl.src;
+
+    console.warn(`⚠️ 卡包封面图加载失败: ${pack ? pack.packId : '未知'}, URL: ${failedUrl}`);
 
     // 如果有正在进行的预加载 Promise，等待其完成
     if (pack && pack._coverCardIdPromise) {
@@ -533,9 +537,12 @@ async function handlePackCoverError(imgEl) {
         const cardImgUrl = currentGameMode === 'ocg'
             ? `https://cdn.233.momobako.com/ygopro/pics/${pack._coverCardId}.jpg`
             : `https://images.ygoprodeck.com/images/cards_small/${pack._coverCardId}.jpg`;
+        console.log(`🔄 使用首卡卡图替代: ${pack.packId}, cardId: ${pack._coverCardId}`);
+        imgEl.referrerPolicy = 'no-referrer';
         imgEl.src = cardImgUrl;
         // 下次失败就直接显示 emoji
         imgEl.onerror = function () {
+            console.warn(`⚠️ 首卡卡图也加载失败: ${pack.packId}, URL: ${cardImgUrl}`);
             imgEl.style.display = 'none';
             if (fallbackIcon) fallbackIcon.style.display = 'block';
         };
@@ -545,6 +552,7 @@ async function handlePackCoverError(imgEl) {
     }
 
     // 没有备选图源，显示 emoji fallback
+    console.warn(`⚠️ 无备选图源，显示 emoji 兜底: ${pack ? pack.packId : '未知'}`);
     imgEl.style.display = 'none';
     if (fallbackIcon) fallbackIcon.style.display = 'block';
 }
