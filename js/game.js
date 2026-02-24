@@ -449,7 +449,7 @@ function renderPackList() {
         packCard.innerHTML = `
             <div class="pack-cover-container">
                 <img class="pack-cover-img" src="${coverImageUrl}" alt="${pack.packName}" loading="lazy"
-                     referrerpolicy="no-referrer" crossorigin="anonymous"
+                     referrerpolicy="no-referrer"
                      onerror="handlePackCoverError(this);" />
                 <span class="pack-icon pack-icon-fallback" style="display:none;">🎴</span>
             </div>
@@ -583,7 +583,8 @@ async function preloadOcgCoverCardId(pack) {
  */
 async function preloadTcgCoverCardId(pack) {
     try {
-        // 先检查 IndexedDB 缓存中是否已有该卡包数据（用户可能之前已打开过）
+        // 仅查询 IndexedDB 缓存，不发送额外 API 请求（避免 CORS / 限流问题）
+        // 用户打开过该卡包后，缓存中就会有数据，下次回到卡包列表时封面图即可显示
         if (typeof TCG_API !== 'undefined' && TCG_API.getCachedSetData) {
             const cached = await TCG_API.getCachedSetData(pack.setCode);
             if (cached && cached.cards && cached.cards.length > 0) {
@@ -591,14 +592,8 @@ async function preloadTcgCoverCardId(pack) {
                 return;
             }
         }
-        // 无缓存时，发送轻量 API 请求只获取 1 张卡
-        const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?cardset=${encodeURIComponent(pack.setCode)}&num=1&offset=0`;
-        const response = await fetch(apiUrl);
-        if (!response.ok) return;
-        const data = await response.json();
-        if (data && data.data && data.data.length > 0) {
-            pack._coverCardId = data.data[0].id;
-        }
+        // 无缓存时不做额外请求，依赖 packCode 对应的 set_image 封面图
+        // 如果 set_image 也加载失败，则显示 emoji 兜底
     } catch (e) {
         console.warn(`⚠️ 预加载 TCG 卡包 ${pack.packId} 首卡ID失败:`, e);
     }
