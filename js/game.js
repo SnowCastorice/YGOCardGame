@@ -454,7 +454,7 @@ function renderPackList() {
                 <span class="pack-icon pack-icon-fallback" style="display:none;">🎴</span>
             </div>
             <div class="pack-name">${(currentGameMode === 'ocg' && pack.packNameJP) ? pack.packNameJP : pack.packName}</div>
-            <div class="pack-code">${(currentGameMode === 'ocg' && pack.packNameJP) ? pack.packName + ' ' : ''}${displayCode}${pack.releaseDate ? ' (' + pack.releaseDate + ')' : ''}</div>
+            <div class="pack-code">${(currentGameMode === 'ocg' && pack.packNameJP) ? pack.packName + '<br>' : ''}${displayCode}${pack.releaseDate ? ' (' + pack.releaseDate + ')' : ''}</div>
             <div class="pack-count">每包 ${pack.cardsPerPack} 张${cardCountInfo} | ${pack.guaranteedRareSlot ? '保底R以上' : '纯随机'} ${modeIcon}</div>
             <div class="pack-price"><span class="pack-price-icon">${priceIcon}</span> ${priceValue}</div>
         `;
