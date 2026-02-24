@@ -17,7 +17,12 @@
 - 因此，项目结构和代码注释需要**清晰明了**，方便任何 AI 快速理解和接手
 - 关键决策和设计思路应记录在代码注释或文档中
 
-## 📋 开发规范
+## � Chrome DevTools MCP 调试规范
+
+- 使用 Chrome DevTools MCP 截图调试时，应**先将页面模拟为手机分辨率**（用户常用 **Xiaomi 14** 设备，**400×890** 分辨率），再进行截图查看
+- 用户日常开发也是以手机分辨率模式调试的，所有 UI 调试均以移动端视图为准
+
+## �📋 开发规范
 
 1. **版本管理**：每次提交都要维护好相应的版本记录
 2. **更新日志**：网页内必须呈现更新日志，让用户可见
@@ -140,12 +145,15 @@
 
 | 优先级 | 来源 | 适用场景 |
 |--------|------|----------|
-| 1 | `packs.json` 中的 `coverImage` 字段 | 手动配置的自定义封面 URL |
+| 1 | `packs.json` 中的 `coverImage` 字段 | 手动配置的自定义封面 URL（OCG 使用 Yugipedia 日文封面） |
 | 2 | `packs.json` 中的 `coverCardId` 字段 → 对应卡图 | 手动指定某张卡的卡图作为封面 |
-| 3 | YGOProDeck set_image：`images.ygoprodeck.com/images/sets/{packCode}.jpg` | TCG 卡包（官方封面图，✅ 自动获取） |
-| 4 | 异步加载 `cardFile` → 首张卡的 YGOCDB CDN 卡图 | OCG 卡包（YGOProDeck 无封面时的自动 fallback） |
-| 5 | emoji 🎴 | 所有图源均失败时的兜底 |
+| 3 | 本地封面图 `data/ocg/covers/{packCode}.png` | OCG 卡包：Yugipedia 上找不到封面时，用户手动放置的本地图片 |
+| 4 | YGOProDeck set_image：`images.ygoprodeck.com/images/sets/{packCode}.jpg` | TCG 卡包（官方封面图，✅ 自动获取） |
+| 5 | 异步加载 `cardFile` → 首张卡的 YGOCDB CDN 卡图 | OCG 卡包（所有图源均失败时的自动 fallback） |
+| 6 | emoji 🎴 | 所有图源均失败时的兜底 |
 
+**OCG 封面图来源**：Yugipedia (`ms.yugipedia.com`)，通过 MediaWiki API 查询日文版卡包封面图 URL，手动写入 `coverImage` 字段。
+**本地封面图目录**：`data/ocg/covers/`，命名规则为 `{packCode}.png`（如 `BLZD.png`），适用于 Yugipedia 上找不到的卡包。
 **扩展方式**：在 `packs.json` 中给卡包添加 `"coverCardId": 卡牌密码`（数字），即可使用该卡的卡图作为封面。
 
 ## 🌐 服务端代理（Cloudflare Pages Functions）
@@ -227,6 +235,8 @@ Cloudflare Pages 会自动检测项目根目录下的 `functions/` 文件夹，�
 data/ocg/
 ├── packs.json           ← 卡包元信息索引（轻量级，不含卡牌列表）
 ├── pack_list.json       ← 完整卡包目录
+├── covers/              ← OCG 卡包本地封面图（命名: {packCode}.png）
+│   └── README.txt       ← 使用说明
 └── cards/               ← 每个卡包的独立卡牌列表文件
     ├── ocg_blzd.json    ← BLAZING DOMINION 的卡牌列表
     ├── ocg_ch02.json    ← THE CHRONICLES DECK 的卡牌列表

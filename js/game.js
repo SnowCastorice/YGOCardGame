@@ -484,7 +484,7 @@ function renderPackList() {
  * 优先级：coverImage > coverCardId 卡图 > YGOProDeck set_image > 空占位
  */
 function getPackCoverImageUrl(pack, packCode) {
-    // 1. 如果 packs.json 中手动配置了 coverImage，直接使用
+    // 1. 如果 packs.json 中手动配置了 coverImage（如 Yugipedia 日文封面 URL），直接使用
     if (pack.coverImage) {
         return pack.coverImage;
     }
@@ -525,6 +525,32 @@ async function handlePackCoverError(imgEl) {
     const failedUrl = imgEl.src;
 
     console.warn(`⚠️ 卡包封面图加载失败: ${pack ? pack.packId : '未知'}, URL: ${failedUrl}`);
+
+    // ——— OCG 本地封面图 fallback ———
+    // 如果当前失败的不是本地 covers 路径，且卡包有 packCode，尝试加载本地封面图
+    // 本地封面图路径：data/ocg/covers/{packCode}.png（或 .jpg/.webp）
+    if (currentGameMode === 'ocg' && pack && pack.packCode && !failedUrl.includes('data/ocg/covers/')) {
+        const localCoverUrl = `data/ocg/covers/${pack.packCode}.png`;
+        console.log(`🔄 尝试本地封面图: ${pack.packId}, URL: ${localCoverUrl}`);
+        imgEl.src = localCoverUrl;
+        // 本地封面图也失败时，继续走后续 fallback（首卡卡图 → emoji）
+        imgEl.onerror = function () {
+            handlePackCoverErrorFinal(imgEl);
+        };
+        return;
+    }
+
+    // ——— 首卡卡图 / emoji fallback ———
+    await handlePackCoverErrorFinal(imgEl);
+}
+
+/**
+ * 卡包封面图最终 fallback：首卡卡图 → emoji
+ * 从 handlePackCoverError 中抽出，供本地 covers 失败后继续调用
+ */
+async function handlePackCoverErrorFinal(imgEl) {
+    const pack = imgEl._packData;
+    const fallbackIcon = imgEl.nextElementSibling;
 
     // 如果有正在进行的预加载 Promise，等待其完成
     if (pack && pack._coverCardIdPromise) {
