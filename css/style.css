@@ -862,6 +862,22 @@ body {
 .card-rarity-badge.rarity-UTR { background-color: var(--rarity-UTR); color: #333; }
 .card-rarity-badge.rarity-PSER { background-color: var(--rarity-PSER); }
 
+/* 合并数量角标（十连开包相同卡片合并时显示） */
+.card-count-badge {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: .7rem;
+  font-weight: bold;
+  color: #fff;
+  background: rgba(255, 255, 255, .15);
+  backdrop-filter: blur(4px);
+  z-index: 2;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
+}
+
 /* 卡牌图片样式 */
 .card-image {
     width: 100%;

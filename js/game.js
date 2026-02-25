@@ -1177,9 +1177,23 @@ async function showResults(cards) {
         'PSER': 7
     };
 
-    // 多包模式下按稀有度从高到低排序
+    // 多包模式下：合并相同卡片 + 按稀有度排序
+    let displayCards = cards;
     if (cards.length > 5) {
-        cards.sort((a, b) => {
+        // 按「卡片编号 + 稀有度」分组合并
+        const mergeMap = new Map();
+        for (const card of cards) {
+            const key = `${card.id || card.name}_${card.rarityCode || 'N'}`;
+            if (mergeMap.has(key)) {
+                mergeMap.get(key).count++;
+            } else {
+                mergeMap.set(key, { ...card, count: 1 });
+            }
+        }
+        displayCards = Array.from(mergeMap.values());
+
+        // 按稀有度从高到低排序
+        displayCards.sort((a, b) => {
             const rankA = RARITY_RANK[a.rarityCode] ?? 0;
             const rankB = RARITY_RANK[b.rarityCode] ?? 0;
             return rankB - rankA;
@@ -1188,10 +1202,10 @@ async function showResults(cards) {
 
     // 计算每张卡的动画延迟，总时长不超过 2 秒
     const maxTotalDelay = 2; // 秒
-    const perCardDelay = Math.min(.15, maxTotalDelay / cards.length);
+    const perCardDelay = Math.min(.15, maxTotalDelay / displayCards.length);
 
-    for (let i = 0; i < cards.length; i++) {
-        const card = cards[i];
+    for (let i = 0; i < displayCards.length; i++) {
+        const card = displayCards[i];
         const cardEl = document.createElement('div');
         const rarityCode = card.rarityCode || 'N';
         cardEl.className = `card-item rarity-${rarityCode}`;
@@ -1228,8 +1242,14 @@ async function showResults(cards) {
             nameHtml = `<span class="card-name-single">${card.name}</span>`;
         }
 
+        // 数量角标（合并后数量 > 1 时显示）
+        const countBadge = (card.count && card.count > 1)
+            ? `<span class="card-count-badge">×${card.count}</span>`
+            : '';
+
         cardEl.innerHTML = `
             <span class="card-rarity-badge rarity-${rarityCode}">${rarityCode}</span>
+            ${countBadge}
             ${imageHtml}
             <div class="card-name-wrapper">
                 ${nameHtml}
