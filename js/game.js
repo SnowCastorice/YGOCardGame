@@ -2169,11 +2169,13 @@ function renderCardPreview(sortBy, cards, pack) {
             break;
     }
 
-    // 稀有度分布统计
+    // 稀有度分布统计（统计所有版本，一张卡有多个版本则每个版本各计一次）
     const rarityCounts = { 'PSER': 0, 'UTR': 0, 'SER': 0, 'UR': 0, 'SR': 0, 'R': 0, 'NR': 0, 'N': 0 };
     allCards.forEach(function (card) {
-        const code = card.rarityCode || 'N';
-        rarityCounts[code] = (rarityCounts[code] || 0) + 1;
+        const versions = card.rarityVersions || [card.rarityCode || 'N'];
+        versions.forEach(function (v) {
+            rarityCounts[v] = (rarityCounts[v] || 0) + 1;
+        });
     });
 
     // 更新弹窗标题
@@ -2225,12 +2227,34 @@ function renderCardPreview(sortBy, cards, pack) {
     `;
 
     // 卡片网格
+    // 稀有度权重（用于确定边框颜色 —— 取最高稀有度版本）
+    const rarityWeight = { 'PSER': 8, 'UTR': 7, 'SER': 6, 'UR': 5, 'SR': 4, 'R': 3, 'NR': 2, 'N': 1 };
     html += '<div class="preview-card-grid">';
     sortedCards.forEach(function (card) {
         const isOwned = !!ownedMap[card.id];
         const ownedQty = ownedMap[card.id] || 0;
         const rarityCode = card.rarityCode || 'N';
+        const versions = card.rarityVersions || [rarityCode];
         const displayName = card.nameCN || card.name || card.nameOriginal || '未知卡片';
+
+        // 取最高稀有度版本作为边框颜色
+        const highestRarity = versions.reduce(function (best, v) {
+            return (rarityWeight[v] || 0) > (rarityWeight[best] || 0) ? v : best;
+        }, versions[0]);
+
+        // 构建多版本稀有度角标 HTML
+        let rarityBadgeHtml;
+        if (versions.length > 1) {
+            // 多版本：展示所有版本，用竖线分隔
+            rarityBadgeHtml = '<span class="preview-rarity-badge preview-rarity-multi">';
+            rarityBadgeHtml += versions.map(function (v) {
+                return '<span class="rarity-version-item rarity-color-' + v + '">' + v + '</span>';
+            }).join('<span class="rarity-sep">|</span>');
+            rarityBadgeHtml += '</span>';
+        } else {
+            // 单版本：保持原有样式
+            rarityBadgeHtml = `<span class="preview-rarity-badge rarity-${rarityCode}">${rarityCode}</span>`;
+        }
 
         // 卡图
         let imageHtml;
@@ -2244,10 +2268,10 @@ function renderCardPreview(sortBy, cards, pack) {
         }
 
         html += `
-            <div class="preview-card-item ${isOwned ? 'owned' : 'not-owned-card'} rarity-border-${rarityCode}" data-card-id="${card.id}">
+            <div class="preview-card-item ${isOwned ? 'owned' : 'not-owned-card'} rarity-border-${highestRarity}" data-card-id="${card.id}">
                 <div class="preview-card-img-wrapper">
                     ${imageHtml}
-                    <span class="preview-rarity-badge rarity-${rarityCode}">${rarityCode}</span>
+                    ${rarityBadgeHtml}
                     ${isOwned ? `<span class="preview-owned-badge">×${ownedQty}</span>` : ''}
                     ${!isOwned ? '<div class="preview-lock-icon">🔒</div>' : ''}
                 </div>

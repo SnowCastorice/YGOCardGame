@@ -2407,18 +2407,38 @@ body {
 }
 
 /* 已拥有卡片的稀有度边框 */
+.preview-card-item.owned.rarity-border-PSER {
+    border-color: var(--rarity-PSER);
+    box-shadow: 0 0 8px rgba(255, 110, 199, .3);
+}
+
+.preview-card-item.owned.rarity-border-UTR {
+    border-color: var(--rarity-UTR);
+    box-shadow: 0 0 8px rgba(224, 224, 224, .25);
+}
+
+.preview-card-item.owned.rarity-border-SER {
+    border-color: var(--rarity-SER);
+    box-shadow: 0 0 8px rgba(0, 229, 255, .25);
+}
+
 .preview-card-item.owned.rarity-border-UR {
     border-color: var(--rarity-UR);
-    box-shadow: 0 0 6px rgba(255, 215, 0, 0.25);
+    box-shadow: 0 0 6px rgba(255, 215, 0, .25);
 }
 
 .preview-card-item.owned.rarity-border-SR {
     border-color: var(--rarity-SR);
-    box-shadow: 0 0 6px rgba(200, 80, 192, 0.2);
+    box-shadow: 0 0 6px rgba(200, 80, 192, .2);
 }
 
 .preview-card-item.owned.rarity-border-R {
     border-color: var(--rarity-R);
+}
+
+.preview-card-item.owned.rarity-border-NR {
+    border-color: var(--rarity-NR);
+    box-shadow: 0 0 4px rgba(192, 192, 208, .15);
 }
 
 /* 未拥有卡片：降低整体亮度 */
@@ -2514,6 +2534,59 @@ body {
 .preview-rarity-badge.rarity-N {
     color: var(--rarity-N);
     border: 1px solid var(--rarity-N);
+}
+
+/* --- 多版本稀有度角标 --- */
+.preview-rarity-badge.preview-rarity-multi {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+    padding: 1px 4px;
+    border: 1px solid rgba(255, 255, 255, .25);
+}
+
+.rarity-version-item {
+    font-size: .55rem;
+    font-weight: bold;
+}
+
+.rarity-sep {
+    font-size: .45rem;
+    color: rgba(255, 255, 255, .35);
+    margin: 0 1px;
+}
+
+/* 多版本角标内各稀有度颜色 */
+.rarity-color-PSER {
+    color: var(--rarity-PSER);
+}
+
+.rarity-color-UTR {
+    color: var(--rarity-UTR);
+}
+
+.rarity-color-SER {
+    color: var(--rarity-SER);
+}
+
+.rarity-color-UR {
+    color: var(--rarity-UR);
+}
+
+.rarity-color-SR {
+    color: var(--rarity-SR);
+}
+
+.rarity-color-R {
+    color: var(--rarity-R);
+}
+
+.rarity-color-NR {
+    color: var(--rarity-NR);
+}
+
+.rarity-color-N {
+    color: var(--rarity-N);
 }
 
 /* --- 已拥有数量角标 --- */
