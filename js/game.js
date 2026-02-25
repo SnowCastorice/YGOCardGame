@@ -1180,16 +1180,19 @@ async function showResults(cards) {
     // 多包模式下：合并相同卡片 + 按稀有度排序
     let displayCards = cards;
     if (cards.length > 5) {
-        // 按「卡片编号 + 稀有度」分组合并
+        // 按「卡片唯一标识 + 稀有度」分组合并
+        // 优先使用 cardSetCode（如 BLZD-JP001），其次 id，最后 name
         const mergeMap = new Map();
         for (const card of cards) {
-            const key = `${card.id || card.name}_${card.rarityCode || 'N'}`;
+            const cardKey = card.cardSetCode || card.id || card.name;
+            const key = `${cardKey}_${card.rarityCode || 'N'}`;
             if (mergeMap.has(key)) {
                 mergeMap.get(key).count++;
             } else {
                 mergeMap.set(key, { ...card, count: 1 });
             }
         }
+        console.log(`🃏 合并前: ${cards.length} 张, 合并后: ${mergeMap.size} 张`);
         displayCards = Array.from(mergeMap.values());
 
         // 按稀有度从高到低排序
