@@ -1165,9 +1165,30 @@ async function showResults(cards) {
     const display = document.getElementById('cards-display');
     display.innerHTML = '';
 
+    // 稀有度排序优先级（数字越大越稀有，排在越前面）
+    const RARITY_RANK = {
+        'N': 0,
+        'NR': 1,
+        'R': 2,
+        'SR': 3,
+        'UR': 4,
+        'SER': 5,
+        'UTR': 6,
+        'PSER': 7
+    };
+
+    // 多包模式下按稀有度从高到低排序
+    if (cards.length > 5) {
+        cards.sort((a, b) => {
+            const rankA = RARITY_RANK[a.rarityCode] ?? 0;
+            const rankB = RARITY_RANK[b.rarityCode] ?? 0;
+            return rankB - rankA;
+        });
+    }
+
     // 计算每张卡的动画延迟，总时长不超过 2 秒
     const maxTotalDelay = 2; // 秒
-    const perCardDelay = Math.min(0.15, maxTotalDelay / cards.length);
+    const perCardDelay = Math.min(.15, maxTotalDelay / cards.length);
 
     for (let i = 0; i < cards.length; i++) {
         const card = cards[i];
