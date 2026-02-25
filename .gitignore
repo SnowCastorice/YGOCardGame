@@ -19,3 +19,6 @@ node_modules/
 _temp_*.html
 _pack_*_output.json
 _cardids_output.txt
+
+# 测试截图和输出文件
+test_output/

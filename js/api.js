@@ -552,6 +552,8 @@ function convertYGOCDBCard(ygocdbCard, rarityCode) {
         attribute: attribute,
         rarity: rarityNames[rarityCode] || 'Common',
         rarityCode: rarityCode || 'N',
+        cardSetCode: '',             // YGOCDB 无卡包编号，后续由加载流程补充
+        setNumber: 0,                // 编号序号，后续由加载流程补充
         // YGOCDB fallback 是 OCG 专用路径，使用日文版卡图
         imageUrl: `${API_CONFIG.YGOCDB.IMAGE_URL}/${ygocdbCard.id}.jpg`,
         imageLargeUrl: `${API_CONFIG.YGOCDB.IMAGE_URL}/${ygocdbCard.id}.jpg`,
@@ -625,6 +627,10 @@ function convertYGOProDeckCard(card, rarityCode, setCode, mode) {
     let rarity = 'Common';
     let code = rarityCode || 'N';
 
+    // 从 card_sets 中查找本卡包的编号（如 BLZD-JP001）
+    let cardSetCode = '';
+    let setNumber = 0;
+
     if (!rarityCode && card.card_sets && setCode) {
         const setInfo = card.card_sets.find(function (s) {
             return s.set_name === setCode || s.set_code.startsWith(setCode);
@@ -632,6 +638,10 @@ function convertYGOProDeckCard(card, rarityCode, setCode, mode) {
         if (setInfo) {
             rarity = setInfo.set_rarity;
             code = mapRarityToCode(setInfo.set_rarity);
+            cardSetCode = setInfo.set_code || '';  // 如 "MZMU-EN001"
+            // 从 set_code 末尾提取数字编号（如 "MZMU-EN001" → 1）
+            var numMatch = cardSetCode.match(/(\d+)$/);
+            if (numMatch) setNumber = parseInt(numMatch[1], 10);
         }
     } else {
         const rarityNames = { 'UR': 'Ultra Rare', 'SR': 'Super Rare', 'R': 'Rare', 'N': 'Common' };
@@ -677,6 +687,8 @@ function convertYGOProDeckCard(card, rarityCode, setCode, mode) {
         attribute: card.attribute,
         rarity: rarity,
         rarityCode: code,
+        cardSetCode: cardSetCode,    // 卡包内编号（如 "BLZD-JP001"）
+        setNumber: setNumber,        // 编号序号（如 1, 2, 3...），用于排序
         imageUrl: imageUrl,
         imageLargeUrl: imageLargeUrl,
         dataSource: 'ygoprodeck'
@@ -731,7 +743,50 @@ async function getOCGCardSetData(packConfig, onProgress) {
                 });
                 await dbPut('cardSets', cached);
             }
-            console.log(`📦 从缓存加载 OCG 卡包 [${packConfig.packName}] (${langConfig.nameLocal})，共 ${cached.cards.length} 张卡`);
+            // 同步稀有度：用 cards.json 中最新的 rarityCode 覆盖缓存中的旧值
+            // （避免修改了卡牌稀有度配置后，缓存数据未更新的问题）
+            if (packConfig.cardIds && packConfig.cardIds.length > 0) {
+                const latestRarityMap = {};
+                packConfig.cardIds.forEach(function (cardDef) {
+                    latestRarityMap[cardDef.id] = cardDef.rarityCode || 'N';
+                });
+                let rarityUpdated = false;
+                cached.cards.forEach(function (card) {
+                    const latestRarity = latestRarityMap[card.id];
+                    if (latestRarity && card.rarityCode !== latestRarity) {
+                        card.rarityCode = latestRarity;
+                        // 同步 rarity 文本描述
+                        const rarityNames = { 'UR': 'Ultra Rare', 'SR': 'Super Rare', 'R': 'Rare', 'N': 'Common' };
+                        card.rarity = rarityNames[latestRarity] || 'Common';
+                        rarityUpdated = true;
+                    }
+                });
+                if (rarityUpdated) {
+                    await dbPut('cardSets', cached);
+                    console.log(`🔄 已同步 OCG 卡包 [${packConfig.packName}] 的稀有度配置到缓存`);
+                }
+            }
+            // 补充卡包内编号（旧版本缓存可能没有 setNumber 字段）
+            if (packConfig.cardIds && packConfig.cardIds.length > 0) {
+                const needsSetNumber = cached.cards.some(function (c) { return !c.setNumber; });
+                if (needsSetNumber) {
+                    const pCode = packConfig.packCode || '';
+                    const idToIdx = {};
+                    packConfig.cardIds.forEach(function (cardDef, index) {
+                        idToIdx[cardDef.id] = index + 1;
+                    });
+                    cached.cards.forEach(function (card) {
+                        var idx = idToIdx[card.id] || 0;
+                        card.setNumber = idx;
+                        if (pCode && idx > 0) {
+                            card.cardSetCode = pCode + '-JP' + String(idx).padStart(3, '0');
+                        }
+                    });
+                    await dbPut('cardSets', cached);
+                    console.log(`� 已补充 OCG 卡包 [${packConfig.packName}] 的卡包内编号到缓存`);
+                }
+            }
+            console.log(`�📦 从缓存加载 OCG 卡包 [${packConfig.packName}] (${langConfig.nameLocal})，共 ${cached.cards.length} 张卡`);
             return cached;
         }
     }
@@ -804,6 +859,22 @@ async function getOCGCardSetData(packConfig, onProgress) {
             throw new Error(`卡包 [${packConfig.packName}] 无法获取数据（API 和离线数据均不可用）`);
         }
     }
+
+    // 2.5 为 OCG 卡片赋予卡包内编号（基于 cardIds 数组的顺序 = 编号顺序）
+    // cardIds 数组的顺序即 BLZD-JP001, JP002, JP003... 的编号顺序
+    const packCode = packConfig.packCode || '';
+    const idToIndex = {};
+    cardIds.forEach(function (cardDef, index) {
+        idToIndex[cardDef.id] = index + 1;  // 编号从1开始
+    });
+    cards.forEach(function (card) {
+        var idx = idToIndex[card.id] || 0;
+        card.setNumber = idx;
+        // 生成卡包编号字符串（如 "BLZD-JP001"）
+        if (packCode && idx > 0) {
+            card.cardSetCode = packCode + '-JP' + String(idx).padStart(3, '0');
+        }
+    });
 
     // 3. 构建缓存数据
     const setData = {
@@ -1016,11 +1087,17 @@ async function getTCGCardSetData(setCode) {
                 }
             }
 
-            console.log(`📦 从缓存加载 TCG 卡包 [${setCode}]，共 ${cached.cards.length} 张卡`);
-            return cached;
+            // 补充卡包内编号（旧版本缓存可能没有 setNumber 字段）
+            const needsSetNumber = cached.cards.some(function (c) { return !c.setNumber; });
+            if (needsSetNumber) {
+                // 旧缓存缺少编号信息，跳过缓存，走后面的 API 重新获取逻辑
+                console.log(`🔢 TCG 缓存中的卡牌缺少编号，将重新从 API 加载...`);
+            } else {
+                console.log(`📦 从缓存加载 TCG 卡包 [${setCode}]，共 ${cached.cards.length} 张卡`);
+                return cached;
+            }
         }
     }
-
     // 2. 从 YGOProDeck API 获取（TCG 默认英文，不传 language 参数）
     console.log(`🌐 从 YGOProDeck 加载 TCG 卡包 [${setCode}]...`);
 

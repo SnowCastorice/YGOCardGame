@@ -1,7 +1,7 @@
 ﻿/**
  * ============================================
  * YGO Pack Opener - 游戏核心逻辑
- * 版本: 1.0.0
+ * 版本: 1.1.0
  * 
  * 【文件说明】
  * 这是游戏的"大脑"，负责：
@@ -12,6 +12,7 @@
  * 5. 控制界面切换和动画播放
  * 6. 管理 OCG/TCG 模式切换
  * 7. 集成货币系统（开包消耗货币、货币兑换）
+ * 8. 集成背包系统（开包卡片自动入库、查看收藏）
  * ============================================
  */
 
@@ -29,6 +30,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     // 初始化货币系统（在绑定事件之前，确保余额数据已就绪）
     CurrencySystem.init();
+
+    // 初始化背包系统
+    InventorySystem.init();
 
     // 先绑定导航栏按钮事件（缓存、日志、模式切换、货币兑换），确保即使加载失败也能使用
     bindNavEvents();
@@ -84,6 +88,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         // 更新货币 UI 显示
         CurrencySystem.updateUI();
+
+        // 更新背包角标
+        InventorySystem.updateBadge();
 
         hideLoadingState();
 
@@ -178,6 +185,10 @@ function bindNavEvents() {
     bindEvent('currency-item-gold', 'click', showExchange);
     bindEvent('currency-item-diamond', 'click', showExchange);
 
+    // 背包
+    bindEvent('btn-inventory', 'click', showInventory);
+    bindEvent('btn-close-inventory', 'click', hideInventory);
+
     // 开发者工具
     bindEvent('btn-dev-tools', 'click', showDevTools);
     bindEvent('btn-close-devtools', 'click', hideDevTools);
@@ -194,6 +205,9 @@ function bindNavEvents() {
     });
     bindEvent('exchange-modal', 'click', function (e) {
         if (e.target === document.getElementById('exchange-modal')) hideExchange();
+    });
+    bindEvent('inventory-modal', 'click', function (e) {
+        if (e.target === document.getElementById('inventory-modal')) hideInventory();
     });
 
     console.log('✅ 导航栏事件绑定完成');
@@ -276,6 +290,12 @@ function bindGameEvents() {
     // 返回选择卡包（两个返回按钮）
     bindEvent('btn-back-to-packs', 'click', showPackSelect);
     bindEvent('btn-back-from-result', 'click', showPackSelect);
+
+    // 卡片预览（关闭按钮 + 遮罩层点击关闭）
+    bindEvent('btn-close-card-preview', 'click', hideCardPreview);
+    bindEvent('card-preview-modal', 'click', function (e) {
+        if (e.target === document.getElementById('card-preview-modal')) hideCardPreview();
+    });
 }
 
 // ====== 绑定所有按钮事件 ======
@@ -447,21 +467,31 @@ function renderPackList() {
         const coverImageUrl = getPackCoverImageUrl(pack, packCode);
 
         packCard.innerHTML = `
-            <div class="pack-cover-container">
-                <img class="pack-cover-img" src="${coverImageUrl}" alt="${pack.packName}" loading="lazy"
-                     referrerpolicy="no-referrer"
-                     onerror="handlePackCoverError(this);" />
-                <span class="pack-icon pack-icon-fallback" style="display:none;">🎴</span>
+            <div class="pack-cover-wrapper">
+                <div class="pack-cover-container">
+                    <img class="pack-cover-img" src="${coverImageUrl}" alt="${pack.packName}" loading="lazy"
+                         referrerpolicy="no-referrer"
+                         onerror="handlePackCoverError(this);" />
+                    <span class="pack-icon pack-icon-fallback" style="display:none;">🎴</span>
+                    <div class="pack-price pack-overlay-tag"><span class="pack-price-icon">${priceIcon}</span> ${priceValue}</div>
+                    <button class="btn-pack-preview pack-overlay-tag" title="查看卡包内所有卡片">🔍 预览</button>
+                </div>
             </div>
             <div class="pack-name">${(currentGameMode === 'ocg' && pack.packNameJP) ? pack.packNameJP : pack.packName}</div>
             <div class="pack-code">${(currentGameMode === 'ocg' && pack.packNameJP) ? pack.packName + '<br>' : ''}${displayCode}${pack.releaseDate ? ' (' + pack.releaseDate + ')' : ''}</div>
             <div class="pack-count">每包 ${pack.cardsPerPack} 张${cardCountInfo} | ${pack.guaranteedRareSlot ? '保底R以上' : '纯随机'} ${modeIcon}</div>
-            <div class="pack-price"><span class="pack-price-icon">${priceIcon}</span> ${priceValue}</div>
         `;
 
         // 将 pack 数据绑定到 DOM 元素上，供 onerror 回调使用
         const imgEl = packCard.querySelector('.pack-cover-img');
         if (imgEl) imgEl._packData = pack;
+
+        // 预览按钮点击事件（阻止冒泡，不触发 selectPack）
+        const previewBtn = packCard.querySelector('.btn-pack-preview');
+        previewBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            showCardPreview(pack);
+        });
 
         packCard.addEventListener('click', function () {
             selectPack(pack);
@@ -752,7 +782,10 @@ async function openPack() {
     // 4. 抽取卡牌
     const drawnCards = drawCards(currentPack, currentPackCards);
 
-    // 5. 展示结果
+    // 5. 将抽到的卡片存入背包
+    InventorySystem.addCards(drawnCards);
+
+    // 6. 展示结果
     await showResults(drawnCards);
 
     // 更新价格信息（余额可能变化）
@@ -1087,15 +1120,17 @@ function devAddGold() {
  * 开发者工具：重置游戏（重置货币余额至初始值，不清除缓存）
  */
 function devResetGame() {
-    if (!confirm('❗ 确定要重置游戏吗？\n\n这将重置你的货币余额：\n• 🪙 金币恢复为初始值\n• 💎 钻石恢复为初始值\n\n⚠️ 不会清除缓存数据。若需清除缓存，请前往「💾 缓存管理」。')) {
+    if (!confirm('❗ 确定要重置游戏吗？\n\n这将重置以下数据：\n• 🪙 金币恢复为初始值\n• 💎 钻石恢复为初始值\n• 🎒 背包清空所有卡片\n\n⚠️ 不会清除缓存数据。若需清除缓存，请前往「💾 缓存管理」。')) {
         return;
     }
 
     try {
         CurrencySystem.resetAll();
         CurrencySystem.updateUI();
-        alert('✅ 游戏已重置！货币已恢复为初始值。');
-        console.log('🛠️ [开发者工具] 游戏已重置');
+        // 重置背包
+        InventorySystem.clearAll();
+        alert('✅ 游戏已重置！货币已恢复为初始值，背包已清空。');
+        console.log('🛠️ [开发者工具] 游戏已重置（含背包清空）');
     } catch (error) {
         console.error('❌ 重置游戏失败:', error);
         alert('❌ 重置失败：' + error.message);
@@ -1223,6 +1258,21 @@ function showExchange() {
 /** 关闭货币兑换弹窗 */
 function hideExchange() {
     document.getElementById('exchange-modal').classList.remove('active');
+}
+
+// ============================================
+// 背包弹窗
+// ============================================
+
+/** 打开背包弹窗 */
+function showInventory() {
+    InventorySystem.renderInventoryModal();
+    document.getElementById('inventory-modal').classList.add('active');
+}
+
+/** 关闭背包弹窗 */
+function hideInventory() {
+    document.getElementById('inventory-modal').classList.remove('active');
 }
 
 /** 更新兑换弹窗内的余额显示 */
@@ -1802,4 +1852,263 @@ function renderCDNComparison(results, cardId) {
     }
 
     compareArea.innerHTML = html;
+}
+
+// ============================================
+// 卡片预览功能
+// ============================================
+
+/**
+ * 打开卡片预览弹窗
+ * 展示当前卡包内所有可开出的卡片，已拥有的卡片正常显示，
+ * 未拥有的卡片添加灰度效果
+ */
+/**
+ * 显示卡片预览弹窗
+ * 支持从卡包列表直接调用（传入 pack 参数），也支持从开包界面调用（使用已加载的 currentPack）
+ * 
+ * @param {Object} [pack] - 卡包对象（可选，不传则使用 currentPack）
+ */
+async function showCardPreview(pack) {
+    // 确定要预览的卡包
+    const targetPack = pack || currentPack;
+
+    if (!targetPack) {
+        alert('当前没有加载任何卡包数据，请先选择一个卡包。');
+        return;
+    }
+
+    // 显示加载状态
+    showLoadingState('正在加载「' + (targetPack.packName || '卡包') + '」的卡片数据...');
+
+    try {
+        // OCG 模式：如果卡包使用独立文件存储 cardIds，先动态加载
+        if (currentGameMode === 'ocg' && targetPack.cardFile && !targetPack.cardIds) {
+            updateLoadingText('正在加载「' + targetPack.packName + '」卡牌列表...');
+            var cardFileUrl = 'data/ocg/cards/' + targetPack.cardFile;
+            var cardFileResponse = await fetch(cardFileUrl);
+            if (!cardFileResponse.ok) {
+                throw new Error('加载卡牌文件失败: ' + cardFileUrl + ' (HTTP ' + cardFileResponse.status + ')');
+            }
+            var cardFileData = await cardFileResponse.json();
+            targetPack.cardIds = cardFileData.cardIds;
+            console.log('📄 [预览] 已加载独立卡牌文件 [' + targetPack.cardFile + ']，共 ' + targetPack.cardIds.length + ' 张卡');
+        }
+
+        // 通过 API 模块获取卡牌数据
+        var setData = await TCG_API.getCardSetData(currentGameMode, targetPack, function (loaded, total) {
+            updateLoadingText('正在加载卡片数据... (' + loaded + '/' + total + ')');
+        });
+
+        // 用加载到的卡片数据渲染预览
+        hideLoadingState();
+        renderCardPreview('id', setData.cards, targetPack);
+        document.getElementById('card-preview-modal').classList.add('active');
+
+    } catch (error) {
+        console.error('❌ [预览] 加载卡包数据失败:', error);
+        hideLoadingState();
+        alert('加载卡包「' + (targetPack.packName || '') + '」失败。\n\n错误详情: ' + error.message);
+    }
+}
+
+/** 关闭卡片预览弹窗 */
+function hideCardPreview() {
+    document.getElementById('card-preview-modal').classList.remove('active');
+}
+
+/**
+ * 渲染卡片预览弹窗内容
+ * 支持排序切换（默认按编号排序）
+ * 
+ * @param {string} sortBy - 排序方式（'id' | 'rarity' | 'owned' | 'name'），默认 'id'
+ * @param {Array} [cards] - 卡片数组（可选，不传则使用 currentPackCards）
+ * @param {Object} [pack] - 卡包对象（可选，不传则使用 currentPack）
+ */
+function renderCardPreview(sortBy, cards, pack) {
+    const contentEl = document.getElementById('card-preview-content');
+    if (!contentEl) return;
+
+    sortBy = sortBy || 'id';
+    // 使用传入的数据或回退到全局变量
+    const previewCards = cards || currentPackCards;
+    const previewPack = pack || currentPack;
+
+    if (!previewCards || previewCards.length === 0) {
+        contentEl.innerHTML = '<p style="text-align:center;color:var(--text-secondary);padding:40px 0;">暂无卡片数据</p>';
+        return;
+    }
+
+    // 获取当前卡包的所有卡片
+    const allCards = previewCards.slice();
+
+    // 从背包系统获取已拥有的卡片信息
+    const ownedMap = {};
+    let ownedCount = 0;
+    allCards.forEach(function (card) {
+        const invCard = InventorySystem.getCard(card.id);
+        if (invCard) {
+            ownedMap[card.id] = invCard.count;
+            ownedCount++;
+        }
+    });
+
+    // 排序
+    const rarityOrder = { 'UR': 4, 'SR': 3, 'R': 2, 'N': 1 };
+    const sortedCards = allCards.slice();
+
+    switch (sortBy) {
+        case 'id':
+            // 按卡包内编号序号（如 BLZD-JP001 → 1, JP002 → 2）从小到大排序
+            sortedCards.sort(function (a, b) {
+                return (Number(a.setNumber) || 0) - (Number(b.setNumber) || 0);
+            });
+            break;
+        case 'rarity':
+            sortedCards.sort(function (a, b) {
+                const rDiff = (rarityOrder[b.rarityCode] || 0) - (rarityOrder[a.rarityCode] || 0);
+                if (rDiff !== 0) return rDiff;
+                // 同稀有度，已拥有的排前面
+                const aOwned = ownedMap[a.id] ? 1 : 0;
+                const bOwned = ownedMap[b.id] ? 1 : 0;
+                return bOwned - aOwned;
+            });
+            break;
+        case 'owned':
+            // 已拥有的排前面，未拥有的排后面
+            sortedCards.sort(function (a, b) {
+                const aOwned = ownedMap[a.id] ? 1 : 0;
+                const bOwned = ownedMap[b.id] ? 1 : 0;
+                if (aOwned !== bOwned) return bOwned - aOwned;
+                return (rarityOrder[b.rarityCode] || 0) - (rarityOrder[a.rarityCode] || 0);
+            });
+            break;
+        case 'name':
+            sortedCards.sort(function (a, b) {
+                const nameA = a.nameCN || a.name || '';
+                const nameB = b.nameCN || b.name || '';
+                return nameA.localeCompare(nameB, 'zh-CN');
+            });
+            break;
+    }
+
+    // 稀有度分布统计
+    const rarityCounts = { 'UR': 0, 'SR': 0, 'R': 0, 'N': 0 };
+    allCards.forEach(function (card) {
+        const code = card.rarityCode || 'N';
+        rarityCounts[code] = (rarityCounts[code] || 0) + 1;
+    });
+
+    // 更新弹窗标题
+    const titleEl = document.getElementById('card-preview-title');
+    if (titleEl) {
+        titleEl.textContent = '🔍 ' + (previewPack ? previewPack.packName || '卡包' : '卡包') + ' — 卡片预览';
+    }
+
+    // 构建 HTML
+    let html = '';
+
+    // 收集进度条
+    const collectionPercent = allCards.length > 0 ? Math.round(ownedCount / allCards.length * 100) : 0;
+    html += `
+        <div class="preview-collection-bar">
+            <div class="preview-collection-info">
+                <span>收集进度</span>
+                <span class="preview-collection-count">${ownedCount} / ${allCards.length} (${collectionPercent}%)</span>
+            </div>
+            <div class="preview-progress-track">
+                <div class="preview-progress-fill" style="width: ${collectionPercent}%"></div>
+            </div>
+        </div>
+    `;
+
+    // 稀有度分布
+    html += `
+        <div class="preview-rarity-dist">
+            <span class="preview-rarity-tag rarity-tag-UR">UR ×${rarityCounts['UR']}</span>
+            <span class="preview-rarity-tag rarity-tag-SR">SR ×${rarityCounts['SR']}</span>
+            <span class="preview-rarity-tag rarity-tag-R">R ×${rarityCounts['R']}</span>
+            <span class="preview-rarity-tag rarity-tag-N">N ×${rarityCounts['N']}</span>
+        </div>
+    `;
+
+    // 排序控制栏
+    html += `
+        <div class="preview-sort-bar">
+            <span class="sort-label">排序：</span>
+            <button class="sort-btn ${sortBy === 'id' ? 'active' : ''}" data-sort="id">编号</button>
+            <button class="sort-btn ${sortBy === 'rarity' ? 'active' : ''}" data-sort="rarity">稀有度</button>
+            <button class="sort-btn ${sortBy === 'owned' ? 'active' : ''}" data-sort="owned">已拥有</button>
+            <button class="sort-btn ${sortBy === 'name' ? 'active' : ''}" data-sort="name">名称</button>
+        </div>
+    `;
+
+    // 卡片网格
+    html += '<div class="preview-card-grid">';
+    sortedCards.forEach(function (card) {
+        const isOwned = !!ownedMap[card.id];
+        const ownedQty = ownedMap[card.id] || 0;
+        const rarityCode = card.rarityCode || 'N';
+        const displayName = card.nameCN || card.name || card.nameOriginal || '未知卡片';
+
+        // 卡图
+        let imageHtml;
+        if (card.imageUrl) {
+            imageHtml = `<img class="preview-card-image ${!isOwned ? 'not-owned' : ''}" 
+                              src="${card.imageUrl}" alt="${displayName}" loading="lazy"
+                              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                         <div class="preview-card-placeholder" style="display:none;">🃏</div>`;
+        } else {
+            imageHtml = `<div class="preview-card-placeholder ${!isOwned ? 'not-owned' : ''}">🃏</div>`;
+        }
+
+        html += `
+            <div class="preview-card-item ${isOwned ? 'owned' : 'not-owned-card'} rarity-border-${rarityCode}" data-card-id="${card.id}">
+                <div class="preview-card-img-wrapper">
+                    ${imageHtml}
+                    <span class="preview-rarity-badge rarity-${rarityCode}">${rarityCode}</span>
+                    ${isOwned ? `<span class="preview-owned-badge">×${ownedQty}</span>` : ''}
+                    ${!isOwned ? '<div class="preview-lock-icon">🔒</div>' : ''}
+                </div>
+                <div class="preview-card-info">
+                    <div class="preview-card-name" title="${displayName}">${displayName}</div>
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+
+    contentEl.innerHTML = html;
+
+    // 绑定排序按钮事件（保持 cards 和 pack 引用）
+    contentEl.querySelectorAll('.preview-sort-bar .sort-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            renderCardPreview(this.getAttribute('data-sort'), previewCards, previewPack);
+        });
+    });
+
+    // 绑定卡片点击事件（已拥有的卡可以放大查看）
+    contentEl.querySelectorAll('.preview-card-item').forEach(function (item) {
+        item.addEventListener('click', function () {
+            const cardId = this.getAttribute('data-card-id');
+            const card = previewCards.find(function (c) { return String(c.id) === String(cardId); });
+            if (card) {
+                const imgUrl = card.imageLargeUrl || card.imageUrl;
+                if (imgUrl) {
+                    // 复用已有的卡片大图查看器
+                    const viewer = document.getElementById('card-image-viewer');
+                    if (!viewer) return;
+                    const img = viewer.querySelector('.viewer-image');
+                    const nameEl = viewer.querySelector('.viewer-card-name');
+                    if (img) img.src = imgUrl;
+                    if (nameEl) {
+                        const displayName = card.nameCN || card.name || '';
+                        const foreignName = card.nameOriginal || '';
+                        nameEl.textContent = foreignName ? displayName + '  ' + foreignName : displayName;
+                    }
+                    viewer.classList.add('active');
+                }
+            }
+        });
+    });
 }
