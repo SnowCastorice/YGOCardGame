@@ -1258,6 +1258,18 @@ body {
     text-decoration: underline;
 }
 
+/* 页脚版本号可点击样式（日志入口） */
+.footer-version-link {
+  cursor: pointer;
+  color: var(--accent-blue);
+  transition: color .2s, text-shadow .2s;
+}
+
+.footer-version-link:hover {
+  color: var(--accent-gold);
+  text-shadow: 0 0 6px rgba(255, 215, 0, .4);
+}
+
 /* ============================================
    动画关键帧
    ============================================ */

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YGO Pack Opener - 游戏王卡包开封模拟器</title>
-<link rel="stylesheet" href="css/style.css?v=1.1.1">
+<link rel="stylesheet" href="css/style.css?v=1.3.4">
 </head>
 <body>
     <!-- ====== 全局加载遮罩层 ====== -->
@@ -37,7 +37,6 @@
         <nav class="top-nav">
             <button id="btn-inventory" class="nav-btn inventory-btn">🎒 背包<span id="inventory-badge" class="inventory-badge" style="display:none;">0</span></button>
             <button id="btn-cache-manage" class="nav-btn">💾 缓存</button>
-            <button id="btn-changelog" class="nav-btn">📋 日志</button>
             <button id="btn-dev-tools" class="nav-btn dev-btn">🔧</button>
         </nav>
     </header>
@@ -215,7 +214,7 @@
 
     <!-- ====== 页脚 ====== -->
     <footer class="footer">
-<p>YGO Pack Opener v1.1.1 | 游戏王卡包开封模拟器</p>
+<p><span id="footer-version" class="footer-version-link" title="点击查看更新日志">YGO Pack Opener v1.3.4</span> | 游戏王卡包开封模拟器</p>
         <p class="footer-credit">
             外文数据: <a href="https://ygoprodeck.com/" target="_blank" rel="noopener">YGOProDeck</a> | 
             中文名称: <a href="https://ygocdb.com/" target="_blank" rel="noopener">YGOCDB</a> | 
@@ -243,10 +242,10 @@
     </script>
 
     <!-- 先加载离线备用数据，再加载 API 模块，最后加载游戏逻辑 -->
-<script src="data/fallback_cards.js?v=1.1.1"></script>
-    <script src="js/currency.js?v=1.1.1"></script>
-    <script src="js/inventory.js?v=1.1.1"></script>
-    <script src="js/api.js?v=1.1.1"></script>
-    <script src="js/game.js?v=1.1.1"></script>
+<script src="data/fallback_cards.js?v=1.3.4"></script>
+    <script src="js/currency.js?v=1.3.4"></script>
+    <script src="js/inventory.js?v=1.3.4"></script>
+    <script src="js/api.js?v=1.3.4"></script>
+    <script src="js/game.js?v=1.3.4"></script>
 </body>
 </html>

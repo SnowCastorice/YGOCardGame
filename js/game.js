@@ -92,9 +92,13 @@ document.addEventListener('DOMContentLoaded', async function () {
         // 更新背包角标
         InventorySystem.updateBadge();
 
+        // 动态同步页脚版本号（从 changelog 数据读取最新版本）
+        syncFooterVersion();
+
         hideLoadingState();
 
-        console.log(`🎴 YGO Pack Opener v1.0.0 初始化完成！当前模式: ${currentGameMode.toUpperCase()}`);
+        const latestVer = changelogData && changelogData.versions && changelogData.versions[0] ? changelogData.versions[0].version : '?';
+        console.log(`🎴 YGO Pack Opener v${latestVer} 初始化完成！当前模式: ${currentGameMode.toUpperCase()}`);
 
     } catch (error) {
         console.error('❌ 加载配置文件失败:', error);
@@ -166,8 +170,8 @@ function bindEvent(id, event, handler) {
 
 // ====== 绑定导航栏按钮事件（缓存、日志、模式切换） ======
 function bindNavEvents() {
-    // 更新日志
-    bindEvent('btn-changelog', 'click', showChangelog);
+    // 更新日志（从页脚版本号入口进入）
+    bindEvent('footer-version', 'click', showChangelog);
     bindEvent('btn-close-changelog', 'click', hideChangelog);
 
     // 缓存管理
@@ -1293,6 +1297,16 @@ function getCardIcon(rarity) {
 // ============================================
 // 更新日志
 // ============================================
+
+/** 从 changelog 数据动态同步页脚版本号，保持底部显示和日志一致 */
+function syncFooterVersion() {
+    const footerEl = document.getElementById('footer-version');
+    if (!footerEl) return;
+    if (changelogData && changelogData.versions && changelogData.versions.length > 0) {
+        const latestVersion = changelogData.versions[0].version;
+        footerEl.textContent = `YGO Pack Opener v${latestVersion}`;
+    }
+}
 
 /** 显示更新日志弹窗 */
 function showChangelog() {
