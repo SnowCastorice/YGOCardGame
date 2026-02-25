@@ -7,12 +7,18 @@
     "setCode": "TCG 专用：YGOProDeck 卡包编码（用于调用 API）",
     "cardFile": "OCG 专用：卡牌列表独立文件路径（相对于 data/ocg/cards/ 目录），每个卡包一个文件",
     "cardsPerPack": "每包抽取的卡牌数量",
-    "rarityRates": "各稀有度的抽取权重（数字越大越容易抽到）",
-    "guaranteedRareSlot": "是否保底最后一张至少为 R 及以上",
+    "packScheme": "抽卡方案：ocg_default = OCG默认(4N+1非N+多版本稀有度), legacy = 旧版(按权重随机)",
+    "rarityRates": "（旧版方案用）各稀有度的抽取权重（数字越大越容易抽到）",
+    "versionOdds": "（OCG方案用）多版本稀有度概率：每种稀有度被选中的相对权重",
+    "guaranteedRareSlot": "（旧版方案用）是否保底最后一张至少为 R 及以上",
     "gameMode": "游戏模式：ocg = 亚洲版, tcg = 欧美版",
     "totalCards": "卡包收录卡牌总数（仅供显示，实际数量以 cardFile 中为准）",
     "price": "开包所需货币数量",
     "currency": "开包使用的货币类型（gold=金币, diamond=钻石）"
+  },
+  "_packScheme说明": {
+    "ocg_default": "OCG默认方案：4张N卡 + 1张非N稀有卡，同一包编号不重复。非N卡若有多个稀有度版本，按versionOdds概率随机。",
+    "legacy": "旧版方案：所有位置按rarityRates权重随机稀有度，兼容TCG和未配置方案的卡包。"
   },
   "packs": [
     {
@@ -26,16 +32,21 @@
       "cardsPerPack": 5,
       "totalCards": 80,
       "cardFile": "ocg_blzd.json",
-      "rarityRates": {
-        "UR": 1,
-        "SR": 4,
-        "R": 25,
-        "N": 70
+      "packScheme": "ocg_default",
+      "versionOdds": {
+        "_说明": "多版本稀有度概率权重（数值越大越容易被选中），用于同一张卡有多个稀有度版本时的随机。概率待用户确认后调整。",
+        "N": 100,
+        "NR": 95,
+        "R": 90,
+        "SR": 80,
+        "UR": 70,
+        "SER": 10,
+        "UTR": 8,
+        "PSER": 3
       },
-      "guaranteedRareSlot": true,
       "price": 100,
       "currency": "gold",
-      "_说明": "2026年1月最新OCG补充包（ブレイジング・ドミニオン），共80张卡，稀有度待补充"
+      "_说明": "2026年1月最新OCG补充包（ブレイジング・ドミニオン），共80张卡，多版本稀有度已配置"
     },
     {
       "packId": "ocg_ch02",
@@ -48,6 +59,7 @@
       "cardsPerPack": 5,
       "totalCards": 42,
       "cardFile": "ocg_ch02.json",
+      "packScheme": "legacy",
       "rarityRates": {
         "UR": 2,
         "SR": 6,
@@ -70,6 +82,7 @@
       "cardsPerPack": 5,
       "totalCards": 60,
       "cardFile": "ocg_25db.json",
+      "packScheme": "legacy",
       "rarityRates": {
         "UR": 2,
         "SR": 6,
@@ -82,11 +95,23 @@
       "_说明": "2025年12月OCG决斗者盒SPECIAL PACK，共60张卡，稀有度待补充"
     }
   ],
+  "defaultPackScheme": "legacy",
   "defaultRarityRates": {
-    "_说明": "OCG 默认概率（UR更稀有，接近日版真实体验）",
+    "_说明": "旧版方案默认概率（兼容未配置方案的卡包）",
     "UR": 1,
     "SR": 4,
     "R": 25,
     "N": 70
+  },
+  "defaultVersionOdds": {
+    "_说明": "OCG默认多版本稀有度概率权重（用于未单独配置versionOdds的ocg_default方案卡包）",
+    "N": 100,
+    "NR": 95,
+    "R": 90,
+    "SR": 80,
+    "UR": 70,
+    "SER": 10,
+    "UTR": 8,
+    "PSER": 3
   }
 }

@@ -491,8 +491,8 @@ async function fetchCardFromYGOCDB(cardId) {
 /**
  * 将 YGOCDB 的卡牌数据转换为统一格式（用于中文 fallback）
  */
-function convertYGOCDBCard(ygocdbCard, rarityCode) {
-    const rarityNames = { 'UR': 'Ultra Rare', 'SR': 'Super Rare', 'R': 'Rare', 'N': 'Common' };
+function convertYGOCDBCard(ygocdbCard, rarityCode, rarityVersions) {
+    const rarityNames = { 'PSER': 'Prismatic Secret Rare', 'UTR': 'Ultimate Rare', 'SER': 'Secret Rare', 'UR': 'Ultra Rare', 'SR': 'Super Rare', 'R': 'Rare', 'NR': 'Normal Rare', 'N': 'Common' };
 
     // 解析 types 字段获取种族/属性/等级
     let cardType = 'Normal Monster';
@@ -552,6 +552,7 @@ function convertYGOCDBCard(ygocdbCard, rarityCode) {
         attribute: attribute,
         rarity: rarityNames[rarityCode] || 'Common',
         rarityCode: rarityCode || 'N',
+        rarityVersions: rarityVersions || [rarityCode || 'N'],  // 多版本稀有度
         cardSetCode: '',             // YGOCDB 无卡包编号，后续由加载流程补充
         setNumber: 0,                // 编号序号，后续由加载流程补充
         // YGOCDB fallback 是 OCG 专用路径，使用日文版卡图
@@ -620,9 +621,10 @@ async function apiRequestYGOProDeck(endpoint, language) {
  * @param {string} rarityCode - 稀有度编码（从 cards.json 预定义，OCG 模式专用）
  * @param {string} setCode - 卡包编码（TCG 模式用于匹配稀有度）
  * @param {string} mode - 模式标识（'ocg' 或 'tcg'），用于选择卡图源
+ * @param {Array} rarityVersions - 多版本稀有度列表（如 ["SR", "SER", "PSER"]）
  * @returns {object} 统一格式的卡牌对象
  */
-function convertYGOProDeckCard(card, rarityCode, setCode, mode) {
+function convertYGOProDeckCard(card, rarityCode, setCode, mode, rarityVersions) {
     // 如果没有预定义稀有度，从 card_sets 中获取（TCG 模式）
     let rarity = 'Common';
     let code = rarityCode || 'N';
@@ -644,7 +646,7 @@ function convertYGOProDeckCard(card, rarityCode, setCode, mode) {
             if (numMatch) setNumber = parseInt(numMatch[1], 10);
         }
     } else {
-        const rarityNames = { 'UR': 'Ultra Rare', 'SR': 'Super Rare', 'R': 'Rare', 'N': 'Common' };
+        const rarityNames = { 'PSER': 'Prismatic Secret Rare', 'UTR': 'Ultimate Rare', 'SER': 'Secret Rare', 'UR': 'Ultra Rare', 'SR': 'Super Rare', 'R': 'Rare', 'NR': 'Normal Rare', 'N': 'Common' };
         rarity = rarityNames[code] || 'Common';
     }
 
@@ -687,6 +689,7 @@ function convertYGOProDeckCard(card, rarityCode, setCode, mode) {
         attribute: card.attribute,
         rarity: rarity,
         rarityCode: code,
+        rarityVersions: rarityVersions || [code],  // 多版本稀有度（如 ["SR", "SER", "PSER"]）
         cardSetCode: cardSetCode,    // 卡包内编号（如 "BLZD-JP001"）
         setNumber: setNumber,        // 编号序号（如 1, 2, 3...），用于排序
         imageUrl: imageUrl,
@@ -743,12 +746,16 @@ async function getOCGCardSetData(packConfig, onProgress) {
                 });
                 await dbPut('cardSets', cached);
             }
-            // 同步稀有度：用 cards.json 中最新的 rarityCode 覆盖缓存中的旧值
+            // 同步稀有度：用 cards.json 中最新的 rarityCode 和 rarityVersions 覆盖缓存中的旧值
             // （避免修改了卡牌稀有度配置后，缓存数据未更新的问题）
             if (packConfig.cardIds && packConfig.cardIds.length > 0) {
                 const latestRarityMap = {};
+                const latestVersionsMap = {};
                 packConfig.cardIds.forEach(function (cardDef) {
                     latestRarityMap[cardDef.id] = cardDef.rarityCode || 'N';
+                    if (cardDef.rarityVersions) {
+                        latestVersionsMap[cardDef.id] = cardDef.rarityVersions;
+                    }
                 });
                 let rarityUpdated = false;
                 cached.cards.forEach(function (card) {
@@ -756,8 +763,22 @@ async function getOCGCardSetData(packConfig, onProgress) {
                     if (latestRarity && card.rarityCode !== latestRarity) {
                         card.rarityCode = latestRarity;
                         // 同步 rarity 文本描述
-                        const rarityNames = { 'UR': 'Ultra Rare', 'SR': 'Super Rare', 'R': 'Rare', 'N': 'Common' };
+                        const rarityNames = { 'PSER': 'Prismatic Secret Rare', 'UTR': 'Ultimate Rare', 'SER': 'Secret Rare', 'UR': 'Ultra Rare', 'SR': 'Super Rare', 'R': 'Rare', 'NR': 'Normal Rare', 'N': 'Common' };
                         card.rarity = rarityNames[latestRarity] || 'Common';
+                        rarityUpdated = true;
+                    }
+                    // 同步多版本稀有度
+                    const latestVersions = latestVersionsMap[card.id];
+                    if (latestVersions) {
+                        const currentVersions = JSON.stringify(card.rarityVersions || []);
+                        const newVersions = JSON.stringify(latestVersions);
+                        if (currentVersions !== newVersions) {
+                            card.rarityVersions = latestVersions;
+                            rarityUpdated = true;
+                        }
+                    } else if (!card.rarityVersions) {
+                        // 兜底：如果没有 rarityVersions，用 rarityCode 补充
+                        card.rarityVersions = [card.rarityCode || 'N'];
                         rarityUpdated = true;
                     }
                 });
@@ -799,10 +820,14 @@ async function getOCGCardSetData(packConfig, onProgress) {
         throw new Error(`OCG 卡包 [${packConfig.packName}] 没有配置 cardIds`);
     }
 
-    // 构建稀有度映射表（ID → rarityCode）
+    // 构建稀有度映射表（ID → rarityCode）和多版本稀有度映射表（ID → rarityVersions）
     const rarityMap = {};
+    const versionsMap = {};
     cardIds.forEach(function (cardDef) {
         rarityMap[cardDef.id] = cardDef.rarityCode;
+        if (cardDef.rarityVersions) {
+            versionsMap[cardDef.id] = cardDef.rarityVersions;
+        }
     });
 
     // 获取所有卡牌 ID 列表
@@ -812,7 +837,7 @@ async function getOCGCardSetData(packConfig, onProgress) {
 
     try {
         // 2.1 尝试 YGOProDeck 批量查询
-        cards = await fetchOCGCardsFromYGOProDeck(allIds, rarityMap, langConfig, onProgress);
+        cards = await fetchOCGCardsFromYGOProDeck(allIds, rarityMap, versionsMap, langConfig, onProgress);
         console.log(`✅ YGOProDeck 返回 ${cards.length} 张卡`);
 
         // 2.1.1 补充中文名（从 YGOCDB 获取，面向中国区用户）
@@ -830,7 +855,7 @@ async function getOCGCardSetData(packConfig, onProgress) {
         if (langConfig.fallbackSource === 'ygocdb') {
             console.log(`🔄 尝试 YGOCDB 备用数据源...`);
             try {
-                cards = await fetchOCGCardsFromYGOCDB(allIds, rarityMap, onProgress);
+                cards = await fetchOCGCardsFromYGOCDB(allIds, rarityMap, versionsMap, onProgress);
                 console.log(`✅ YGOCDB 返回 ${cards.length} 张卡`);
             } catch (ygocdbError) {
                 console.warn(`⚠️ YGOCDB 也失败了:`, ygocdbError.message);
@@ -900,11 +925,12 @@ async function getOCGCardSetData(packConfig, onProgress) {
  * 
  * @param {Array} allIds - 卡牌 ID 数组
  * @param {object} rarityMap - ID → rarityCode 映射
+ * @param {object} versionsMap - ID → rarityVersions 映射（多版本稀有度）
  * @param {object} langConfig - 语言配置
  * @param {function} onProgress - 进度回调
  * @returns {Array} 统一格式的卡牌数组
  */
-async function fetchOCGCardsFromYGOProDeck(allIds, rarityMap, langConfig, onProgress) {
+async function fetchOCGCardsFromYGOProDeck(allIds, rarityMap, versionsMap, langConfig, onProgress) {
     const cards = [];
     const batchSize = API_CONFIG.BATCH_SIZE;
 
@@ -921,7 +947,8 @@ async function fetchOCGCardsFromYGOProDeck(allIds, rarityMap, langConfig, onProg
         if (apiData && apiData.data) {
             apiData.data.forEach(function (card) {
                 const rarityCode = rarityMap[card.id] || 'N';
-                cards.push(convertYGOProDeckCard(card, rarityCode, null, 'ocg'));
+                const rarityVersions = versionsMap[card.id] || [rarityCode];
+                cards.push(convertYGOProDeckCard(card, rarityCode, null, 'ocg', rarityVersions));
             });
         }
 
@@ -941,10 +968,11 @@ async function fetchOCGCardsFromYGOProDeck(allIds, rarityMap, langConfig, onProg
  * 
  * @param {Array} allIds - 卡牌 ID 数组
  * @param {object} rarityMap - ID → rarityCode 映射
+ * @param {object} versionsMap - ID → rarityVersions 映射（多版本稀有度）
  * @param {function} onProgress - 进度回调
  * @returns {Array} 统一格式的卡牌数组
  */
-async function fetchOCGCardsFromYGOCDB(allIds, rarityMap, onProgress) {
+async function fetchOCGCardsFromYGOCDB(allIds, rarityMap, versionsMap, onProgress) {
     const cards = [];
     let loadedCount = 0;
 
@@ -953,7 +981,8 @@ async function fetchOCGCardsFromYGOCDB(allIds, rarityMap, onProgress) {
             const ygocdbCard = await fetchCardFromYGOCDB(cardId);
             if (ygocdbCard) {
                 const rarityCode = rarityMap[cardId] || 'N';
-                cards.push(convertYGOCDBCard(ygocdbCard, rarityCode));
+                const rarityVersions = versionsMap[cardId] || [rarityCode];
+                cards.push(convertYGOCDBCard(ygocdbCard, rarityCode, rarityVersions));
             }
         } catch (error) {
             console.warn(`⚠️ YGOCDB 获取卡牌 ${cardId} 失败`);

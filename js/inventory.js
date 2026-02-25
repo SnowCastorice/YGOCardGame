@@ -17,10 +17,14 @@ const InventorySystem = (function () {
 
     // ====== 稀有度 → 价格映射（临时固定价格，后续可替换为API价格） ======
     const RARITY_PRICES = {
-        'UR': 500,   // 极稀有：500 金币
-        'SR': 200,   // 超稀有：200 金币
-        'R':  50,    // 稀有：50 金币
-        'N':  10     // 普通：10 金币
+        'PSER': 2000, // 棱镜秘密闪：2000 金币
+        'UTR':  1500, // 终极闪：1500 金币
+        'SER':  1000, // 秘密闪：1000 金币
+        'UR':   500,  // 极稀有：500 金币
+        'SR':   200,  // 超稀有：200 金币
+        'R':    50,   // 稀有：50 金币
+        'NR':   20,   // 普通闪：20 金币
+        'N':    10    // 普通：10 金币
     };
 
     // ====== localStorage 存储 key ======
@@ -267,9 +271,13 @@ const InventorySystem = (function () {
         // 价格参考说明
         html += `
             <div class="inventory-price-note">
-                💡 价格参考：<span class="rarity-price rarity-UR">UR ${RARITY_PRICES['UR']}🪙</span> 
+                💡 价格参考：<span class="rarity-price rarity-PSER">PSER ${RARITY_PRICES['PSER']}🪙</span> 
+                <span class="rarity-price rarity-UTR">UTR ${RARITY_PRICES['UTR']}🪙</span> 
+                <span class="rarity-price rarity-SER">SER ${RARITY_PRICES['SER']}🪙</span> 
+                <span class="rarity-price rarity-UR">UR ${RARITY_PRICES['UR']}🪙</span> 
                 <span class="rarity-price rarity-SR">SR ${RARITY_PRICES['SR']}🪙</span> 
                 <span class="rarity-price rarity-R">R ${RARITY_PRICES['R']}🪙</span> 
+                <span class="rarity-price rarity-NR">NR ${RARITY_PRICES['NR']}🪙</span> 
                 <span class="rarity-price rarity-N">N ${RARITY_PRICES['N']}🪙</span>
             </div>
         `;
@@ -360,7 +368,7 @@ const InventorySystem = (function () {
      * @returns {Array} 排序后的数组
      */
     function sortCards(cards, sortBy) {
-        const rarityOrder = { 'UR': 4, 'SR': 3, 'R': 2, 'N': 1 };
+        const rarityOrder = { 'PSER': 8, 'UTR': 7, 'SER': 6, 'UR': 5, 'SR': 4, 'R': 3, 'NR': 2, 'N': 1 };
         const sorted = cards.slice(); // 复制一份
 
         switch (sortBy) {

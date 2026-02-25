@@ -793,9 +793,189 @@ async function openPack() {
 }
 
 /**
- * 根据稀有度权重随机抽取卡牌
+ * 抽卡入口 —— 根据卡包的 packScheme 分发到不同的抽卡方案
  * 
- * 【工作原理（简单解释）】：
+ * 【方案说明】
+ * - ocg_default：OCG 默认方案 → 4张N卡 + 1张非N稀有卡，同包编号不重复，支持多版本稀有度随机
+ * - legacy：旧版方案 → 所有位置按 rarityRates 权重随机稀有度（兼容 TCG 和未配置的卡包）
+ */
+function drawCards(pack, cards) {
+    const scheme = pack.packScheme || 'legacy';
+
+    if (scheme === 'ocg_default') {
+        return drawCards_OCG(pack, cards);
+    }
+    return drawCards_Legacy(pack, cards);
+}
+
+// ============================================
+// OCG 默认方案：4N + 1非N + 多版本稀有度
+// ============================================
+
+/**
+ * OCG 默认抽卡方案
+ * 
+ * 【流程】
+ * 1. 把卡池分为 N卡池 和 非N卡池（按 rarityCode 判断）
+ * 2. 从 N卡池 随机抽 4 张（编号不重复）
+ * 3. 从 非N卡池 随机抽 1 张（编号不与已抽的重复）
+ * 4. 对非N卡检查 rarityVersions：
+ *    - 只有1个版本 → 直接使用
+ *    - 有多个版本 → 按 versionOdds 概率随机选一个稀有度
+ * 5. 按稀有度排序展示
+ */
+function drawCards_OCG(pack, cards) {
+    const results = [];
+    const usedSetNumbers = new Set(); // 已选编号，防止同包重复
+
+    // 按基础稀有度（rarityCode）把卡分成 N池 和 非N池
+    const nPool = [];
+    const nonNPool = [];
+    cards.forEach(function (card) {
+        const code = card.rarityCode || 'N';
+        if (code === 'N') {
+            nPool.push(card);
+        } else {
+            nonNPool.push(card);
+        }
+    });
+
+    // 获取多版本稀有度概率配置
+    const modeConfig = getCurrentModeConfig();
+    const versionOdds = pack.versionOdds || modeConfig.defaultVersionOdds || {};
+
+    // 计算需要抽几张N卡（总数 - 1张非N位）
+    const nCount = pack.cardsPerPack - 1;
+
+    // --- 步骤1：从N池随机抽 nCount 张（编号不重复）---
+    const shuffledN = shuffleArray([...nPool]);
+    for (let i = 0; i < shuffledN.length && results.length < nCount; i++) {
+        const card = shuffledN[i];
+        const setNum = card.setNumber || card.id;
+        if (!usedSetNumbers.has(setNum)) {
+            usedSetNumbers.add(setNum);
+            // N卡也可能有多版本（如 NR/PSER），同样走版本随机
+            const finalCard = resolveCardVersion(card, versionOdds);
+            results.push(finalCard);
+        }
+    }
+
+    // N池不够时兜底：用非N池补充
+    if (results.length < nCount) {
+        const shuffledNonN = shuffleArray([...nonNPool]);
+        for (let i = 0; i < shuffledNonN.length && results.length < nCount; i++) {
+            const card = shuffledNonN[i];
+            const setNum = card.setNumber || card.id;
+            if (!usedSetNumbers.has(setNum)) {
+                usedSetNumbers.add(setNum);
+                const finalCard = resolveCardVersion(card, versionOdds);
+                results.push(finalCard);
+            }
+        }
+    }
+
+    // --- 步骤2：从非N池随机抽 1 张（编号不与已抽的重复）---
+    const availableNonN = nonNPool.filter(function (card) {
+        const setNum = card.setNumber || card.id;
+        return !usedSetNumbers.has(setNum);
+    });
+
+    if (availableNonN.length > 0) {
+        const picked = availableNonN[Math.floor(Math.random() * availableNonN.length)];
+        const setNum = picked.setNumber || picked.id;
+        usedSetNumbers.add(setNum);
+        // 对非N卡进行多版本稀有度随机
+        const finalCard = resolveCardVersion(picked, versionOdds);
+        results.push(finalCard);
+    } else {
+        // 非N池为空的极端情况（理论上不会出现），从N池兜底
+        const fallbackN = nPool.filter(function (card) {
+            return !usedSetNumbers.has(card.setNumber || card.id);
+        });
+        if (fallbackN.length > 0) {
+            const picked = fallbackN[Math.floor(Math.random() * fallbackN.length)];
+            results.push(resolveCardVersion(picked, versionOdds));
+        }
+    }
+
+    // --- 步骤3：按稀有度排序（N在前，最稀有的在后面，营造惊喜感）---
+    const rarityOrder = { 'N': 0, 'NR': 1, 'R': 2, 'SR': 3, 'UR': 4, 'SER': 5, 'UTR': 6, 'PSER': 7 };
+    results.sort(function (a, b) {
+        return (rarityOrder[a.rarityCode] || 0) - (rarityOrder[b.rarityCode] || 0);
+    });
+
+    return results;
+}
+
+/**
+ * 多版本稀有度随机 —— 根据 versionOdds 从 rarityVersions 中选一个
+ * 
+ * 【举例】
+ * 一张卡的 rarityVersions = ["SR", "SER", "PSER"]
+ * versionOdds = { SR: 80, SER: 10, PSER: 3 }
+ * → 总权重 = 80 + 10 + 3 = 93
+ * → SR 约 86%, SER 约 10.8%, PSER 约 3.2%
+ * 
+ * @param {Object} card - 原始卡牌数据
+ * @param {Object} versionOdds - 各稀有度的概率权重
+ * @returns {Object} 带最终稀有度的卡牌副本
+ */
+function resolveCardVersion(card, versionOdds) {
+    const versions = card.rarityVersions;
+    const result = { ...card };
+
+    // 没有 rarityVersions 或只有1个版本，直接返回
+    if (!versions || versions.length <= 1) {
+        return result;
+    }
+
+    // 收集各版本的权重
+    const weights = [];
+    let totalWeight = 0;
+    for (let i = 0; i < versions.length; i++) {
+        const w = versionOdds[versions[i]] || 1; // 未配置的稀有度默认权重1
+        weights.push(w);
+        totalWeight += w;
+    }
+
+    // 按权重随机选择
+    let random = Math.random() * totalWeight;
+    for (let i = 0; i < versions.length; i++) {
+        random -= weights[i];
+        if (random <= 0) {
+            result.rarityCode = versions[i];
+            return result;
+        }
+    }
+
+    // 兜底：返回最后一个版本
+    result.rarityCode = versions[versions.length - 1];
+    return result;
+}
+
+/**
+ * 数组洗牌（Fisher-Yates 算法）
+ * @param {Array} arr - 要洗牌的数组（会创建副本，不修改原数组）
+ * @returns {Array} 洗牌后的新数组
+ */
+function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+    }
+    return arr;
+}
+
+// ============================================
+// 旧版方案：按权重随机稀有度（兼容 TCG / legacy 卡包）
+// ============================================
+
+/**
+ * 旧版抽卡方案 —— 按 rarityRates 权重随机
+ * 
+ * 【工作原理】
  * 假设 UR=3, SR=8, R=20, N=69，总共 100
  * 就好比一个转盘，各稀有度按权重占据不同面积
  * 每次随机转一下，看指针落在哪个区域，就抽到哪个稀有度的卡
@@ -803,8 +983,7 @@ async function openPack() {
  * 
  * 如果开启了「保底R以上」，最后一张卡至少是 R 稀有度
  */
-function drawCards(pack, cards) {
-    // 使用卡包自己的概率配置，如果没有就用当前模式的默认值
+function drawCards_Legacy(pack, cards) {
     const modeConfig = getCurrentModeConfig();
     const rates = pack.rarityRates || modeConfig.defaultRarityRates;
     const results = [];
@@ -849,8 +1028,8 @@ function drawCards(pack, cards) {
         }
     }
 
-    // 按稀有度排序：N → R → SR → UR（最稀有的放后面，营造惊喜感）
-    const rarityOrder = { 'N': 0, 'R': 1, 'SR': 2, 'UR': 3 };
+    // 按稀有度排序：N → NR → R → SR → UR → SER → UTR → PSER
+    const rarityOrder = { 'N': 0, 'NR': 1, 'R': 2, 'SR': 3, 'UR': 4, 'SER': 5, 'UTR': 6, 'PSER': 7 };
     results.sort(function (a, b) {
         return (rarityOrder[a.rarityCode] || 0) - (rarityOrder[b.rarityCode] || 0);
     });
@@ -858,7 +1037,7 @@ function drawCards(pack, cards) {
     return results;
 }
 
-/** 随机抽取一个稀有度 */
+/** 随机抽取一个稀有度（旧版方案用） */
 function drawRandomRarity(rates, rarities, totalWeight) {
     let random = Math.random() * totalWeight;
     for (let j = 0; j < rarities.length; j++) {
@@ -870,14 +1049,13 @@ function drawRandomRarity(rates, rarities, totalWeight) {
     return 'N';
 }
 
-/** 保底抽取（至少 R 以上） */
+/** 保底抽取：至少 R 以上（旧版方案用） */
 function drawGuaranteedRare(rates, totalWeight) {
-    // 只从 R、SR、UR 中按权重抽取
     const rareRates = { R: rates['R'] || 0, SR: rates['SR'] || 0, UR: rates['UR'] || 0 };
     const rareRarities = Object.keys(rareRates);
     const rareTotal = rareRarities.reduce(function (sum, r) { return sum + rareRates[r]; }, 0);
 
-    if (rareTotal === 0) return 'R'; // 兜底
+    if (rareTotal === 0) return 'R';
 
     let random = Math.random() * rareTotal;
     for (let j = 0; j < rareRarities.length; j++) {
@@ -889,10 +1067,9 @@ function drawGuaranteedRare(rates, totalWeight) {
     return 'R';
 }
 
-/** 查找最近的有卡牌的稀有度 */
+/** 查找最近的有卡牌的稀有度（旧版方案用） */
 function findAvailableRarity(cardsByRarity, targetRarity) {
-    // 优先尝试降级
-    const fallbackOrder = ['N', 'R', 'SR', 'UR'];
+    const fallbackOrder = ['N', 'NR', 'R', 'SR', 'UR', 'SER', 'UTR', 'PSER'];
     for (const r of fallbackOrder) {
         if (cardsByRarity[r] && cardsByRarity[r].length > 0) {
             return r;
@@ -1954,7 +2131,7 @@ function renderCardPreview(sortBy, cards, pack) {
     });
 
     // 排序
-    const rarityOrder = { 'UR': 4, 'SR': 3, 'R': 2, 'N': 1 };
+    const rarityOrder = { 'PSER': 8, 'UTR': 7, 'SER': 6, 'UR': 5, 'SR': 4, 'R': 3, 'NR': 2, 'N': 1 };
     const sortedCards = allCards.slice();
 
     switch (sortBy) {
@@ -1993,7 +2170,7 @@ function renderCardPreview(sortBy, cards, pack) {
     }
 
     // 稀有度分布统计
-    const rarityCounts = { 'UR': 0, 'SR': 0, 'R': 0, 'N': 0 };
+    const rarityCounts = { 'PSER': 0, 'UTR': 0, 'SER': 0, 'UR': 0, 'SR': 0, 'R': 0, 'NR': 0, 'N': 0 };
     allCards.forEach(function (card) {
         const code = card.rarityCode || 'N';
         rarityCounts[code] = (rarityCounts[code] || 0) + 1;
@@ -2022,13 +2199,17 @@ function renderCardPreview(sortBy, cards, pack) {
         </div>
     `;
 
-    // 稀有度分布
+    // 稀有度分布（只展示数量>0的稀有度）
+    const rarityDisplayOrder = ['PSER', 'UTR', 'SER', 'UR', 'SR', 'R', 'NR', 'N'];
+    let rarityTagsHtml = '';
+    rarityDisplayOrder.forEach(function (code) {
+        if (rarityCounts[code] > 0) {
+            rarityTagsHtml += `<span class="preview-rarity-tag rarity-tag-${code}">${code} ×${rarityCounts[code]}</span>\n            `;
+        }
+    });
     html += `
         <div class="preview-rarity-dist">
-            <span class="preview-rarity-tag rarity-tag-UR">UR ×${rarityCounts['UR']}</span>
-            <span class="preview-rarity-tag rarity-tag-SR">SR ×${rarityCounts['SR']}</span>
-            <span class="preview-rarity-tag rarity-tag-R">R ×${rarityCounts['R']}</span>
-            <span class="preview-rarity-tag rarity-tag-N">N ×${rarityCounts['N']}</span>
+            ${rarityTagsHtml}
         </div>
     `;
 

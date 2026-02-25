@@ -14,9 +14,13 @@
     --accent-blue: #4a9eff;
     --accent-red: #ff4757;
     --rarity-N: #a0a0a0;
+    --rarity-NR: #c0c0d0;
     --rarity-R: #4a9eff;
     --rarity-SR: #c850c0;
     --rarity-UR: #ffd700;
+    --rarity-SER: #00e5ff;
+    --rarity-UTR: #e0e0e0;
+    --rarity-PSER: #ff6ec7;
     --border-color: #2a2a5e;
     --shadow-glow: 0 0 20px rgba(74, 158, 255, 0.3);
 }
@@ -759,6 +763,11 @@ body {
     border-color: var(--rarity-N);
 }
 
+.card-item.rarity-NR {
+    border-color: var(--rarity-NR);
+    box-shadow: 0 0 8px rgba(192, 192, 208, 0.3);
+}
+
 .card-item.rarity-R {
     border-color: var(--rarity-R);
     box-shadow: 0 0 12px rgba(74, 158, 255, 0.4);
@@ -775,6 +784,24 @@ body {
     animation: cardReveal 0.6s ease forwards, urShine 2s ease-in-out infinite;
 }
 
+.card-item.rarity-SER {
+    border-color: var(--rarity-SER);
+    box-shadow: 0 0 25px rgba(0, 229, 255, 0.5);
+    animation: cardReveal 0.6s ease forwards, urShine 2s ease-in-out infinite;
+}
+
+.card-item.rarity-UTR {
+    border-color: var(--rarity-UTR);
+    box-shadow: 0 0 25px rgba(224, 224, 224, 0.6);
+    animation: cardReveal 0.6s ease forwards, urShine 2s ease-in-out infinite;
+}
+
+.card-item.rarity-PSER {
+    border-color: var(--rarity-PSER);
+    box-shadow: 0 0 30px rgba(255, 110, 199, 0.6);
+    animation: cardReveal 0.6s ease forwards, urShine 2s ease-in-out infinite;
+}
+
 .card-rarity-badge {
     position: absolute;
     top: 6px;
@@ -788,9 +815,13 @@ body {
 }
 
 .card-rarity-badge.rarity-N { background-color: var(--rarity-N); }
+.card-rarity-badge.rarity-NR { background-color: var(--rarity-NR); }
 .card-rarity-badge.rarity-R { background-color: var(--rarity-R); }
 .card-rarity-badge.rarity-SR { background-color: var(--rarity-SR); }
 .card-rarity-badge.rarity-UR { background-color: var(--rarity-UR); }
+.card-rarity-badge.rarity-SER { background-color: var(--rarity-SER); }
+.card-rarity-badge.rarity-UTR { background-color: var(--rarity-UTR); color: #333; }
+.card-rarity-badge.rarity-PSER { background-color: var(--rarity-PSER); }
 
 /* 卡牌图片样式 */
 .card-image {
@@ -1967,6 +1998,18 @@ body {
     font-size: 0.68rem;
 }
 
+.inventory-price-note .rarity-price.rarity-PSER {
+    color: var(--rarity-PSER);
+}
+
+.inventory-price-note .rarity-price.rarity-UTR {
+    color: var(--rarity-UTR);
+}
+
+.inventory-price-note .rarity-price.rarity-SER {
+    color: var(--rarity-SER);
+}
+
 .inventory-price-note .rarity-price.rarity-UR {
     color: var(--rarity-UR);
 }
@@ -1977,6 +2020,10 @@ body {
 
 .inventory-price-note .rarity-price.rarity-R {
     color: var(--rarity-R);
+}
+
+.inventory-price-note .rarity-price.rarity-NR {
+    color: var(--rarity-NR);
 }
 
 .inventory-price-note .rarity-price.rarity-N {
@@ -2005,6 +2052,21 @@ body {
 }
 
 /* 稀有度边框颜色 */
+.inventory-card-item.rarity-border-PSER {
+    border-color: var(--rarity-PSER);
+    box-shadow: 0 0 8px rgba(255, 110, 199, 0.35);
+}
+
+.inventory-card-item.rarity-border-UTR {
+    border-color: var(--rarity-UTR);
+    box-shadow: 0 0 8px rgba(224, 224, 224, 0.3);
+}
+
+.inventory-card-item.rarity-border-SER {
+    border-color: var(--rarity-SER);
+    box-shadow: 0 0 8px rgba(0, 229, 255, 0.3);
+}
+
 .inventory-card-item.rarity-border-UR {
     border-color: var(--rarity-UR);
     box-shadow: 0 0 6px rgba(255, 215, 0, 0.25);
@@ -2017,6 +2079,10 @@ body {
 
 .inventory-card-item.rarity-border-R {
     border-color: var(--rarity-R);
+}
+
+.inventory-card-item.rarity-border-NR {
+    border-color: var(--rarity-NR);
 }
 
 .inventory-card-item.rarity-border-N {
@@ -2062,6 +2128,21 @@ body {
     backdrop-filter: blur(4px);
 }
 
+.inventory-rarity-badge.rarity-PSER {
+    color: var(--rarity-PSER);
+    border: 1px solid var(--rarity-PSER);
+}
+
+.inventory-rarity-badge.rarity-UTR {
+    color: var(--rarity-UTR);
+    border: 1px solid var(--rarity-UTR);
+}
+
+.inventory-rarity-badge.rarity-SER {
+    color: var(--rarity-SER);
+    border: 1px solid var(--rarity-SER);
+}
+
 .inventory-rarity-badge.rarity-UR {
     color: var(--rarity-UR);
     border: 1px solid var(--rarity-UR);
@@ -2075,6 +2156,11 @@ body {
 .inventory-rarity-badge.rarity-R {
     color: var(--rarity-R);
     border: 1px solid var(--rarity-R);
+}
+
+.inventory-rarity-badge.rarity-NR {
+    color: var(--rarity-NR);
+    border: 1px solid var(--rarity-NR);
 }
 
 .inventory-rarity-badge.rarity-N {
@@ -2222,6 +2308,21 @@ body {
     background: rgba(255, 255, 255, 0.05);
 }
 
+.preview-rarity-tag.rarity-tag-PSER {
+    color: var(--rarity-PSER);
+    border: 1px solid var(--rarity-PSER);
+}
+
+.preview-rarity-tag.rarity-tag-UTR {
+    color: var(--rarity-UTR);
+    border: 1px solid var(--rarity-UTR);
+}
+
+.preview-rarity-tag.rarity-tag-SER {
+    color: var(--rarity-SER);
+    border: 1px solid var(--rarity-SER);
+}
+
 .preview-rarity-tag.rarity-tag-UR {
     color: var(--rarity-UR);
     border: 1px solid var(--rarity-UR);
@@ -2235,6 +2336,11 @@ body {
 .preview-rarity-tag.rarity-tag-R {
     color: var(--rarity-R);
     border: 1px solid var(--rarity-R);
+}
+
+.preview-rarity-tag.rarity-tag-NR {
+    color: var(--rarity-NR);
+    border: 1px solid var(--rarity-NR);
 }
 
 .preview-rarity-tag.rarity-tag-N {
@@ -2370,6 +2476,21 @@ body {
     backdrop-filter: blur(4px);
 }
 
+.preview-rarity-badge.rarity-PSER {
+    color: var(--rarity-PSER);
+    border: 1px solid var(--rarity-PSER);
+}
+
+.preview-rarity-badge.rarity-UTR {
+    color: var(--rarity-UTR);
+    border: 1px solid var(--rarity-UTR);
+}
+
+.preview-rarity-badge.rarity-SER {
+    color: var(--rarity-SER);
+    border: 1px solid var(--rarity-SER);
+}
+
 .preview-rarity-badge.rarity-UR {
     color: var(--rarity-UR);
     border: 1px solid var(--rarity-UR);
@@ -2383,6 +2504,11 @@ body {
 .preview-rarity-badge.rarity-R {
     color: var(--rarity-R);
     border: 1px solid var(--rarity-R);
+}
+
+.preview-rarity-badge.rarity-NR {
+    color: var(--rarity-NR);
+    border: 1px solid var(--rarity-NR);
 }
 
 .preview-rarity-badge.rarity-N {

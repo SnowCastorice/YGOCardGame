@@ -266,12 +266,18 @@ data/ocg/
 
 ### 稀有度临时价格（后续可替换）
 
-| 稀有度 | 价格 |
-|--------|------|
-| UR | 500🪙 |
-| SR | 200🪙 |
-| R | 50🪙 |
-| N | 10🪙 |
+| 稀有度 | 英文名 | 价格 | 配色 |
+|--------|--------|------|------|
+| PSER | Prismatic Secret Rare（棱镜秘密闪） | 2000🪙 | #ff6ec7（粉紫） |
+| UTR | Ultimate Rare（终极闪） | 1500🪙 | #e0e0e0（铂金） |
+| SER | Secret Rare（秘密闪） | 1000🪙 | #00e5ff（青蓝） |
+| UR | Ultra Rare（极稀有） | 500🪙 | #ffd700（金色） |
+| SR | Super Rare（超稀有） | 200🪙 | #c850c0（紫色） |
+| R | Rare（稀有） | 50🪙 | #4a9eff（蓝色） |
+| NR | Normal Rare（普通闪） | 20🪙 | #c0c0d0（银白） |
+| N | Common（普通） | 10🪙 | #a0a0a0（灰色） |
+
+> 稀有度等级排序（高→低）：PSER > UTR > SER > UR > SR > R > NR > N
 
 ### 公开 API
 
@@ -347,13 +353,27 @@ data/ocg/
 
 > 以下是已确认但尚未完成的事项，请在后续开发中关注。
 
-1. **� OCG 稀有度问题**（临时方案已实施）
+1. **🟡 OCG 稀有度问题**（BLZD 已完成真实数据录入，其他卡包仍为测试数据）
    - 原始问题：通过 YGOCDB 抓取的 OCG 卡包数据**不包含稀有度信息**，默认全部设为 "N"
-   - 临时方案：已用 Python 脚本为现有 3 个 OCG 卡包**随机分配了测试稀有度**（UR ~7%, SR ~13%, R ~22%, N ~58%）
+   - **BLZD 已完成**：已从卡包资料手动整理真实稀有度数据，写入 `ocg_blzd.json`
+   - 其他 OCG 卡包（CH02、25DB）仍为随机测试稀有度，后续需逐个替换为真实数据
    - 缓存同步：已在 `api.js` 的 `getOCGCardSetData` 中增加**稀有度同步逻辑**，缓存命中时自动用 `cards.json` 中最新的 `rarityCode` 覆盖缓存旧值
-   - ⚠️ 注意：当前稀有度为**随机测试数据**，非真实稀有度。后续需要找到 OCG 真实稀有度数据源替换
    - 影响范围：所有通过 `fetch_packs.py` 抓取的 OCG 卡包
 
+3. **� 多版本稀有度系统**（已基本完成，概率待用户确认）
+   - 数据结构：`ocg_blzd.json` 中每张卡新增 `rarityVersions` 数组，记录该卡所有稀有度版本（如 `["SR", "SER"]`）
+   - `rarityCode` 字段保留为基础稀有度（兼容现有代码逻辑），`setNumber` 字段记录卡包编号（如 `"BLZD-JP001"`）
+   - 辅助包（JPS01~JPS20）数据存储在 `supplementPack` 节点中，暂不加入主卡池
+   - **已完成**：8种稀有度的完整 UI 样式支持（CSS 颜色/边框/角标/光效 + JS 排序/价格/名称映射）
+   - 新增稀有度类型：NR（普通闪）、SER（秘密闪）、PSER（棱镜秘密闪）、UTR（终极闪）
+   - **已完成**：OCG 默认抽卡方案实现（`packScheme: "ocg_default"`）
+     - 每包 5 张：4 张 N 卡 + 1 张非 N 稀有卡
+     - 同一包内卡片编号不重复
+     - 非 N 卡若有多个稀有度版本（如 SR/SER/PSER），按 `versionOdds` 权重概率随机
+     - 旧版方案（`packScheme: "legacy"`）保留兼容，用于 TCG 和未配置方案的卡包
+   - **已完成**：`api.js` 全链路支持 `rarityVersions` 传递（获取→缓存→同步→抽卡）
+   - **待用户确认**：`versionOdds` 各稀有度的实际概率权重（当前为临时值）
+   - **TCG 抽卡方案**：挂起待补充
 2. **🔴 KONAMI 卡图代理无法获取真实卡图**（挂起）
    - 当前状态：`functions/api/card-image.js` 代理已正确部署且功能正常，但 KONAMI 服务器对**所有服务端请求**（无论 Python/Cloudflare fetch/curl）统一返回 "Coming Soon" 占位图（200×290 PNG, ~40KB）
    - 根本原因：KONAMI 的 **Imperva WAF（Web 应用防火墙）** 要求客户端执行 JavaScript 挑战验证后才返回真实卡图，服务端代理无法通过此验证
