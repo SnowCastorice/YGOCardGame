@@ -284,8 +284,14 @@ function bindGameEvents() {
     // 开包按钮
     bindEvent('btn-open-pack', 'click', openPack);
 
+    // 开十包按钮
+    bindEvent('btn-open-multi', 'click', function () { openMultiPacks(10); });
+
     // 再开一包
     bindEvent('btn-open-again', 'click', openPack);
+
+    // 再开十包
+    bindEvent('btn-open-again-multi', 'click', function () { openMultiPacks(10); });
 
     // 返回选择卡包（两个返回按钮）
     bindEvent('btn-back-to-packs', 'click', showPackSelect);
@@ -793,6 +799,60 @@ async function openPack() {
 }
 
 /**
+ * 开十包（批量开包）
+ * 一次性开 count 包，所有卡片汇总展示
+ * @param {number} count - 开包数量
+ */
+async function openMultiPacks(count) {
+    if (!currentPack || !currentPackCards) return;
+
+    const currency = currentPack.currency || 'gold';
+    const price = currentPack.price || 0;
+    const totalPrice = price * count;
+
+    // 1. 检查总费用
+    if (totalPrice > 0 && !CurrencySystem.canAfford(currency, totalPrice)) {
+        const currDef = CurrencySystem.getCurrencyDef(currency);
+        const balance = CurrencySystem.getBalance(currency);
+        // 计算当前余额最多能开几包
+        const affordCount = price > 0 ? Math.floor(balance / price) : count;
+        if (affordCount <= 0) {
+            alert(`${currDef.icon} ${currDef.name}不足！\n\n开${count}包需要 ${totalPrice} ${currDef.icon}${currDef.name}，当前只有 ${balance} ${currDef.icon}。\n\n点击顶部货币栏可以进行兑换。`);
+            return;
+        }
+        // 余额不足以开满，询问是否开能负担的数量
+        const confirmOpen = confirm(`${currDef.icon} ${currDef.name}不足以开${count}包（需要 ${totalPrice}，当前 ${balance}）。\n\n是否改为开 ${affordCount} 包？（花费 ${affordCount * price} ${currDef.icon}）`);
+        if (!confirmOpen) return;
+        count = affordCount;
+    }
+
+    // 2. 扣除总费用
+    const actualTotalPrice = price * count;
+    if (actualTotalPrice > 0) {
+        CurrencySystem.spendBalance(currency, actualTotalPrice);
+    }
+
+    // 3. 播放开包动画
+    await playOpeningAnimation();
+
+    // 4. 批量抽卡，汇总所有结果
+    const allCards = [];
+    for (let i = 0; i < count; i++) {
+        const drawnCards = drawCards(currentPack, currentPackCards);
+        allCards.push(...drawnCards);
+    }
+
+    // 5. 将抽到的卡片存入背包
+    InventorySystem.addCards(allCards);
+
+    // 6. 展示汇总结果
+    await showResults(allCards);
+
+    // 更新价格信息（余额可能变化）
+    updateOpenPackPriceInfo();
+}
+
+/**
  * 抽卡入口 —— 根据卡包的 packScheme 分发到不同的抽卡方案
  * 
  * 【方案说明】
@@ -1105,10 +1165,17 @@ async function showResults(cards) {
     const display = document.getElementById('cards-display');
     display.innerHTML = '';
 
-    for (const card of cards) {
+    // 计算每张卡的动画延迟，总时长不超过 2 秒
+    const maxTotalDelay = 2; // 秒
+    const perCardDelay = Math.min(0.15, maxTotalDelay / cards.length);
+
+    for (let i = 0; i < cards.length; i++) {
+        const card = cards[i];
         const cardEl = document.createElement('div');
         const rarityCode = card.rarityCode || 'N';
         cardEl.className = `card-item rarity-${rarityCode}`;
+        // 动态设置动画延迟（覆盖 CSS nth-child 规则）
+        cardEl.style.animationDelay = (i * perCardDelay).toFixed(2) + 's';
 
         // 构建卡片 HTML
         // 有卡图时，点击图片可放大查看（使用 imageLargeUrl 作为大图源）
@@ -1149,6 +1216,14 @@ async function showResults(cards) {
         `;
 
         display.appendChild(cardEl);
+    }
+
+    // 更新结果标题（根据卡片数量判断是否为批量开包）
+    const cardsPerPack = (currentPack && currentPack.cardsPerPack) || 5;
+    const packCount = Math.round(cards.length / cardsPerPack);
+    const resultTitle = document.querySelector('#result-section .section-title');
+    if (resultTitle) {
+        resultTitle.textContent = packCount > 1 ? `开包结果 (×${packCount})` : '开包结果';
     }
 
     switchSection('result-section');
@@ -1521,6 +1596,34 @@ function updateOpenPackPriceInfo() {
         } else {
             openAgainBtn.classList.remove('insufficient');
             openAgainBtn.textContent = price > 0 ? `🎴 再开一包 (${currDef.icon} ${price})` : '🎴 再开一包';
+        }
+    }
+
+    // 更新「开十包」按钮的可用状态
+    const multiCount = 10;
+    const totalPriceMulti = price * multiCount;
+    const canAffordMulti = totalPriceMulti <= 0 || CurrencySystem.canAfford(currency, totalPriceMulti);
+
+    const openMultiBtn = document.getElementById('btn-open-multi');
+    const openAgainMultiBtn = document.getElementById('btn-open-again-multi');
+
+    if (openMultiBtn) {
+        if (!canAffordMulti) {
+            openMultiBtn.classList.add('insufficient');
+            openMultiBtn.textContent = `🪙 余额不足 (需要 ${totalPriceMulti} ${currDef.icon})`;
+        } else {
+            openMultiBtn.classList.remove('insufficient');
+            openMultiBtn.textContent = price > 0 ? `🎴×10 开十包 (${currDef.icon} ${totalPriceMulti})` : '🎴×10 开十包';
+        }
+    }
+
+    if (openAgainMultiBtn) {
+        if (!canAffordMulti) {
+            openAgainMultiBtn.classList.add('insufficient');
+            openAgainMultiBtn.textContent = `🪙 余额不足 (需要 ${totalPriceMulti} ${currDef.icon})`;
+        } else {
+            openAgainMultiBtn.classList.remove('insufficient');
+            openAgainMultiBtn.textContent = price > 0 ? `🎴×10 再开十包 (${currDef.icon} ${totalPriceMulti})` : '🎴×10 再开十包';
         }
     }
 }

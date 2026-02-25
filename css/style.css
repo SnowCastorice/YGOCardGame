@@ -628,6 +628,10 @@ body {
 .open-btn-container {
     text-align: center;
     margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
 }
 
 .btn-open-pack {
@@ -651,6 +655,41 @@ body {
 
 .btn-open-pack:active {
     transform: scale(0.98);
+}
+
+/* 开十包按钮（渐变蓝色风格，与开一包区分） */
+.btn-open-multi {
+    padding: 12px 36px;
+    font-size: 1.05rem;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(135deg, #4a9eff, #2d6fd6);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all .3s ease;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .3);
+    box-shadow: 0 4px 15px rgba(74, 158, 255, .4);
+}
+
+.btn-open-multi:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 25px rgba(74, 158, 255, .6);
+}
+
+.btn-open-multi:active {
+    transform: scale(0.98);
+}
+
+.btn-open-multi.insufficient {
+    background: linear-gradient(135deg, #555, #777);
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.btn-open-multi.insufficient:hover {
+    transform: none;
+    box-shadow: none;
 }
 
 .btn-secondary {
@@ -914,6 +953,10 @@ body {
 }
 
 .result-actions .btn-open-pack {
+    margin-bottom: 8px;
+}
+
+.result-actions .btn-open-multi {
     margin-bottom: 8px;
 }
 
