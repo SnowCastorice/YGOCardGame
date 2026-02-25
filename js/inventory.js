@@ -31,7 +31,7 @@ const InventorySystem = (function () {
     const STORAGE_KEY = 'ygo_inventory_data';
 
     // ====== 内部状态 ======
-    // 背包数据结构：{ "卡片密码": { id, name, nameCN, nameOriginal, rarityCode, imageUrl, imageLargeUrl, count, firstObtained } }
+    // 背包数据结构：{ "卡片密码": { id, name, nameCN, nameOriginal, rarityCode, imageUrl, imageLargeUrl, count, rarityVersionsOwned: { "SR": 2, "SER": 1 }, firstObtained } }
     let inventory = {};
     let initialized = false;
 
@@ -39,7 +39,7 @@ const InventorySystem = (function () {
 
     /**
      * 初始化背包系统
-     * 从 localStorage 读取背包数据
+     * 从 localStorage 读取背包数据，自动迁移旧格式（补充 rarityVersionsOwned）
      */
     function init() {
         if (initialized) return;
@@ -47,6 +47,22 @@ const InventorySystem = (function () {
         const saved = loadFromStorage();
         if (saved) {
             inventory = saved;
+            // 迁移旧数据：为没有 rarityVersionsOwned 的卡片补充默认值
+            let migrated = false;
+            Object.keys(inventory).forEach(function (cardId) {
+                const card = inventory[cardId];
+                if (!card.rarityVersionsOwned) {
+                    const rarity = card.rarityCode || 'N';
+                    const versionsOwned = {};
+                    versionsOwned[rarity] = card.count || 1;
+                    card.rarityVersionsOwned = versionsOwned;
+                    migrated = true;
+                }
+            });
+            if (migrated) {
+                saveToStorage();
+                console.log('🎒 背包数据已自动迁移（补充 rarityVersionsOwned）');
+            }
         }
 
         initialized = true;
@@ -84,6 +100,7 @@ const InventorySystem = (function () {
     /**
      * 将一组卡片添加到背包（通常是开包结果）
      * @param {Array} cards - 卡片数组，每个元素包含 { id, name, nameCN, nameOriginal, rarityCode, imageUrl, imageLargeUrl }
+     * 注意：rarityCode 是开包时实际获得的稀有度版本
      */
     function addCards(cards) {
         if (!initialized) init();
@@ -91,11 +108,19 @@ const InventorySystem = (function () {
 
         cards.forEach(function (card) {
             const cardId = String(card.id);
+            const rarity = card.rarityCode || 'N';
+
             if (inventory[cardId]) {
-                // 已有该卡：数量+1
+                // 已有该卡：总数量+1，并记录对应稀有度版本+1
                 inventory[cardId].count += 1;
+                if (!inventory[cardId].rarityVersionsOwned) {
+                    inventory[cardId].rarityVersionsOwned = {};
+                }
+                inventory[cardId].rarityVersionsOwned[rarity] = (inventory[cardId].rarityVersionsOwned[rarity] || 0) + 1;
             } else {
                 // 新卡：创建记录
+                const versionsOwned = {};
+                versionsOwned[rarity] = 1;
                 inventory[cardId] = {
                     id: card.id,
                     name: card.name || '',
@@ -105,6 +130,7 @@ const InventorySystem = (function () {
                     imageUrl: card.imageUrl || '',
                     imageLargeUrl: card.imageLargeUrl || '',
                     count: 1,
+                    rarityVersionsOwned: versionsOwned,
                     firstObtained: Date.now()
                 };
             }
@@ -118,11 +144,23 @@ const InventorySystem = (function () {
     /**
      * 获取背包中指定卡片的信息
      * @param {number|string} cardId - 卡片密码
-     * @returns {object|null} 卡片信息（含数量），不存在返回 null
+     * @returns {object|null} 卡片信息（含数量和各版本收集数），不存在返回 null
      */
     function getCard(cardId) {
         if (!initialized) init();
         return inventory[String(cardId)] || null;
+    }
+
+    /**
+     * 获取指定卡片各稀有度版本的收集数量
+     * @param {number|string} cardId - 卡片密码
+     * @returns {object} 如 { "SR": 2, "SER": 1 }，未拥有返回空对象
+     */
+    function getCardVersions(cardId) {
+        if (!initialized) init();
+        const card = inventory[String(cardId)];
+        if (!card) return {};
+        return card.rarityVersionsOwned || {};
     }
 
     /**
@@ -433,6 +471,7 @@ const InventorySystem = (function () {
         init: init,
         addCards: addCards,
         getCard: getCard,
+        getCardVersions: getCardVersions,
         getAllCards: getAllCards,
         getUniqueCardCount: getUniqueCardCount,
         getTotalCardCount: getTotalCardCount,

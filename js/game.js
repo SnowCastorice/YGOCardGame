@@ -2119,13 +2119,15 @@ function renderCardPreview(sortBy, cards, pack) {
     // 获取当前卡包的所有卡片
     const allCards = previewCards.slice();
 
-    // 从背包系统获取已拥有的卡片信息
+    // 从背包系统获取已拥有的卡片信息（含各版本收集数量）
     const ownedMap = {};
+    const ownedVersionsMap = {}; // { cardId: { "SR": 2, "SER": 1 } }
     let ownedCount = 0;
     allCards.forEach(function (card) {
         const invCard = InventorySystem.getCard(card.id);
         if (invCard) {
             ownedMap[card.id] = invCard.count;
+            ownedVersionsMap[card.id] = InventorySystem.getCardVersions(card.id);
             ownedCount++;
         }
     });
@@ -2242,18 +2244,46 @@ function renderCardPreview(sortBy, cards, pack) {
             return (rarityWeight[v] || 0) > (rarityWeight[best] || 0) ? v : best;
         }, versions[0]);
 
-        // 构建多版本稀有度角标 HTML
+        // 获取该卡各稀有度版本的收集数量
+        const versionsOwned = ownedVersionsMap[card.id] || {};
+
+        // 构建多版本稀有度角标 HTML（未收集的版本显示灰色，已收集的显示彩色）
         let rarityBadgeHtml;
         if (versions.length > 1) {
             // 多版本：展示所有版本，用竖线分隔
             rarityBadgeHtml = '<span class="preview-rarity-badge preview-rarity-multi">';
             rarityBadgeHtml += versions.map(function (v) {
-                return '<span class="rarity-version-item rarity-color-' + v + '">' + v + '</span>';
+                const collected = versionsOwned[v] && versionsOwned[v] > 0;
+                const colorClass = collected ? 'rarity-color-' + v : 'rarity-color-uncollected';
+                return '<span class="rarity-version-item ' + colorClass + '">' + v + '</span>';
             }).join('<span class="rarity-sep">|</span>');
             rarityBadgeHtml += '</span>';
         } else {
-            // 单版本：保持原有样式
-            rarityBadgeHtml = `<span class="preview-rarity-badge rarity-${rarityCode}">${rarityCode}</span>`;
+            // 单版本：根据收集状态决定颜色
+            const singleCollected = versionsOwned[rarityCode] && versionsOwned[rarityCode] > 0;
+            const singleClass = singleCollected ? 'rarity-' + rarityCode : 'rarity-uncollected';
+            rarityBadgeHtml = `<span class="preview-rarity-badge ${singleClass}">${rarityCode}</span>`;
+        }
+
+        // 构建右下角数量角标（按稀有度分别显示，颜色对应稀有度）
+        let ownedBadgeHtml = '';
+        if (isOwned) {
+            if (versions.length > 1) {
+                // 多版本：每个版本单独显示数量
+                let parts = [];
+                versions.forEach(function (v) {
+                    const vCount = versionsOwned[v] || 0;
+                    if (vCount > 0) {
+                        parts.push('<span class="owned-version-count rarity-color-' + v + '">×' + vCount + '</span>');
+                    }
+                });
+                if (parts.length > 0) {
+                    ownedBadgeHtml = '<span class="preview-owned-badge preview-owned-multi">' + parts.join('') + '</span>';
+                }
+            } else {
+                // 单版本：显示总数，颜色对应稀有度
+                ownedBadgeHtml = `<span class="preview-owned-badge rarity-color-${rarityCode}">×${ownedQty}</span>`;
+            }
         }
 
         // 卡图
@@ -2272,7 +2302,7 @@ function renderCardPreview(sortBy, cards, pack) {
                 <div class="preview-card-img-wrapper">
                     ${imageHtml}
                     ${rarityBadgeHtml}
-                    ${isOwned ? `<span class="preview-owned-badge">×${ownedQty}</span>` : ''}
+                    ${ownedBadgeHtml}
                     ${!isOwned ? '<div class="preview-lock-icon">🔒</div>' : ''}
                 </div>
                 <div class="preview-card-info">

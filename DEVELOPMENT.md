@@ -284,7 +284,8 @@ data/ocg/
 | 方法 | 说明 |
 |------|------|
 | `InventorySystem.addCard(card)` | 添加一张卡片到背包 |
-| `InventorySystem.getCard(cardId)` | 查询指定卡片（返回 `{...card, count}` 或 `null`） |
+| `InventorySystem.getCard(cardId)` | 查询指定卡片（返回 `{...card, count, rarityVersionsOwned}` 或 `null`） |
+| `InventorySystem.getCardVersions(cardId)` | 获取指定卡片各稀有度版本的收集数量（返回如 `{ "SR": 2, "SER": 1 }`） |
 | `InventorySystem.getAllCards()` | 获取所有卡片数组 |
 | `InventorySystem.clearAll()` | 清空所有卡片数据 |
 | `InventorySystem.updateBadge()` | 更新导航栏角标数字 |
