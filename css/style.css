@@ -635,6 +635,7 @@ body {
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(255, 215, 0, .3), 0 0 40px rgba(138, 43, 226, .15);
   border: 2px solid rgba(255, 215, 0, .4);
+  cursor: zoom-in;
   /* 淡入动画：初始透明，加载完成后渐显 */
   opacity: 0;
   transition: opacity .4s ease, transform .3s ease, box-shadow .3s ease;

@@ -774,6 +774,15 @@ async function selectPack(pack) {
             if (coverWrapper) coverWrapper.classList.remove('is-loading');
         }
 
+        // 点击封面图弹出大图查看器
+        if (coverImg) {
+            coverImg.onclick = function() {
+                if (coverImg.src && coverImg.naturalWidth > 0) {
+                    openCardImageViewer(coverImg.src, pack.packName || '');
+                }
+            };
+        }
+
         const displayCode = pack.packCode || pack.setCode || pack.packId;
         document.getElementById('current-pack-desc').textContent =
             `${displayCode} | 共 ${currentPackCards.length} 种卡牌 | 每包抽取 ${pack.cardsPerPack} 张 | 数据: ${dataSourceName}${setData.isOfflineData ? '\n⚠️ 当前使用离线备用数据' : ''}`;
