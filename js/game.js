@@ -23,6 +23,7 @@ let changelogData = null;    // 更新日志数据
 let currentPack = null;      // 当前选中的卡包配置
 let currentPackCards = null;  // 当前选中卡包的卡牌数据（来自 API 缓存）
 let currentGameMode = 'ocg';  // 当前游戏模式：'ocg' 或 'tcg'，默认 OCG
+let tcgModeEnabled = false;    // TCG 测试模式是否已开启（通过开发者工具开启）
 
 // ====== 页面加载完成后初始化 ======
 document.addEventListener('DOMContentLoaded', async function () {
@@ -37,10 +38,15 @@ document.addEventListener('DOMContentLoaded', async function () {
     // 先绑定导航栏按钮事件（缓存、日志、模式切换、货币兑换），确保即使加载失败也能使用
     bindNavEvents();
 
-    // 从本地存储读取上次的游戏模式（如果有的话）
+    // 从本地存储读取上次的游戏模式
+    // TCG 模式需要先在开发者工具中开启才能使用
     const savedMode = localStorage.getItem('ygo_game_mode');
-    if (savedMode === 'tcg' || savedMode === 'ocg') {
-        currentGameMode = savedMode;
+    const savedTcgEnabled = localStorage.getItem('ygo_tcg_enabled') === 'true';
+    tcgModeEnabled = savedTcgEnabled;
+    if (savedMode === 'tcg' && savedTcgEnabled) {
+        currentGameMode = 'tcg';
+    } else {
+        currentGameMode = 'ocg';
     }
     // 更新切换按钮的激活状态
     updateModeButtons();
@@ -49,32 +55,39 @@ document.addEventListener('DOMContentLoaded', async function () {
         showLoadingState('正在加载游戏配置...');
         console.log('📡 开始 fetch 配置文件...');
 
-        // 同时加载三个配置文件（OCG/TCG 独立存储），加快速度
-        const [ocgResponse, tcgResponse, changelogResponse] = await Promise.all([
+        // 加载 OCG 配置和更新日志（TCG 配置延迟加载，仅在开启 TCG 测试模式时才加载）
+        const [ocgResponse, changelogResponse] = await Promise.all([
             fetch('data/ocg/packs.json'),
-            fetch('data/tcg/packs.json'),
             fetch('data/changelog.json')
         ]);
 
-        console.log('📡 fetch 完成，ocg/packs.json status:', ocgResponse.status, ', tcg/packs.json status:', tcgResponse.status, ', changelog.json status:', changelogResponse.status);
+        console.log('📡 fetch 完成，ocg/packs.json status:', ocgResponse.status, ', changelog.json status:', changelogResponse.status);
 
         // 检查 HTTP 响应状态
         if (!ocgResponse.ok) {
             throw new Error(`加载 ocg/packs.json 失败: HTTP ${ocgResponse.status} ${ocgResponse.statusText}`);
-        }
-        if (!tcgResponse.ok) {
-            throw new Error(`加载 tcg/packs.json 失败: HTTP ${tcgResponse.status} ${tcgResponse.statusText}`);
         }
         if (!changelogResponse.ok) {
             throw new Error(`加载 changelog.json 失败: HTTP ${changelogResponse.status} ${changelogResponse.statusText}`);
         }
 
         ocgPackConfig = await ocgResponse.json();
-        tcgPackConfig = await tcgResponse.json();
         changelogData = await changelogResponse.json();
         console.log('✅ JSON 解析成功');
         console.log(`📦 OCG 卡包数量: ${ocgPackConfig.packs.length}`);
-        console.log(`📦 TCG 卡包数量: ${tcgPackConfig.packs.length}`);
+
+        // 如果 TCG 测试模式已开启，加载 TCG 配置
+        if (tcgModeEnabled) {
+            try {
+                const tcgResponse = await fetch('data/tcg/packs.json');
+                if (tcgResponse.ok) {
+                    tcgPackConfig = await tcgResponse.json();
+                    console.log(`📦 TCG 卡包数量: ${tcgPackConfig.packs.length}`);
+                }
+            } catch (e) {
+                console.warn('⚠️ TCG 配置加载失败（测试模式）:', e.message);
+            }
+        }
 
         // 初始化各个模块
         renderPackList();
@@ -223,8 +236,31 @@ function bindNavEvents() {
  * 切换游戏模式
  * @param {string} mode - 'ocg' 或 'tcg'
  */
-function switchGameMode(mode) {
+async function switchGameMode(mode) {
     if (mode === currentGameMode) return; // 同一模式不重复切换
+
+    // TCG 模式需要先在开发者工具中开启
+    if (mode === 'tcg' && !tcgModeEnabled) {
+        alert('⚠️ TCG 模式尚未开启。\n\n请在「🔧 开发者工具」中开启 TCG 测试模式。');
+        return;
+    }
+
+    // 如果切换到 TCG 但尚未加载配置，先加载
+    if (mode === 'tcg' && !tcgPackConfig) {
+        showLoadingState('正在加载 TCG 卡包配置...');
+        try {
+            const tcgResponse = await fetch('data/tcg/packs.json');
+            if (tcgResponse.ok) {
+                tcgPackConfig = await tcgResponse.json();
+                console.log(`📦 TCG 卡包数量: ${tcgPackConfig.packs.length}`);
+            }
+            hideLoadingState();
+        } catch (e) {
+            hideLoadingState();
+            alert('❌ 加载 TCG 配置失败: ' + e.message);
+            return;
+        }
+    }
 
     currentGameMode = mode;
     // 保存到本地存储，下次打开网页时记住选择
@@ -252,22 +288,14 @@ function switchGameMode(mode) {
 function updateModeButtons() {
     const ocgBtn = document.getElementById('btn-mode-ocg');
     const tcgBtn = document.getElementById('btn-mode-tcg');
-    const modeInfoText = document.getElementById('mode-info-text');
 
     if (ocgBtn) {
         ocgBtn.classList.toggle('active', currentGameMode === 'ocg');
     }
     if (tcgBtn) {
+        // TCG 按钮仅在测试模式开启时可见
+        tcgBtn.style.display = tcgModeEnabled ? '' : 'none';
         tcgBtn.classList.toggle('active', currentGameMode === 'tcg');
-    }
-
-    // 更新模式提示文本
-    if (modeInfoText) {
-        if (currentGameMode === 'ocg') {
-            modeInfoText.textContent = '🎌 OCG 模式（亚洲版） — 每包5张 | 中文名+日文名 | 数据源: YGOProDeck + YGOCDB';
-        } else {
-            modeInfoText.textContent = '🌎 TCG 模式（欧美版） — 每包9张 | 中文名+英文名 | 数据源: YGOProDeck + YGOCDB';
-        }
     }
 }
 
@@ -458,9 +486,6 @@ function renderPackList() {
         const packCard = document.createElement('div');
         packCard.className = 'pack-card';
 
-        // 根据模式显示不同的图标
-        const modeIcon = currentGameMode === 'ocg' ? '🎌' : '🌎';
-
         // OCG 卡包显示 packCode，TCG 卡包显示 setCode
         const displayCode = pack.packCode || pack.setCode || pack.packId;
         // OCG 卡包显示卡牌数量（优先使用 totalCards 字段，兼容旧的 cardIds 方式）
@@ -476,33 +501,49 @@ function renderPackList() {
         const packCode = pack.packCode || pack.setCode || '';
         const coverImageUrl = getPackCoverImageUrl(pack, packCode);
 
+        // 卡包名称：OCG 优先日文名，TCG 使用英文名
+        const packNameDisplay = (currentGameMode === 'ocg' && pack.packNameJP) ? pack.packNameJP : pack.packName;
+        // 副标题：编码
+        const subInfo = displayCode;
+        // 发售日期
+        const releaseDateText = pack.releaseDate || '';
+
         packCard.innerHTML = `
-            <div class="pack-cover-wrapper">
+            <div class="pack-card__cover">
                 <div class="pack-cover-container">
-                    <img class="pack-cover-img" src="${coverImageUrl}" alt="${pack.packName}" loading="lazy"
+                    <img class="pack-cover-img" src="${coverImageUrl}" alt="${packNameDisplay}" loading="lazy"
                          referrerpolicy="no-referrer"
                          onerror="handlePackCoverError(this);" />
                     <span class="pack-icon pack-icon-fallback" style="display:none;">🎴</span>
-                    <div class="pack-price pack-overlay-tag"><span class="pack-price-icon">${priceIcon}</span> ${priceValue}</div>
-                    <button class="btn-pack-preview pack-overlay-tag" title="查看卡包内所有卡片">🔍 预览</button>
+                    <button class="pack-card__preview-icon" title="预览卡包内容">🔍</button>
                 </div>
             </div>
-            <div class="pack-name">${(currentGameMode === 'ocg' && pack.packNameJP) ? pack.packNameJP : pack.packName}</div>
-            <div class="pack-code">${(currentGameMode === 'ocg' && pack.packNameJP) ? pack.packName + '<br>' : ''}${displayCode}${pack.releaseDate ? ' (' + pack.releaseDate + ')' : ''}</div>
-            <div class="pack-count">每包 ${pack.cardsPerPack} 张${cardCountInfo} | ${pack.guaranteedRareSlot ? '保底R以上' : '纯随机'} ${modeIcon}</div>
+            <div class="pack-card__info">
+                <div class="pack-card__name">${packNameDisplay}</div>
+                <div class="pack-card__meta">${subInfo}${releaseDateText ? ' · ' + releaseDateText : ''}</div>
+                <div class="pack-card__price"><span class="pack-price-icon">${priceIcon}</span>${priceValue}</div>
+            </div>
         `;
 
         // 将 pack 数据绑定到 DOM 元素上，供 onerror 回调使用
         const imgEl = packCard.querySelector('.pack-cover-img');
         if (imgEl) imgEl._packData = pack;
 
-        // 预览按钮点击事件（阻止冒泡，不触发 selectPack）
-        const previewBtn = packCard.querySelector('.btn-pack-preview');
+        // 预览按钮点击事件（卡图右上角放大镜图标，阻止冒泡）
+        const previewBtn = packCard.querySelector('.pack-card__preview-icon');
         previewBtn.addEventListener('click', function (e) {
             e.stopPropagation();
             showCardPreview(pack);
         });
 
+        // 点击卡图封面区域也触发预览（阻止冒泡，不触发开包）
+        const coverArea = packCard.querySelector('.pack-card__cover');
+        coverArea.addEventListener('click', function (e) {
+            e.stopPropagation();
+            showCardPreview(pack);
+        });
+
+        // 点击卡包整体（右侧信息区域）触发开包
         packCard.addEventListener('click', function () {
             selectPack(pack);
         });
@@ -674,8 +715,8 @@ async function selectPack(pack) {
     currentPack = pack;
 
     // 显示加载状态
-    const dataSourceName = 'YGOProDeck + YGOCDB';
-    showLoadingState(`正在从 ${dataSourceName} 加载「${pack.packName}」...`);
+    const dataSourceName = currentGameMode === 'ocg' ? '本地数据' : 'YGOProDeck + YGOCDB';
+    showLoadingState(`正在加载「${pack.packName}」...`);
 
     try {
         // OCG 模式：如果卡包使用独立文件存储 cardIds，先动态加载
@@ -1785,6 +1826,27 @@ function showDevTools() {
     const resetGameBtn = document.getElementById('btn-dev-reset-game');
     if (addGoldBtn) addGoldBtn.onclick = devAddGold;
     if (resetGameBtn) resetGameBtn.onclick = devResetGame;
+
+    // 绑定 TCG 测试模式开关按钮
+    const tcgToggleBtn = document.getElementById('btn-dev-toggle-tcg');
+    if (tcgToggleBtn) {
+        // 更新按钮状态文本
+        tcgToggleBtn.textContent = tcgModeEnabled ? '🔒 关闭 TCG 模式' : '🔓 开启 TCG 模式';
+        tcgToggleBtn.onclick = function () {
+            tcgModeEnabled = !tcgModeEnabled;
+            localStorage.setItem('ygo_tcg_enabled', tcgModeEnabled ? 'true' : 'false');
+            tcgToggleBtn.textContent = tcgModeEnabled ? '🔒 关闭 TCG 模式' : '🔓 开启 TCG 模式';
+            // 更新 TCG 按钮可见性
+            updateModeButtons();
+            // 如果当前在 TCG 模式但关闭了开关，自动切换回 OCG
+            if (!tcgModeEnabled && currentGameMode === 'tcg') {
+                switchGameMode('ocg');
+            }
+            const statusText = tcgModeEnabled ? '已开启 TCG 测试模式' : '已关闭 TCG 测试模式';
+            alert('✅ ' + statusText);
+            console.log('🛠️ [开发者工具] ' + statusText);
+        };
+    }
 
     // 绑定按钮事件（仅首次）
     const loadBtn = document.getElementById('btn-devtools-load');

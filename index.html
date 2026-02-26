@@ -2,9 +2,9 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>YGO Pack Opener - 游戏王卡包开封模拟器</title>
-<link rel="stylesheet" href="css/style.css?v=1.3.4">
+    <link rel="stylesheet" href="css/style.css?v=1.4.3">
 </head>
 <body>
     <!-- ====== 全局加载遮罩层 ====== -->
@@ -17,7 +17,6 @@
 
     <!-- ====== 顶部导航栏 ====== -->
     <header class="top-bar">
-        <h1 class="game-title">YGO Pack Opener</h1>
         <!-- 货币显示栏 -->
         <div class="currency-bar">
             <div class="currency-item" id="currency-item-gold" title="点击兑换">
@@ -29,29 +28,23 @@
                 <span class="currency-value" id="currency-balance-diamond">0</span>
             </div>
         </div>
-        <!-- OCG / TCG 模式切换开关 -->
-        <div class="mode-switch-container">
+        <!-- OCG / TCG 模式切换开关（TCG 默认隐藏，可在开发者工具中开启） -->
+        <div class="mode-switch-container" id="mode-switch-container">
             <button id="btn-mode-ocg" class="mode-btn active" data-mode="ocg">OCG</button>
-            <button id="btn-mode-tcg" class="mode-btn" data-mode="tcg">TCG</button>
+            <button id="btn-mode-tcg" class="mode-btn" data-mode="tcg" style="display:none;">TCG</button>
         </div>
         <nav class="top-nav">
-            <button id="btn-inventory" class="nav-btn inventory-btn">🎒 背包<span id="inventory-badge" class="inventory-badge" style="display:none;">0</span></button>
-            <button id="btn-cache-manage" class="nav-btn">💾 缓存</button>
+            <button id="btn-inventory" class="nav-btn inventory-btn">🎒<span id="inventory-badge" class="inventory-badge" style="display:none;">0</span></button>
+            <button id="btn-cache-manage" class="nav-btn">💾</button>
             <button id="btn-dev-tools" class="nav-btn dev-btn">🔧</button>
         </nav>
     </header>
 
     <!-- ====== 主游戏区域 ====== -->
     <main class="game-area">
-        <!-- 当前模式提示 -->
-        <div id="mode-info" class="mode-info">
-<span id="mode-info-text">🎌 OCG 模式（亚洲版） — 每包5张 | 中文名+日文名 | 数据源: YGOProDeck + YGOCDB</span>
-        </div>
-
         <!-- 卡包选择区域 -->
         <section id="pack-select-section" class="section-panel">
             <h2 class="section-title">选择卡包</h2>
-<p class="section-subtitle">OCG: 中文名+日文名 | TCG: 中文名+英文名 | 数据源: YGOProDeck + YGOCDB</p>
             <div id="pack-list" class="pack-list">
                 <!-- 卡包列表会由 JS 动态生成 -->
             </div>
@@ -143,6 +136,15 @@
                     <p class="devtools-note">💡 重置游戏：仅重置货币余额，不清除缓存。若需清除缓存，请前往「💾 缓存管理」。</p>
                 </div>
 
+                <!-- ▸ 板块：TCG 测试模式 -->
+                <div class="devtools-section-card">
+                    <h3 class="devtools-section-title">🌎 TCG 测试模式</h3>
+                    <div class="devtools-actions-btns">
+                        <button id="btn-dev-toggle-tcg" class="btn-devtools-action btn-dev-tcg">🔓 开启 TCG 模式</button>
+                    </div>
+                    <p class="devtools-note devtools-tcg-warning">⚠️ TCG 开发未完成，仅为测试版本。开启后可在顶部切换到 TCG 模式，数据和功能可能不完整。</p>
+                </div>
+
                 <!-- ▸ 板块二：CDN 卡图对比 -->
                 <div class="devtools-section-card">
                     <h3 class="devtools-section-title">🖼️ CDN 卡图对比</h3>
@@ -214,7 +216,7 @@
 
     <!-- ====== 页脚 ====== -->
     <footer class="footer">
-<p><span id="footer-version" class="footer-version-link" title="点击查看更新日志">YGO Pack Opener v1.3.4</span> | 游戏王卡包开封模拟器</p>
+<p><span id="footer-version" class="footer-version-link" title="点击查看更新日志">YGO Pack Opener v1.4.3</span> | 游戏王卡包开封模拟器</p>
         <p class="footer-credit">
             外文数据: <a href="https://ygoprodeck.com/" target="_blank" rel="noopener">YGOProDeck</a> | 
             中文名称: <a href="https://ygocdb.com/" target="_blank" rel="noopener">YGOCDB</a> | 
@@ -242,10 +244,10 @@
     </script>
 
     <!-- 先加载离线备用数据，再加载 API 模块，最后加载游戏逻辑 -->
-<script src="data/fallback_cards.js?v=1.3.4"></script>
-    <script src="js/currency.js?v=1.3.4"></script>
-    <script src="js/inventory.js?v=1.3.4"></script>
-    <script src="js/api.js?v=1.3.4"></script>
-    <script src="js/game.js?v=1.3.4"></script>
+    <script src="data/fallback_cards.js?v=1.4.3"></script>
+    <script src="js/currency.js?v=1.4.3"></script>
+    <script src="js/inventory.js?v=1.4.3"></script>
+    <script src="js/api.js?v=1.4.3"></script>
+    <script src="js/game.js?v=1.4.3"></script>
 </body>
 </html>

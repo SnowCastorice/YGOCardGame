@@ -101,8 +101,9 @@
 
 ## 🎯 设计优先级
 
-1. **移动端体验优先** — 网页主要面向手机用户，优先保证移动端的交互和显示效果
-2. **PC 端次之** — 在移动端体验良好的基础上兼顾桌面端
+1. **移动端专属体验** — 网页只面向手机用户，桌面端显示效果与移动端完全一致（居中展示）
+2. **适配不同手机宽度和刘海屏** — 使用 `viewport-fit=cover` + `safe-area-inset` 确保所有设备安全显示
+3. **CSS 不使用媒体查询** — v1.4.3 起移除所有 `@media` 断点，移动端样式即默认样式，桌面端 `max-width: 500px` 居中显示
 
 ## 🔗 项目信息
 
@@ -112,20 +113,36 @@
 
 ## 📊 数据源架构
 
+> **v1.4.0 架构重构：OCG 本地数据优先，零 API 调用**
+>
 > OCG 和 TCG 采用**不同的数据获取方案**，这是经过讨论后确定的重要架构决策。
 
-### OCG 模式
+### OCG 模式（v1.4.0+ 本地数据优先）
 
 | 维度 | 来源 | 说明 |
 |------|------|------|
-| **卡包列表** | YGOCDB (`ygocdb.com/packs`) | 通过 `fetch_packs.py` 离线抓取 HTML 解析 |
-| **卡牌收录** | YGOCDB (`ygocdb.com/pack/{id}`) | 从卡包详情页解析卡牌密码列表，写入 `cards.json` 的 `cardIds` |
-| **卡牌详情** | YGOProDeck API (`?language=ja`) | 按密码批量获取 `?id=xxx,yyy` |
-| **中文名补充** | YGOCDB API (`/api/v0/?search=`) | 补充中文卡名 `cn_name` |
-| **卡图** | YGOCDB CDN (`cdn.233.momobako.com`) | 日文版卡图 |
-| **稀有度** | ⚠️ 需手动配置 | YGOCDB 不提供稀有度信息（**待处理**） |
+| **卡包列表** | `data/ocg/packs.json` | 卡包元信息索引（轻量级） |
+| **卡牌收录** | `data/ocg/cards/*.json` | 每个卡包独立文件，含 cardIds + cardData |
+| **卡牌详情** | `cardData` 节点（本地） | 由 `build_pack_data.py` 从 `cards.json` 提取注入，含中/日/英文名、攻防、效果 |
+| **中文名** | `cardData.cn_name`（本地） | 直接从本地数据读取，不再调用 YGOCDB API |
+| **卡图** | YGOCDB CDN (`cdn.233.momobako.com`) | 日文版卡图（仅卡图从 CDN 加载） |
+| **稀有度** | `cardIds[].rarityCode` + `rarityVersions` | 手动配置在卡包文件中 |
+| **API 回退** | YGOProDeck + YGOCDB | 仅当卡包未构建本地数据时才调用 API |
 
-### TCG 模式
+**工作流程（零 API 调用）**：
+```
+页面加载 packs.json（轻量索引）
+    ↓
+用户点击卡包 → 加载 ocg_blzd.json（含 cardData 节点）
+    ↓
+buildOCGCardsFromLocalData()（纯本地转换）
+    ↓
+直接开包！卡图从 CDN 加载
+```
+
+### TCG 模式（暂停开发，仅测试）
+
+> ⚠️ TCG 开发已暂停，入口默认隐藏，可在开发者工具中开启测试模式
 
 | 维度 | 来源 | 说明 |
 |------|------|------|
@@ -139,8 +156,9 @@
 
 ### 关键区别
 
-- **TCG** 只需一个 `setCode` 就能获取完整卡牌列表 + 稀有度（YGOProDeck 天然支持）
-- **OCG** 需要预定义 `cardIds` 数组（YGOProDeck 的 OCG 数据覆盖率低），通过 YGOCDB 获取卡牌列表
+- **OCG** 本地数据优先，卡牌数据内嵌在 JSON 文件中，零 API 调用，加载几乎瞬时
+- **TCG** 需要通过 YGOProDeck API 实时获取，加载较慢（开发已暂停）
+- OCG 的全量数据库 `data/common/cards.json`（12MB）来源于 YGOCDB，含 13900+ 张卡的完整信息
 
 ### 卡包封面图来源（v1.0.1 新增）
 
@@ -188,6 +206,20 @@ Cloudflare Pages 会自动检测项目根目录下的 `functions/` 文件夹，�
 `cloudflare-worker/konami-image-proxy.js` 为原独立 Worker 代码，已弃用，保留作为参考。
 
 ## 🛠️ 工具脚本
+
+### `build_pack_data.py` — OCG 卡包数据构建脚本（v1.4.0 新增）
+
+从 `data/common/cards.json`（YGOCDB 全量数据库）提取卡牌详情，注入到 `data/ocg/cards/*.json` 文件中。
+构建后的卡包文件包含完整的卡牌信息（中文名/日文名/英文名/攻防/效果），网页运行时无需调用任何 API。
+
+| 命令 | 说明 |
+|------|------|
+| `python build_pack_data.py` | 构建所有 OCG 卡包（将 cardData 注入到每个卡包文件） |
+| `python build_pack_data.py ocg_blzd` | 只构建指定卡包 |
+| `python build_pack_data.py --check` | 检查哪些卡在 cards.json 中找不到（不修改文件） |
+| `python build_pack_data.py --info` | 查看 cards.json 统计信息 |
+
+**⚠️ 重要**：每次新增或更新卡包后，必须运行此脚本以确保本地数据完整。
 
 ### `fetch_packs.py` — 卡包数据抓取工具
 
@@ -297,13 +329,15 @@ data/ocg/
 
 ### 功能说明
 
-在卡包列表界面，每个卡包封面图上叠加了「🪙 价格」和「🔍 预览」浮动标签（价格位于卡图**左上角**，预览位于卡图**右下角**，对角线分布避免重叠），容器 `pack-cover-container` 使用 `inline-flex` + `width: auto` 紧贴卡图实际尺寸，外层 `pack-cover-wrapper` 负责居中。点击预览标签后自动加载卡包数据并弹出预览弹窗，展示该卡包内**所有可开出的卡片**。玩家无需先进入开包界面即可查看卡包内容，减少操作步骤。
+在卡包列表界面，每个卡包采用**横向卡片布局**（左图右文），价格和预览按钮作为独立的操作按钮放在右侧信息区底部。点击预览按钮后自动加载卡包数据并弹出预览弹窗，展示该卡包内**所有可开出的卡片**。玩家无需先进入开包界面即可查看卡包内容，减少操作步骤。
 
 ### 核心特性
 
 | 特性 | 说明 |
 |------|------|
-| **卡包列表内直接预览** | 预览按钮以浮动标签形式叠加在卡图右下角，价格标签在左上角（对角线分布），容器使用 `inline-flex` 紧贴卡图尺寸 + `backdrop-filter: blur` 半透明毛玻璃效果，点击后独立加载数据，不影响开包流程 |
+| **横向卡片布局** | 卡包封面在左（固定高度），信息在右（卡名、编码·发售日期、金币价格），BEM 命名（`.pack-card__cover` / `.pack-card__info`） |
+| **卡图预览入口** | 卡图右上角半透明放大镜图标（`.pack-card__preview-icon`），hover 显示，移动端始终可见；点击卡图/图标进入预览界面 |
+| **金币价格胶囊** | 价格标签（`.pack-card__price`）位于卡名下方，小胶囊样式，不再占用独立操作行 |
 | **收集进度条** | 显示 `已拥有/总数 (百分比%)`，带可视化进度条 |
 | **稀有度分布** | 标签形式展示 UR、SR、R、N 各多少张 |
 | **已拥有/未拥有区分** | 已拥有：正常显示 + 绿色数量角标；未拥有：**灰度 + 降低透明度 + 🔒 图标** |
@@ -315,8 +349,8 @@ data/ocg/
 | 文件 | 变更 |
 |------|------|
 | `index.html` | 预览弹窗 HTML 结构 |
-| `js/game.js` | `showCardPreview(pack)` / `hideCardPreview` / `renderCardPreview(sortBy, cards, pack)` 函数 + `renderPackList` 中使用 `pack-cover-wrapper`（居中）+ `pack-cover-container`（紧贴卡图）+ 价格/预览浮动标签 |
-| `css/style.css` | `.pack-cover-wrapper`（居中外层容器）、`.pack-cover-container`（`inline-flex` 紧贴卡图）、`.pack-overlay-tag`（叠加浮动标签通用样式）、`.pack-price`（左上角价格标签）、`.btn-pack-preview`（右下角预览按钮）+ 预览弹窗完整样式（进度条、灰度效果、网格布局、响应式适配） |
+| `js/game.js` | `showCardPreview(pack)` / `hideCardPreview` / `renderCardPreview(sortBy, cards, pack)` 函数 + `renderPackList` 中使用横向卡片布局，点击卡图区域触发预览，点击右侧信息区触发开包 |
+| `css/style.css` | `.pack-card`（横向 flex 布局、固定高度）、`.pack-card__cover`（左侧封面）、`.pack-card__info`（右侧信息）、`.pack-card__preview-icon`（右上角半透明放大镜叠加图标）、`.pack-card__price`（金币胶囊）+ 预览弹窗完整样式（进度条、灰度效果、网格布局、响应式适配） |
 
 ### 数据依赖
 
