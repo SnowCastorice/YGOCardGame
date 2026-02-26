@@ -1,0 +1,123 @@
+============================================
+YGO Pack Opener — API & CDN 资源清单
+============================================
+
+标记说明：
+  ✅ 当前使用中
+  ⬜ 未使用 / 备用
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+一、卡牌数据 API
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ YGOProDeck API (主要数据源)
+   用途：获取外文卡牌数据（名称、攻防、效果、稀有度等）
+   端点：https://db.ygoprodeck.com/api/v7
+   使用方式：
+     - OCG 模式：?language=ja（日文名 + 日文效果）
+     - TCG 模式：默认英文
+   官网：https://ygoprodeck.com/
+   文档：https://ygoprodeck.com/api-guide/
+   卡包列表（OCG/TCG/MD/DL）：https://ygoprodeck.com/packs/
+   卡片数据库：https://ygoprodeck.com/card-database/
+
+✅ YGOCDB 百鸽 API (中文数据源)
+   用途：获取卡牌中文名称（cn_name），同时返回 jp_name / en_name
+   端点：https://ygocdb.com/api/v0
+   使用方式：
+     - 查询卡片信息：https://ygocdb.com/api/v0/?search={cardId}
+   官网：https://ygocdb.com/
+   API 文档：https://ygocdb.com/api
+   卡包列表（OCG/TCG）：https://ygocdb.com/packs
+
+⬜ YGOResources API (多国语言)
+   用途：提供多国语言卡片数据（暂未接入）
+   端点：https://db.ygoresources.com/
+   文档：https://db.ygoresources.com/about/api
+
+⬜ YGOMeta
+   用途：提供 OCG / TCG / MD 卡片信息（暂未接入数据API）
+   官网：https://www.yugiohmeta.com/
+
+⬜ KONAMI 游戏王官方卡查
+   用途：OCG / TCG 官方卡片数据库（暂未直接调用数据API）
+   官网：https://www.db.yugioh-card.com/yugiohdb/
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+二、卡牌图片 CDN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ YGOCDB CDN — 萌卡 YGOPro 卡图 (OCG 默认图源)
+   URL：https://cdn.233.momobako.com/ygopro/pics/{id}.jpg
+   格式：JPEG
+   说明：日文卡图，当前 OCG 模式默认使用
+
+⬜ YGOCDB CDN — 高清 WebP 卡图 (备用)
+   URL：https://cdn.233.momobako.com/ygoimg/ygopro/{id}.webp
+   格式：WebP
+   说明：高清卡图，备用图源
+
+⬜ YGOCDB CDN — 压缩 WebP 卡图 (备用)
+   URL：https://cdn.233.momobako.com/ygoimg/ygopro/{id}.webp!/fw/400/quality/85
+   格式：WebP (宽400 + 质量85)
+   说明：CDN 在线压缩处理，备用图源
+
+⬜ YGOProDeck 小图 (备用)
+   URL：https://images.ygoprodeck.com/images/cards_small/{id}.jpg
+   格式：JPEG
+   说明：TCG 备用小图
+
+⬜ YGOProDeck 大图 (备用)
+   URL：https://images.ygoprodeck.com/images/cards/{id}.jpg
+   格式：JPEG
+   说明：大尺寸卡图，备用图源
+
+✅ YGOProDeck 卡包封面图
+   URL：https://images.ygoprodeck.com/images/sets/{packCode}.jpg
+   格式：JPEG
+   说明：TCG 卡包封面图片
+
+✅ YugiohMeta S3 CDN (TCG 默认图源)
+   URL：https://s3.duellinksmeta.com/cards/{metaId}_w420.webp
+   格式：WebP
+   说明：英文卡图，当前 TCG 模式默认使用，需要 password→_id 映射表
+   映射表：data/tcg/yugiohmeta_map.json
+
+⬜ KONAMI 官方卡图 (备用，通过服务端代理)
+   URL：/api/card-image?cid={cid}
+   实际源：https://www.db.yugioh-card.com/yugiohdb/get_image.action?type=1&osplang=1&cid={cid}&ciid=1
+   格式：JPEG
+   说明：KONAMI 官方日文卡图（200×290），通过 Cloudflare Pages Function 代理绕过 WAF 跨域限制
+   需要 cid 参数（非卡片密码），图片尺寸较小，当前作为备用
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+三、项目自有服务
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ KONAMI 卡图代理 (Cloudflare Pages Function)
+   路径：/api/card-image?cid={cid}
+   代码：functions/api/card-image.js
+   说明：服务端代理，绕过 KONAMI 官网 Imperva WAF 跨域限制
+   部署：随项目自动部署到 Cloudflare Pages，无需额外配置
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+四、页面引用 & 致谢
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+页脚致谢链接：
+  - YGOProDeck：https://ygoprodeck.com/
+  - YGOCDB：https://ygocdb.com/
+  - Konami：https://www.konami.com/
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+五、本地缓存方式
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  - IndexedDB：缓存卡牌数据（名称、攻防、效果、图片URL等）
+  - Cache API：缓存卡牌图片文件（浏览器离线可用）
+  - localStorage：存储用户设置、货币数据、背包数据
