@@ -1,7 +1,6 @@
 ﻿/**
  * ============================================
  * YGO Pack Opener - 游戏核心逻辑
- * 版本: 1.1.1
  * 
  * 【文件说明】
  * 这是游戏的"大脑"，负责：
@@ -24,6 +23,12 @@ let currentPack = null;      // 当前选中的卡包配置
 let currentPackCards = null;  // 当前选中卡包的卡牌数据（来自 API 缓存）
 let currentGameMode = 'ocg';  // 当前游戏模式：'ocg' 或 'tcg'，默认 OCG
 let tcgModeEnabled = false;    // TCG 测试模式是否已开启（通过开发者工具开启）
+
+// ====== 稀有度排序常量 ======
+// 升序排序（N在前，PSER在后）—— 用于开包结果展示，营造惊喜感
+const RARITY_ORDER_ASC = { 'N': 0, 'NR': 1, 'R': 2, 'SR': 3, 'UR': 4, 'SER': 5, 'UTR': 6, 'PSER': 7 };
+// 降序排序（PSER在前，N在后）—— 用于预览/背包等列表，稀有卡优先展示
+const RARITY_ORDER_DESC = { 'PSER': 8, 'UTR': 7, 'SER': 6, 'UR': 5, 'SR': 4, 'R': 3, 'NR': 2, 'N': 1 };
 
 // ====== 页面加载完成后初始化 ======
 document.addEventListener('DOMContentLoaded', async function () {
@@ -334,13 +339,6 @@ function bindGameEvents() {
     bindEvent('card-preview-modal', 'click', function (e) {
         if (e.target === document.getElementById('card-preview-modal')) hideCardPreview();
     });
-}
-
-// ====== 绑定所有按钮事件 ======
-function bindEvents() {
-    bindNavEvents();
-    bindGameEvents();
-    bindCardImageViewer();
 }
 
 // ============================================
@@ -1035,9 +1033,8 @@ function drawCards_OCG(pack, cards) {
     }
 
     // --- 步骤3：按稀有度排序（N在前，最稀有的在后面，营造惊喜感）---
-    const rarityOrder = { 'N': 0, 'NR': 1, 'R': 2, 'SR': 3, 'UR': 4, 'SER': 5, 'UTR': 6, 'PSER': 7 };
     results.sort(function (a, b) {
-        return (rarityOrder[a.rarityCode] || 0) - (rarityOrder[b.rarityCode] || 0);
+        return (RARITY_ORDER_ASC[a.rarityCode] || 0) - (RARITY_ORDER_ASC[b.rarityCode] || 0);
     });
 
     return results;
@@ -1165,9 +1162,8 @@ function drawCards_Legacy(pack, cards) {
     }
 
     // 按稀有度排序：N → NR → R → SR → UR → SER → UTR → PSER
-    const rarityOrder = { 'N': 0, 'NR': 1, 'R': 2, 'SR': 3, 'UR': 4, 'SER': 5, 'UTR': 6, 'PSER': 7 };
     results.sort(function (a, b) {
-        return (rarityOrder[a.rarityCode] || 0) - (rarityOrder[b.rarityCode] || 0);
+        return (RARITY_ORDER_ASC[a.rarityCode] || 0) - (RARITY_ORDER_ASC[b.rarityCode] || 0);
     });
 
     return results;
@@ -2371,7 +2367,6 @@ function renderCardPreview(sortBy, cards, pack) {
     });
 
     // 排序
-    const rarityOrder = { 'PSER': 8, 'UTR': 7, 'SER': 6, 'UR': 5, 'SR': 4, 'R': 3, 'NR': 2, 'N': 1 };
     const sortedCards = allCards.slice();
 
     switch (sortBy) {
@@ -2383,7 +2378,7 @@ function renderCardPreview(sortBy, cards, pack) {
             break;
         case 'rarity':
             sortedCards.sort(function (a, b) {
-                const rDiff = (rarityOrder[b.rarityCode] || 0) - (rarityOrder[a.rarityCode] || 0);
+                const rDiff = (RARITY_ORDER_DESC[b.rarityCode] || 0) - (RARITY_ORDER_DESC[a.rarityCode] || 0);
                 if (rDiff !== 0) return rDiff;
                 // 同稀有度，已拥有的排前面
                 const aOwned = ownedMap[a.id] ? 1 : 0;
@@ -2397,7 +2392,7 @@ function renderCardPreview(sortBy, cards, pack) {
                 const aOwned = ownedMap[a.id] ? 1 : 0;
                 const bOwned = ownedMap[b.id] ? 1 : 0;
                 if (aOwned !== bOwned) return bOwned - aOwned;
-                return (rarityOrder[b.rarityCode] || 0) - (rarityOrder[a.rarityCode] || 0);
+                return (RARITY_ORDER_DESC[b.rarityCode] || 0) - (RARITY_ORDER_DESC[a.rarityCode] || 0);
             });
             break;
         case 'name':

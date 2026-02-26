@@ -1270,16 +1270,6 @@ function mapRarityToCode(rarityName) {
 // ====== 卡图缓存管理 ======
 
 /**
- * 获取卡牌图片（优先使用缓存）
- */
-/**
- * 获取卡图 URL（直接返回原始 URL，由浏览器 HTTP 缓存管理）
- */
-async function getCachedImageUrl(imageUrl) {
-    return imageUrl || null;
-}
-
-/**
  * 批量预加载卡包的所有卡图
  * 使用 Image 对象预加载，利用浏览器 HTTP 缓存，避免 CORS 跨域问题
  */
@@ -1400,9 +1390,6 @@ window.TCG_API = {
 
     // 获取缓存中的卡包数据（不触发 API 请求）
     getCachedSetData: getCachedSetData,
-
-    // 获取缓存的图片 URL
-    getCachedImageUrl: getCachedImageUrl,
 
     // 批量预加载卡图
     preloadCardImages: preloadCardImages,
