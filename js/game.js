@@ -745,6 +745,37 @@ async function selectPack(pack) {
         const modeTag = currentGameMode === 'ocg' ? ' [OCG]' : ' [TCG]';
         document.getElementById('current-pack-name').textContent = pack.packName + modeTag + offlineTag;
 
+        // 设置卡包封面图（直接用 img.src，利用浏览器 HTTP 缓存秒显）
+        const packCode = pack.packCode || pack.setCode || pack.packId;
+        const coverUrl = getPackCoverImageUrl(pack, packCode);
+        const coverImg = document.getElementById('current-pack-cover');
+        const coverWrapper = coverImg ? coverImg.closest('.pack-cover-wrapper') : null;
+        if (coverImg && coverUrl) {
+            coverImg.classList.remove('is-loaded');
+            coverImg.style.display = '';
+            coverImg.alt = pack.packName;
+            coverImg.src = coverUrl;
+            // 缓存命中时 img.complete 为 true，跳过骨架屏和淡入动画直接显示
+            if (coverImg.complete && coverImg.naturalWidth > 0) {
+                coverImg.classList.add('is-loaded');
+                if (coverWrapper) coverWrapper.classList.remove('is-loading');
+            } else {
+                // 网络加载：显示骨架屏，加载完成后淡入
+                if (coverWrapper) coverWrapper.classList.add('is-loading');
+                coverImg.onload = function() {
+                    coverImg.classList.add('is-loaded');
+                    if (coverWrapper) coverWrapper.classList.remove('is-loading');
+                };
+                coverImg.onerror = function() {
+                    coverImg.style.display = 'none';
+                    if (coverWrapper) coverWrapper.classList.remove('is-loading');
+                };
+            }
+        } else if (coverImg) {
+            coverImg.style.display = 'none';
+            if (coverWrapper) coverWrapper.classList.remove('is-loading');
+        }
+
         const displayCode = pack.packCode || pack.setCode || pack.packId;
         document.getElementById('current-pack-desc').textContent =
             `${displayCode} | 共 ${currentPackCards.length} 种卡牌 | 每包抽取 ${pack.cardsPerPack} 张 | 数据: ${dataSourceName}${setData.isOfflineData ? '\n⚠️ 当前使用离线备用数据' : ''}`;
@@ -1654,25 +1685,9 @@ function updateOpenPackPriceInfo() {
     const balance = CurrencySystem.getBalance(currency);
     const canAfford = price <= 0 || CurrencySystem.canAfford(currency, price);
 
-    // 更新开包按钮区域的价格提示
-    let priceInfoEl = document.getElementById('open-pack-price-info');
-    if (!priceInfoEl) {
-        // 如果元素不存在，动态创建并插入到开包按钮之前
-        priceInfoEl = document.createElement('div');
-        priceInfoEl.id = 'open-pack-price-info';
-        priceInfoEl.className = 'open-pack-price-info';
-        const btnContainer = document.querySelector('.open-btn-container');
-        if (btnContainer) {
-            btnContainer.parentElement.insertBefore(priceInfoEl, btnContainer);
-        }
-    }
-
-    if (price > 0 && currDef) {
-        priceInfoEl.innerHTML = `开包花费: ${currDef.icon} ${price} ${currDef.name} | 当前余额: ${currDef.icon} ${balance}`;
-        priceInfoEl.style.display = 'block';
-    } else {
-        priceInfoEl.style.display = 'none';
-    }
+    // 移除旧版花费信息行（如果存在）
+    const oldPriceInfo = document.getElementById('open-pack-price-info');
+    if (oldPriceInfo) oldPriceInfo.remove();
 
     // 更新开包按钮的可用状态
     const openBtn = document.getElementById('btn-open-pack');

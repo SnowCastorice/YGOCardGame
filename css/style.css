@@ -355,13 +355,7 @@ body {
     border: 1px solid rgba(255, 71, 87, 0.3);
 }
 
-/* 开包区域的价格提示 */
-.open-pack-price-info {
-    text-align: center;
-    margin-bottom: 12px;
-    font-size: 0.9rem;
-    color: var(--accent-gold);
-}
+/* 开包区域的价格提示（已移除，价格信息显示在按钮文字中） */
 
 /* 余额不足时的按钮样式 */
 .btn-open-pack.insufficient {
@@ -605,7 +599,59 @@ body {
    ============================================ */
 .pack-info {
     text-align: center;
-    margin-bottom: 32px;
+    margin-bottom: 16px;
+}
+
+/* 开包界面的卡包封面图 */
+.pack-cover-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 12px 0;
+  /* 固定容器尺寸，避免图片加载时的布局抖动 */
+  min-height: 260px;
+  align-items: center;
+  position: relative;
+}
+
+/* 骨架屏 loading 占位 */
+.pack-cover-wrapper.is-loading:before {
+  content: '';
+  display: block;
+  width: 180px;
+  height: 260px;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 215, 0, .2);
+  background: linear-gradient(110deg, rgba(30, 20, 60, .6) 30%, rgba(80, 60, 140, .3) 50%, rgba(30, 20, 60, .6) 70%);
+  background-size: 200% 100%;
+  animation: cover-shimmer 1.5s ease-in-out infinite;
+  position: absolute;
+}
+
+@keyframes cover-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.pack-cover-large {
+  width: 180px;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(255, 215, 0, .3), 0 0 40px rgba(138, 43, 226, .15);
+  border: 2px solid rgba(255, 215, 0, .4);
+  /* 淡入动画：初始透明，加载完成后渐显 */
+  opacity: 0;
+  transition: opacity .4s ease, transform .3s ease, box-shadow .3s ease;
+}
+
+/* 图片加载完成后显示 */
+.pack-cover-large.is-loaded {
+  opacity: 1;
+}
+
+.pack-cover-large:hover,
+.pack-cover-large:active {
+  transform: scale(1.05);
+  box-shadow: 0 6px 28px rgba(255, 215, 0, .5), 0 0 50px rgba(138, 43, 226, .25);
 }
 
 .pack-desc {
@@ -616,11 +662,16 @@ body {
 
 .open-btn-container {
     text-align: center;
-    margin-bottom: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 10px;
+}
+
+/* 返回按钮在按钮组内的样式 */
+.open-btn-container .btn-secondary {
+    margin-top: 4px;
+    width: 75%;
 }
 
 .btn-open-pack {
@@ -2118,23 +2169,6 @@ body {
 /* ============================================
    卡片预览功能样式 (v1.2.0)
    ============================================ */
-
-/* --- 预览按钮 --- */
-.pack-actions-row {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    margin-top: 16px;
-    flex-wrap: wrap;
-}
-
-.pack-actions-row .btn-secondary {
-    margin-top: 0;
-    width: 80%;
-}
-
 
 /* --- 预览弹窗 --- */
 .card-preview-modal-content {
