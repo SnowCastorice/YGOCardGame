@@ -42,9 +42,10 @@
         "N": 70
       },
       "guaranteedRareSlot": true,
-      "price": 100,
+      "price": 2530,
       "currency": "gold",
-      "_说明": "2025年12月OCG PREMIUM PACK 2026，共32张卡，稀有度待补充"
+      "_说明": "2025年12月OCG PREMIUM PACK 2026，共32张卡，稀有度待补充",
+      "_价格来源": "KONAMI官网含税价格: 1盒 2,530日元"
     },
     {
       "packId": "ocg_blzd",
@@ -70,9 +71,10 @@
         "PSER": 3
       },
       "category": "booster",
-      "price": 100,
+      "price": 176,
       "currency": "gold",
-      "_说明": "2026年1月最新OCG补充包（ブレイジング・ドミニオン），共80张卡，多版本稀有度已配置"
+      "_说明": "2026年1月最新OCG补充包（ブレイジング・ドミニオン），共80张卡，多版本稀有度已配置",
+      "_价格来源": "KONAMI官网含税价格: 1包 176日元"
     },
     {
       "packId": "ocg_ch02",
@@ -94,9 +96,10 @@
       },
       "guaranteedRareSlot": true,
       "category": "structure",
-      "price": 100,
+      "price": 1430,
       "currency": "gold",
-      "_说明": "2026年1月OCG记事卡组（精灵术的使者），共42张卡，稀有度待补充"
+      "_说明": "2026年1月OCG记事卡组（精灵术的使者），共42张卡，稀有度待补充",
+      "_价格来源": "KONAMI官网含税价格: 1,430日元"
     },
     {
       "packId": "ocg_25db",
