@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>YGO Pack Opener - 游戏王卡包开封模拟器</title>
-<link rel="stylesheet" href="css/style.css?v=1.4.7">
+<link rel="stylesheet" href="css/style.css?v=1.4.8">
 </head>
 <body>
     <!-- ====== 全局加载遮罩层 ====== -->
@@ -45,6 +45,13 @@
         <!-- 卡包选择区域 -->
         <section id="pack-select-section" class="section-panel">
             <h2 class="section-title">选择卡包</h2>
+            <!-- 卡包分类选项卡 -->
+            <div id="pack-category-tabs" class="pack-category-tabs">
+                <button class="pack-category-tab active" data-category="booster">补充包</button>
+                <button class="pack-category-tab" data-category="structure">主题卡组</button>
+                <button class="pack-category-tab" data-category="concept">系列补充包</button>
+                <button class="pack-category-tab" data-category="special">特殊包</button>
+            </div>
             <div id="pack-list" class="pack-list">
                 <!-- 卡包列表会由 JS 动态生成 -->
             </div>
@@ -218,7 +225,7 @@
 
     <!-- ====== 页脚 ====== -->
     <footer class="footer">
-<p><span id="footer-version" class="footer-version-link" title="点击查看更新日志">YGO Pack Opener v1.4.7</span> | 游戏王卡包开封模拟器</p>
+<p><span id="footer-version" class="footer-version-link" title="点击查看更新日志">YGO Pack Opener v1.4.8</span> | 游戏王卡包开封模拟器</p>
         <p class="footer-credit">
             外文数据: <a href="https://ygoprodeck.com/" target="_blank" rel="noopener">YGOProDeck</a> | 
             中文名称: <a href="https://ygocdb.com/" target="_blank" rel="noopener">YGOCDB</a> | 
@@ -246,10 +253,10 @@
     </script>
 
     <!-- 先加载离线备用数据，再加载 API 模块，最后加载游戏逻辑 -->
-    <script src="data/fallback_cards.js?v=1.4.6"></script>
-    <script src="js/currency.js?v=1.4.6"></script>
-    <script src="js/inventory.js?v=1.4.6"></script>
-    <script src="js/api.js?v=1.4.6"></script>
-    <script src="js/game.js?v=1.4.6"></script>
+    <script src="data/fallback_cards.js?v=1.4.8"></script>
+    <script src="js/currency.js?v=1.4.8"></script>
+    <script src="js/inventory.js?v=1.4.8"></script>
+    <script src="js/api.js?v=1.4.8"></script>
+    <script src="js/game.js?v=1.4.8"></script>
 </body>
 </html>

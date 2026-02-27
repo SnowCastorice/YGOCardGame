@@ -1,6 +1,6 @@
 {
   "_说明": "BLAZING DOMINION (BLZD) 卡包卡牌列表 —— 从 packs.json 拆分独立管理",
-  "_数据源": "通过 YGOCDB 自动拉取 (ygocdb.com/pack/1000009559000)，稀有度数据来自卡包资料手动整理",
+"_数据源": "通过 YGOCDB 自动拉取 (ygocdb.com/pack/1000009559000)，稀有度数据来自 pack_references 手动整理",
   "_稀有度说明": "rarityVersions 记录该卡所有稀有度版本，rarityCode 为基础稀有度（兼容现有代码）。抽卡规则和概率待后续补充。",
   "packId": "ocg_blzd",
   "packCode": "BLZD",

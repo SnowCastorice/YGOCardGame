@@ -445,6 +445,48 @@ body {
 /* ============================================
    卡包选择区域（横向卡片布局）
    ============================================ */
+
+/* 卡包分类选项卡 */
+.pack-category-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.pack-category-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.pack-category-tab {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  font-size: .8rem;
+  font-weight: bold;
+  background: var(--bg-panel);
+  border: 1.5px solid var(--border-color);
+  border-radius: 20px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all .25s ease;
+  white-space: nowrap;
+}
+
+.pack-category-tab:active {
+  color: var(--text-primary);
+  border-color: var(--accent-blue);
+}
+
+.pack-category-tab.active {
+  background: var(--accent-gold);
+  color: #000;
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 8px rgba(255, 215, 0, .3);
+}
+
 .pack-list {
   display: flex;
   flex-direction: column;

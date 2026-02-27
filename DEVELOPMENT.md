@@ -280,6 +280,21 @@ data/ocg/
     └── ocg_25db.json    ← DUELIST BOX 的卡牌列表
 ```
 
+### KONAMI 官方商品信息参考（v1.4.6+ 新增）
+
+```
+pack_references/konami_official_products/
+├── basic_packs.json       ← 基本卡包（基本パック）16 个，2022.07 ~ 2026.04
+├── structure_decks.json   ← 预组卡组（構築済みデッキ）16 个，2021.08 ~ 2026.01
+├── concept_packs.json     ← 概念卡包（コンセプトパック）16 个，2023.11 ~ 2026.06
+└── special_packs.json     ← 特殊卡包/套装（スペシャルパック/セット）16 个，2022.04 ~ 2026.03
+```
+
+**数据来源**：https://www.yugioh-card.com/japan/products/
+**采集日期**：2026-02-27
+**包含字段**：商品名称、packCode、分类（中日双语）、发售日期（中日双语）、含税/不含税价格、封面图 URL、商品详情页 URL、限定销售渠道（部分）
+**注意**：当前仅采集了各分类首页展示的商品（近 3~4 年），早期商品待后续补充录入。
+
 **工作流程**：页面加载时只读取轻量级的 `packs.json`，当用户点击某个卡包时，才动态加载该卡包的 `cards/{cardFile}` 文件。
 ## 🎒 背包系统（v1.1.0 新增）
 
@@ -390,6 +405,15 @@ data/ocg/
 
 ## 📝 近期变更记录
 
+### v1.4.8（2026-02-27）— 卡包分类选项卡 + 新增 PREMIUM PACK 2026
+- 主页卡包列表新增分类选项卡：补充包、主题卡组、系列补充包、特殊包
+- 分类字段 `category` 加入 packs.json 数据结构，支持 booster/structure/concept/special 四类
+- 新增卡包 PREMIUM PACK 2026（26PP，系列补充包分类，32张卡）
+- 25DB 归类为特殊包（当前特殊包页签显示"暂无卡包"的空态提示，25DB 待正式收录）
+
+### v1.4.7（2026-02-26）— 开包界面封面图可点击放大查看
+- 点击开包界面的卡包封面图弹出大图查看器，复用已有的 card-image-viewer
+
 ### v1.4.6（2026-02-26）— 代码质量清理
 - `changelog.json` 补全 v1.4.4、v1.4.5 版本记录
 - `game.js`：移除文件头过时的版本号注释；删除从未被调用的 `bindEvents()` 函数；提取 `rarityOrder` 为模块级常量 `RARITY_ORDER_ASC` / `RARITY_ORDER_DESC`，消除 3 处重复定义
@@ -412,9 +436,14 @@ data/ocg/
 
 > 以下是已确认但尚未完成的事项，请在后续开发中关注。
 
+0. **🟡 KONAMI 官方商品数据补全**（进行中）
+   - 已完成：四个分类首页展示的商品信息采集（各 16 个，共 64 个商品），保存在 `pack_references/konami_official_products/` 下
+   - 待完成：各分类「もっと見る」（查看更多）内的早期商品数据录入
+   - 数据源：https://www.yugioh-card.com/japan/products/
+
 1. **🟡 OCG 稀有度问题**（BLZD 已完成真实数据录入，其他卡包仍为测试数据）
    - 原始问题：通过 YGOCDB 抓取的 OCG 卡包数据**不包含稀有度信息**，默认全部设为 "N"
-   - **BLZD 已完成**：已从卡包资料手动整理真实稀有度数据，写入 `ocg_blzd.json`
+- **BLZD 已完成**：已从 `pack_references` 手动整理真实稀有度数据，写入 `ocg_blzd.json`
    - 其他 OCG 卡包（CH02、25DB）仍为随机测试稀有度，后续需逐个替换为真实数据
    - 缓存同步：已在 `api.js` 的 `getOCGCardSetData` 中增加**稀有度同步逻辑**，缓存命中时自动用 `cards.json` 中最新的 `rarityCode` 覆盖缓存旧值
    - 影响范围：所有通过 `fetch_packs.py` 抓取的 OCG 卡包

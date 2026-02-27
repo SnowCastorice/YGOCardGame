@@ -23,6 +23,7 @@ let currentPack = null;      // 当前选中的卡包配置
 let currentPackCards = null;  // 当前选中卡包的卡牌数据（来自 API 缓存）
 let currentGameMode = 'ocg';  // 当前游戏模式：'ocg' 或 'tcg'，默认 OCG
 let tcgModeEnabled = false;    // TCG 测试模式是否已开启（通过开发者工具开启）
+let currentPackCategory = 'booster';  // 当前选中的卡包分类（booster/structure/concept/special）
 
 // ====== 稀有度排序常量 ======
 // 升序排序（N在前，PSER在后）—— 用于开包结果展示，营造惊喜感
@@ -95,6 +96,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
 
         // 初始化各个模块
+        bindCategoryTabs();
+        console.log('✅ bindCategoryTabs 完成');
+
         renderPackList();
         console.log('✅ renderPackList 完成');
 
@@ -470,17 +474,42 @@ function closeCardImageViewer() {
  * 渲染卡包选择列表
  * 根据当前 OCG/TCG 模式，读取对应的 packs 数组，生成可点击的卡包卡片
  */
+/**
+ * 绑定卡包分类选项卡事件
+ */
+function bindCategoryTabs() {
+    const tabsContainer = document.getElementById('pack-category-tabs');
+    if (!tabsContainer) return;
+    tabsContainer.addEventListener('click', function (e) {
+        const tab = e.target.closest('.pack-category-tab');
+        if (!tab || tab.classList.contains('active')) return;
+        // 切换激活状态
+        tabsContainer.querySelectorAll('.pack-category-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        // 更新当前分类并重新渲染卡包列表
+        currentPackCategory = tab.dataset.category;
+        renderPackList();
+    });
+}
+
 function renderPackList() {
     const packListEl = document.getElementById('pack-list');
     packListEl.innerHTML = '';
 
     const modeConfig = getCurrentModeConfig();
     if (!modeConfig || !modeConfig.packs) {
-        packListEl.innerHTML = '<p style="text-align:center;color:var(--text-secondary);grid-column:1/-1;">当前模式下暂无可用卡包</p>';
+        packListEl.innerHTML = '<p style="text-align:center;color:var(--text-secondary);">当前模式下暂无可用卡包</p>';
         return;
     }
 
-    modeConfig.packs.forEach(function (pack) {
+    // 按当前分类筛选卡包
+    const filteredPacks = modeConfig.packs.filter(pack => pack.category === currentPackCategory);
+    if (filteredPacks.length === 0) {
+        packListEl.innerHTML = '<p style="text-align:center;color:var(--text-secondary);padding:40px 0;">该分类暂无卡包，敬请期待 🌟</p>';
+        return;
+    }
+
+    filteredPacks.forEach(function (pack) {
         const packCard = document.createElement('div');
         packCard.className = 'pack-card';
 

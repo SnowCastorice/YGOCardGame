@@ -14,13 +14,38 @@
     "gameMode": "游戏模式：ocg = 亚洲版, tcg = 欧美版",
     "totalCards": "卡包收录卡牌总数（仅供显示，实际数量以 cardFile 中为准）",
     "price": "开包所需货币数量",
-    "currency": "开包使用的货币类型（gold=金币, diamond=钻石）"
+    "currency": "开包使用的货币类型（gold=金币, diamond=钻石）",
+    "category": "卡包分类：booster=补充包, structure=主题卡组, concept=系列补充包, special=特殊包"
   },
   "_packScheme说明": {
     "ocg_default": "OCG默认方案：4张N卡 + 1张非N稀有卡，同一包编号不重复。非N卡若有多个稀有度版本，按versionOdds概率随机。",
     "legacy": "旧版方案：所有位置按rarityRates权重随机稀有度，兼容TCG和未配置方案的卡包。"
   },
   "packs": [
+    {
+      "packId": "ocg_26pp",
+      "packName": "PREMIUM PACK 2026",
+      "packNameJP": "プレミアムパック 2026",
+      "packCode": "26PP",
+      "releaseDate": "2025-12-20",
+      "ygocdbPackId": "1000009549000",
+      "coverImage": "https://ms.yugipedia.com//c/c8/26PP-BoosterJP.png",
+      "cardsPerPack": 5,
+      "totalCards": 32,
+      "cardFile": "ocg_26pp.json",
+      "category": "concept",
+      "packScheme": "legacy",
+      "rarityRates": {
+        "UR": 1,
+        "SR": 4,
+        "R": 25,
+        "N": 70
+      },
+      "guaranteedRareSlot": true,
+      "price": 100,
+      "currency": "gold",
+      "_说明": "2025年12月OCG PREMIUM PACK 2026，共32张卡，稀有度待补充"
+    },
     {
       "packId": "ocg_blzd",
       "packName": "BLAZING DOMINION",
@@ -44,6 +69,7 @@
         "UTR": 8,
         "PSER": 3
       },
+      "category": "booster",
       "price": 100,
       "currency": "gold",
       "_说明": "2026年1月最新OCG补充包（ブレイジング・ドミニオン），共80张卡，多版本稀有度已配置"
@@ -67,6 +93,7 @@
         "N": 70
       },
       "guaranteedRareSlot": true,
+      "category": "structure",
       "price": 100,
       "currency": "gold",
       "_说明": "2026年1月OCG记事卡组（精灵术的使者），共42张卡，稀有度待补充"
@@ -90,6 +117,7 @@
         "N": 70
       },
       "guaranteedRareSlot": true,
+      "category": "special",
       "price": 100,
       "currency": "gold",
       "_说明": "2025年12月OCG决斗者盒SPECIAL PACK，共60张卡，稀有度待补充"
