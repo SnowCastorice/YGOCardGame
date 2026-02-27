@@ -405,6 +405,13 @@ pack_references/konami_official_products/
 
 ## 📝 近期变更记录
 
+### v1.5.2（2026-02-27）— +1辅助包专属卡池 + 卡图放大修复
+- 辅助包使用专属卡池（`supplementPack` 节点，BLZD-JPS01~JPS20 共 20 张卡），不再从主卡池抽取
+- 补全辅助包 20 张卡的 ID 和 `cardData`，通过 `build_pack_data.py` 注入完整卡牌信息
+- `api.js` 新增 `buildSupplementCardsFromLocalData` 函数，加载卡包时同时构建辅助包卡池
+- 修复辅助包卡片无法点击放大查看的问题（给 `#bonus-cards` 容器绑定事件委托）
+- 新增全局变量 `currentSupplementCards`，与 `currentPackCards` 生命周期同步
+
 ### v1.5.1（2026-02-27）— 新增「开整盒」（30包）选项
 - 开包界面和结果界面新增「📦×30 开整盒」按钮，价格为单包价格 ×30
 - 整盒按钮下方配有「整盒购入赠送 +1 辅助包」文字说明
@@ -467,7 +474,7 @@ pack_references/konami_official_products/
 3. **� 多版本稀有度系统**（已基本完成，概率待用户确认）
    - 数据结构：`ocg_blzd.json` 中每张卡新增 `rarityVersions` 数组，记录该卡所有稀有度版本（如 `["SR", "SER"]`）
    - `rarityCode` 字段保留为基础稀有度（兼容现有代码逻辑），`setNumber` 字段记录卡包编号（如 `"BLZD-JP001"`）
-   - 辅助包（JPS01~JPS20）数据存储在 `supplementPack` 节点中，暂不加入主卡池
+   - 辅助包（JPS01~JPS20）数据已启用，存储在 `supplementPack` 节点中，开整盒时从中随机抽 1 张
    - **已完成**：8种稀有度的完整 UI 样式支持（CSS 颜色/边框/角标/光效 + JS 排序/价格/名称映射）
    - 新增稀有度类型：NR（普通闪）、SER（秘密闪）、PSER（棱镜秘密闪）、UTR（终极闪）
    - **已完成**：OCG 默认抽卡方案实现（`packScheme: "ocg_default"`）

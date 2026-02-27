@@ -21,6 +21,7 @@ let tcgPackConfig = null;    // TCG 卡包配置数据（来自 data/tcg/packs.j
 let changelogData = null;    // 更新日志数据
 let currentPack = null;      // 当前选中的卡包配置
 let currentPackCards = null;  // 当前选中卡包的卡牌数据（来自 API 缓存）
+let currentSupplementCards = null;  // 当前卡包的辅助包卡池（仅开盒时使用）
 let currentGameMode = 'ocg';  // 当前游戏模式：'ocg' 或 'tcg'，默认 OCG
 let tcgModeEnabled = false;    // TCG 测试模式是否已开启（通过开发者工具开启）
 let currentPackCategory = 'booster';  // 当前选中的卡包分类（booster/structure/concept/special）
@@ -281,6 +282,7 @@ async function switchGameMode(mode) {
     // 重置当前选中的卡包
     currentPack = null;
     currentPackCards = null;
+    currentSupplementCards = null;
 
     // 回到卡包选择界面并重新渲染
     if (getCurrentModeConfig()) {
@@ -397,6 +399,34 @@ function bindCardImageViewer() {
         // 打开查看器（带过渡动画）
         viewer.classList.add('active');
     });
+
+    // 事件委托：监听辅助包区域的卡片点击（放大查看）
+    const bonusCardsEl = document.getElementById('bonus-cards');
+    if (bonusCardsEl) {
+        bonusCardsEl.addEventListener('click', function (e) {
+            const img = e.target.closest('.card-image.clickable');
+            if (!img) return;
+
+            e.stopPropagation();
+
+            const largeUrl = img.getAttribute('data-large-url');
+            const cardName = img.getAttribute('data-card-name') || '';
+            const foreignName = img.getAttribute('data-card-foreign') || '';
+
+            if (!largeUrl) return;
+
+            viewerImage.src = largeUrl;
+            viewerImage.alt = cardName;
+
+            let displayName = cardName;
+            if (foreignName && foreignName !== cardName) {
+                displayName += `<br><span style="font-size:0.8em;opacity:0.7;">${foreignName}</span>`;
+            }
+            viewerName.innerHTML = displayName;
+
+            viewer.classList.add('active');
+        });
+    }
 
     // 事件委托：监听开发者工具 CDN 面板中的卡图点击（放大查看）
     var devtoolsCompareArea = document.getElementById('devtools-compare-area');
@@ -785,6 +815,10 @@ async function selectPack(pack) {
             const cardFileData = await cardFileResponse.json();
             // 将 cardIds 注入到 pack 对象中，供 API 模块使用
             pack.cardIds = cardFileData.cardIds;
+            // 将辅助包数据也注入到 pack 对象中（如果存在）
+            if (cardFileData.supplementPack) {
+                pack.supplementPack = cardFileData.supplementPack;
+            }
             console.log(`📄 已加载独立卡牌文件 [${pack.cardFile}]，共 ${pack.cardIds.length} 张卡`);
         }
 
@@ -794,6 +828,7 @@ async function selectPack(pack) {
             updateLoadingText(`正在从 ${dataSourceName} 加载「${pack.packName}」... (${loaded}/${total})`);
         });
         currentPackCards = setData.cards;
+        currentSupplementCards = setData.supplementCards || null;
 
         // 更新开包界面信息
         const offlineTag = setData.isOfflineData ? ' [离线模式]' : '';
@@ -869,6 +904,7 @@ async function selectPack(pack) {
 function showPackSelect() {
     currentPack = null;
     currentPackCards = null;
+    currentSupplementCards = null;
     switchSection('pack-select-section');
 }
 
@@ -1002,14 +1038,17 @@ async function openMultiPacks(count) {
         allCards.push(...drawnCards);
     }
 
-    // 5. +1辅助包：从整个卡池中平均随机抽1张卡（暂按平均分布）
+    // 5. +1辅助包：从辅助包专属卡池中平均随机抽1张卡
     const bonusCards = [];
-    if (currentPackCards.length > 0) {
-        const randomIndex = Math.floor(Math.random() * currentPackCards.length);
-        const bonusCard = { ...currentPackCards[randomIndex] };
+    const suppPool = currentSupplementCards || [];
+    if (suppPool.length > 0) {
+        const randomIndex = Math.floor(Math.random() * suppPool.length);
+        const bonusCard = { ...suppPool[randomIndex] };
         // 标记为辅助包卡片，方便后续识别
         bonusCard._isBonus = true;
         bonusCards.push(bonusCard);
+    } else {
+        console.warn('⚠️ 当前卡包没有辅助包卡池数据，跳过+1辅助包');
     }
 
     // 6. 将所有卡片（含辅助包）存入背包

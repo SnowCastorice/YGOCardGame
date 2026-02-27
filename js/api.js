@@ -730,16 +730,21 @@ async function getOCGCardSetData(packConfig, onProgress) {
         console.log(`📦 [本地数据] 加载 OCG 卡包 [${packConfig.packName}]，共 ${cardIds.length} 张卡`);
         const cards = buildOCGCardsFromLocalData(packConfig);
 
+        // 构建辅助包卡池（如果存在）
+        const supplementCards = buildSupplementCardsFromLocalData(packConfig);
+
         const setData = {
             setCode: packId,
             cards: cards,
+            supplementCards: supplementCards,
             totalCards: cards.length,
             fetchedAt: Date.now(),
             dataSource: 'local',
             language: 'local'
         };
 
-        console.log(`✅ OCG 卡包 [${packConfig.packName}] 本地加载完成，共 ${cards.length} 张卡（零 API 调用）`);
+        const suppInfo = supplementCards.length > 0 ? `，辅助包 ${supplementCards.length} 张` : '';
+        console.log(`✅ OCG 卡包 [${packConfig.packName}] 本地加载完成，共 ${cards.length} 张卡${suppInfo}（零 API 调用）`);
         return setData;
     }
 
@@ -825,6 +830,68 @@ function buildOCGCardsFromLocalData(packConfig) {
             imageUrl: `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardDef.id}.jpg`,
             imageLargeUrl: `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardDef.id}.jpg`,
             dataSource: 'local'
+        });
+    });
+
+    return cards;
+}
+
+/**
+ * 从本地 supplementPack 数据构建辅助包卡牌数组
+ * 辅助包卡池独立于主卡池，开整盒时随机抽1张
+ * 
+ * @param {object} packConfig - 卡包配置（含 supplementPack 节点）
+ * @returns {Array} 辅助包卡牌数组（格式与主卡池一致），无辅助包时返回空数组
+ */
+function buildSupplementCardsFromLocalData(packConfig) {
+    const supp = packConfig.supplementPack;
+    if (!supp || !supp.cards || supp.cards.length === 0) {
+        return [];
+    }
+
+    const rarityNames = {
+        'PSER': 'Prismatic Secret Rare', 'UTR': 'Ultimate Rare',
+        'SER': 'Secret Rare', 'UR': 'Ultra Rare', 'SR': 'Super Rare',
+        'R': 'Rare', 'NR': 'Normal Rare', 'N': 'Common'
+    };
+
+    const cards = [];
+    supp.cards.forEach(function (cardDef) {
+        if (!cardDef.id) return;  // 跳过无 ID 的卡
+
+        const d = cardDef.cardData || {};
+        // 辅助包卡片默认稀有度取 rarityVersions 的第一个
+        const rarityCode = cardDef.rarityVersions ? cardDef.rarityVersions[0] : 'UR';
+        const rarityVersions = cardDef.rarityVersions || [rarityCode];
+
+        // 主显示名：优先中文名，其次日文名
+        const cnName = d.cn_name || '';
+        const jpName = d.jp_name || '';
+        const enName = d.en_name || '';
+        const displayName = cnName || jpName || enName || ('ID:' + cardDef.id);
+        const foreignName = jpName || enName || '';
+
+        const setNumber = cardDef.setNumber || '';
+
+        cards.push({
+            id: cardDef.id,
+            name: displayName,
+            nameCN: cnName,
+            nameOriginal: foreignName,
+            type: 'Effect Monster',  // 简化处理
+            desc: d.desc || '',
+            atk: d.atk,
+            def: d.def,
+            level: d.level,
+            rarity: rarityNames[rarityCode] || 'Ultra Rare',
+            rarityCode: rarityCode,
+            rarityVersions: rarityVersions,
+            cardSetCode: setNumber,
+            setNumber: setNumber,
+            imageUrl: `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardDef.id}.jpg`,
+            imageLargeUrl: `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardDef.id}.jpg`,
+            dataSource: 'local',
+            _isSupplement: true  // 标记为辅助包卡片
         });
     });
 
