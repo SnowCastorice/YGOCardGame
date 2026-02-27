@@ -1761,7 +1761,7 @@ function updateOpenPackPriceInfo() {
             openBtn.textContent = `余额不足 (需要 ${price} ${currDef.icon})`;
         } else {
             openBtn.classList.remove('insufficient');
-            openBtn.textContent = price > 0 ? `开启卡包 (${currDef.icon} ${price})` : '开启卡包';
+            openBtn.textContent = price > 0 ? `开1包 (${currDef.icon} ${price})` : '开1包';
         }
     }
 
@@ -1771,7 +1771,7 @@ function updateOpenPackPriceInfo() {
             openAgainBtn.textContent = `余额不足 (需要 ${price} ${currDef.icon})`;
         } else {
             openAgainBtn.classList.remove('insufficient');
-            openAgainBtn.textContent = price > 0 ? `再开一包 (${currDef.icon} ${price})` : '再开一包';
+            openAgainBtn.textContent = price > 0 ? `再开1包 (${currDef.icon} ${price})` : '再开1包';
         }
     }
 
@@ -1786,20 +1786,20 @@ function updateOpenPackPriceInfo() {
     if (openBoxBtn) {
         if (!canAffordBox) {
             openBoxBtn.classList.add('insufficient');
-            openBoxBtn.textContent = `余额不足 (需要 ${totalPriceBox} ${currDef.icon})`;
+            openBoxBtn.innerHTML = `余额不足 (需要 ${totalPriceBox} ${currDef.icon})`;
         } else {
             openBoxBtn.classList.remove('insufficient');
-            openBoxBtn.textContent = price > 0 ? `×30 开整盒 (${currDef.icon} ${totalPriceBox})` : '×30 开整盒';
+            openBoxBtn.innerHTML = price > 0 ? `开1盒 (30包 ${currDef.icon} ${totalPriceBox})<span class="btn-box-sub">赠送 +1 辅助包</span>` : '开1盒<span class="btn-box-sub">赠送 +1 辅助包</span>';
         }
     }
 
     if (openAgainBoxBtn) {
         if (!canAffordBox) {
             openAgainBoxBtn.classList.add('insufficient');
-            openAgainBoxBtn.textContent = `余额不足 (需要 ${totalPriceBox} ${currDef.icon})`;
+            openAgainBoxBtn.innerHTML = `余额不足 (需要 ${totalPriceBox} ${currDef.icon})`;
         } else {
             openAgainBoxBtn.classList.remove('insufficient');
-            openAgainBoxBtn.textContent = price > 0 ? `×30 再开整盒 (${currDef.icon} ${totalPriceBox})` : '×30 再开整盒';
+            openAgainBoxBtn.innerHTML = price > 0 ? `再开1盒 (30包 ${currDef.icon} ${totalPriceBox})<span class="btn-box-sub">赠送 +1 辅助包</span>` : '再开1盒<span class="btn-box-sub">赠送 +1 辅助包</span>';
         }
     }
 }

@@ -854,13 +854,14 @@ body {
     box-shadow: none;
 }
 
-/* 整盒按钮下方的赠送提示文字 */
-.btn-box-hint {
-    margin: 4px auto 8px;
-    font-size: .75rem;
-    color: #ffd700;
-    text-align: center;
+/* 整盒按钮内的赠送提示小字（换行显示） */
+.btn-box-sub {
+    display: block;
+    font-size: .7rem;
+    font-weight: normal;
     opacity: .85;
+    margin-top: 2px;
+    color: #ffd700;
 }
 
 .btn-secondary {
