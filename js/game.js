@@ -1002,11 +1002,24 @@ async function openMultiPacks(count) {
         allCards.push(...drawnCards);
     }
 
-    // 5. 将抽到的卡片存入背包
-    InventorySystem.addCards(allCards);
+    // 5. +1辅助包：从整个卡池中平均随机抽1张卡（暂按平均分布）
+    const bonusCards = [];
+    if (currentPackCards.length > 0) {
+        const randomIndex = Math.floor(Math.random() * currentPackCards.length);
+        const bonusCard = { ...currentPackCards[randomIndex] };
+        // 标记为辅助包卡片，方便后续识别
+        bonusCard._isBonus = true;
+        bonusCards.push(bonusCard);
+    }
 
-    // 6. 展示汇总结果
-    await showResults(allCards);
+    // 6. 将所有卡片（含辅助包）存入背包
+    InventorySystem.addCards(allCards);
+    if (bonusCards.length > 0) {
+        InventorySystem.addCards(bonusCards);
+    }
+
+    // 7. 展示汇总结果（传入辅助包卡片）
+    await showResults(allCards, bonusCards);
 
     // 根据开盒模式显示/隐藏对应的再开按钮
     toggleResultButtons('box');
@@ -1321,8 +1334,12 @@ function playOpeningAnimation() {
 // 卡牌结果展示（带卡图）
 // ============================================
 
-/** 展示抽到的卡牌 */
-async function showResults(cards) {
+/** 展示抽到的卡牌
+ * @param {Array} cards - 主卡片数组（开包/开盒抽到的卡）
+ * @param {Array} [bonusCards=[]] - 辅助包卡片数组（仅开盒时传入）
+ */
+async function showResults(cards, bonusCards) {
+    bonusCards = bonusCards || [];
     const display = document.getElementById('cards-display');
     display.innerHTML = '';
 
@@ -1423,6 +1440,55 @@ async function showResults(cards) {
         display.appendChild(cardEl);
     }
 
+    // 渲染+1辅助包区域（仅开盒时显示）
+    const bonusDisplay = document.getElementById('bonus-display');
+    const bonusCardsEl = document.getElementById('bonus-cards');
+    if (bonusDisplay && bonusCardsEl) {
+        if (bonusCards.length > 0) {
+            bonusDisplay.style.display = '';
+            bonusCardsEl.innerHTML = '';
+            for (const card of bonusCards) {
+                const cardEl = document.createElement('div');
+                const rarityCode = card.rarityCode || 'N';
+                cardEl.className = `card-item rarity-${rarityCode}`;
+
+                let imageHtml;
+                if (card.imageUrl) {
+                    const largeUrl = card.imageLargeUrl || card.imageUrl;
+                    const cardName = card.nameCN || card.name;
+                    const foreignName = card.nameOriginal || '';
+                    imageHtml = `<img class="card-image clickable" src="${card.imageUrl}" alt="${cardName}" loading="lazy" 
+                                      data-large-url="${largeUrl}" data-card-name="${cardName}" data-card-foreign="${foreignName}"
+                                      onerror="this.style.display='none';this.classList.remove('clickable');this.nextElementSibling.style.display='block';">
+                                 <span class="card-icon" style="display:none;">${getCardIcon(rarityCode)}</span>`;
+                } else {
+                    imageHtml = `<span class="card-icon">${getCardIcon(rarityCode)}</span>`;
+                }
+
+                let nameHtml;
+                if (card.nameCN && card.nameCN !== card.nameOriginal) {
+                    nameHtml = `<span class="card-name-cn">${card.nameCN}</span>
+                                <span class="card-name-foreign">${card.nameOriginal || card.name}</span>`;
+                } else {
+                    nameHtml = `<span class="card-name-single">${card.name}</span>`;
+                }
+
+                cardEl.innerHTML = `
+                    <span class="card-rarity-badge rarity-${rarityCode}">${rarityCode}</span>
+                    ${imageHtml}
+                    <div class="card-name-wrapper">
+                        ${nameHtml}
+                    </div>
+                `;
+                bonusCardsEl.appendChild(cardEl);
+            }
+        } else {
+            // 非开盒模式，隐藏辅助包区域
+            bonusDisplay.style.display = 'none';
+            bonusCardsEl.innerHTML = '';
+        }
+    }
+
     // 更新结果标题（根据卡片数量判断是否为批量开包）
     const cardsPerPack = (currentPack && currentPack.cardsPerPack) || 5;
     const packCount = Math.round(cards.length / cardsPerPack);
@@ -1431,9 +1497,10 @@ async function showResults(cards) {
         resultTitle.textContent = packCount > 1 ? `开包结果 (×${packCount})` : '开包结果';
     }
 
-    // 统计各稀有度的数量（使用原始cards数组而非合并后的displayCards）
+    // 统计各稀有度的数量（使用原始cards数组而非合并后的displayCards，含辅助包）
+    const allStatsCards = cards.concat(bonusCards);
     const rarityStats = {};
-    for (const card of cards) {
+    for (const card of allStatsCards) {
         const r = card.rarityCode || 'N';
         rarityStats[r] = (rarityStats[r] || 0) + 1;
     }
@@ -1446,11 +1513,11 @@ async function showResults(cards) {
             .map(r => `<span class="rarity-stats__item rarity-stats__item--${r}">${r} ×${rarityStats[r]}</span>`)
             .join('');
         statsEl.innerHTML = items;
-        // 强制确保统计行在标题之后、卡片之前
+        // 强制确保统计行在标题之后、辅助包之前
         const resultSection = document.getElementById('result-section');
-        const cardsDisplay = document.getElementById('cards-display');
-        if (resultSection && cardsDisplay) {
-            resultSection.insertBefore(statsEl, cardsDisplay);
+        const bonusEl = document.getElementById('bonus-display');
+        if (resultSection && bonusEl) {
+            resultSection.insertBefore(statsEl, bonusEl);
         }
     }
 

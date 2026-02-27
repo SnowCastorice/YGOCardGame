@@ -977,6 +977,32 @@ body {
 .rarity-stats__item--UTR { color: var(--rarity-UTR); }
 .rarity-stats__item--PSER { color: var(--rarity-PSER); }
 
+/* +1辅助包展示区域 */
+.bonus-display {
+  width: 90%;
+  margin: 12px auto;
+  padding: 12px;
+  border: 2px dashed var(--rarity-SR);
+  border-radius: 12px;
+  background: rgba(255, 215, 0, .06);
+  text-align: center;
+}
+
+.bonus-display__title {
+  margin: 0 0 10px;
+  font-size: .85rem;
+  color: var(--rarity-SR);
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.bonus-display__cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
 .card-item {
     width: 105px;
     height: 185px;
