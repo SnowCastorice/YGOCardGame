@@ -451,28 +451,20 @@ body {
   display: flex;
   gap: 6px;
   margin-bottom: 12px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  padding-bottom: 2px;
-}
-
-.pack-category-tabs::-webkit-scrollbar {
-  display: none;
 }
 
 .pack-category-tab {
-  flex-shrink: 0;
-  padding: 6px 14px;
+  flex: 1;
+  padding: 6px 0;
   font-size: .8rem;
   font-weight: bold;
+  text-align: center;
   background: var(--bg-panel);
   border: 1.5px solid var(--border-color);
   border-radius: 20px;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all .25s ease;
-  white-space: nowrap;
 }
 
 .pack-category-tab:active {
