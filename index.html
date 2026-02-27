@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>YGO Pack Opener - 游戏王卡包开封模拟器</title>
-<link rel="stylesheet" href="css/style.css?v=1.4.9">
+<link rel="stylesheet" href="css/style.css?v=1.5.1">
 </head>
 <body>
     <!-- ====== 全局加载遮罩层 ====== -->
@@ -71,6 +71,8 @@
             <div class="open-btn-container">
                 <button id="btn-open-pack" class="btn-open-pack">🎴 开启卡包</button>
                 <button id="btn-open-multi" class="btn-open-multi">🎴×10 开十包</button>
+                <button id="btn-open-box" class="btn-open-box">📦×30 开整盒</button>
+                <p class="btn-box-hint">整盒购入赠送 +1 辅助包</p>
                 <button id="btn-back-to-packs" class="btn-secondary">← 返回选择卡包</button>
             </div>
         </section>
@@ -94,6 +96,8 @@
             <div class="result-actions">
                 <button id="btn-open-again" class="btn-open-pack">🎴 再开一包</button>
                 <button id="btn-open-again-multi" class="btn-open-multi">🎴×10 再开十包</button>
+                <button id="btn-open-again-box" class="btn-open-box">📦×30 再开整盒</button>
+                <p class="btn-box-hint">整盒购入赠送 +1 辅助包</p>
                 <button id="btn-back-from-result" class="btn-secondary">← 返回选择卡包</button>
             </div>
         </section>
@@ -226,7 +230,7 @@
 
     <!-- ====== 页脚 ====== -->
     <footer class="footer">
-<p><span id="footer-version" class="footer-version-link" title="点击查看更新日志">YGO Pack Opener v1.4.9</span> | 游戏王卡包开封模拟器</p>
+<p><span id="footer-version" class="footer-version-link" title="点击查看更新日志">YGO Pack Opener v1.5.1</span> | 游戏王卡包开封模拟器</p>
         <p class="footer-credit">
             外文数据: <a href="https://ygoprodeck.com/" target="_blank" rel="noopener">YGOProDeck</a> | 
             中文名称: <a href="https://ygocdb.com/" target="_blank" rel="noopener">YGOCDB</a> | 
@@ -254,10 +258,10 @@
     </script>
 
     <!-- 先加载离线备用数据，再加载 API 模块，最后加载游戏逻辑 -->
-    <script src="data/fallback_cards.js?v=1.4.9"></script>
-    <script src="js/currency.js?v=1.4.9"></script>
-    <script src="js/inventory.js?v=1.4.9"></script>
-    <script src="js/api.js?v=1.4.9"></script>
-    <script src="js/game.js?v=1.4.9"></script>
+    <script src="data/fallback_cards.js?v=1.5.1"></script>
+    <script src="js/currency.js?v=1.5.1"></script>
+    <script src="js/inventory.js?v=1.5.1"></script>
+    <script src="js/api.js?v=1.5.1"></script>
+    <script src="js/game.js?v=1.5.1"></script>
 </body>
 </html>

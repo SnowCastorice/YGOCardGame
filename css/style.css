@@ -626,6 +626,52 @@ body {
 }
 
 /* ============================================
+   卡包锁定状态（--locked 修饰符）
+   ============================================ */
+.pack-card--locked {
+  cursor: default;
+  opacity: .65;
+  border-color: var(--border-color);
+}
+
+.pack-card--locked:active {
+  border-color: var(--border-color);
+  box-shadow: none;
+}
+
+/* 锁定卡包封面灰度 + 暗化 */
+.pack-card--locked .pack-cover-img {
+  filter: grayscale(.8) brightness(.6);
+}
+
+/* 锁定徽标：封面正中的锁图标 */
+.pack-card__lock-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.6rem;
+  z-index: 2;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, .7);
+  pointer-events: none;
+}
+
+/* "即将推出"提示文字 */
+.pack-card__locked-hint {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 3px;
+  padding: 2px 10px;
+  background: rgba(160, 160, 160, .1);
+  border: 1px solid rgba(160, 160, 160, .3);
+  border-radius: 12px;
+  font-size: .72rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* ============================================
    开包按钮
    ============================================ */
 .pack-info {
@@ -796,6 +842,63 @@ body {
 .btn-open-multi.insufficient:active {
     transform: none;
     box-shadow: none;
+}
+
+/* 开整盒（30包）按钮（紫金渐变风格，宽度更大，突出高级感） */
+.btn-open-box {
+    width: 90%;
+    white-space: nowrap;
+    padding: 16px 36px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(135deg, #c850c0, #ff6ec7, #ffd700);
+    border: 2px solid rgba(255, 215, 0, .5);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all .3s ease;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, .4);
+    box-shadow: 0 4px 20px rgba(200, 80, 192, .5);
+    background-size: 200% 200%;
+    animation: box-btn-shimmer 3s ease infinite;
+}
+
+@keyframes box-btn-shimmer {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.btn-open-box:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 30px rgba(200, 80, 192, .7);
+}
+
+.btn-open-box:active {
+    transform: scale(0.98);
+}
+
+.btn-open-box.insufficient {
+    background: linear-gradient(135deg, #555, #777);
+    border-color: transparent;
+    box-shadow: none;
+    cursor: not-allowed;
+    animation: none;
+}
+
+.btn-open-box.insufficient:hover,
+.btn-open-box.insufficient:active {
+    transform: none;
+    box-shadow: none;
+}
+
+/* 整盒按钮下方的赠送提示文字 */
+.btn-box-hint {
+    margin: 4px auto 8px;
+    font-size: .75rem;
+    color: #ffd700;
+    text-align: center;
+    opacity: .85;
 }
 
 .btn-secondary {
@@ -1083,6 +1186,10 @@ body {
 
 .result-actions .btn-open-multi {
     margin-bottom: 8px;
+}
+
+.result-actions .btn-open-box {
+    margin-bottom: 4px;
 }
 
 /* ============================================

@@ -334,6 +334,12 @@ function bindGameEvents() {
     // 再开十包
     bindEvent('btn-open-again-multi', 'click', function () { openMultiPacks(10); });
 
+    // 开整盒（30包）
+    bindEvent('btn-open-box', 'click', function () { openMultiPacks(30); });
+
+    // 再开整盒（30包）
+    bindEvent('btn-open-again-box', 'click', function () { openMultiPacks(30); });
+
     // 返回选择卡包（两个返回按钮）
     bindEvent('btn-back-to-packs', 'click', showPackSelect);
     bindEvent('btn-back-from-result', 'click', showPackSelect);
@@ -508,7 +514,7 @@ function renderPackList() {
     }
 
     // 按当前分类筛选卡包
-const filteredPacks = modeConfig.packs.filter(pack => pack.category === currentPackCategory && !pack.hidden);
+const filteredPacks = modeConfig.packs.filter(pack => pack.category === currentPackCategory);
     if (filteredPacks.length === 0) {
         packListEl.innerHTML = '<p style="text-align:center;color:var(--text-secondary);padding:40px 0;">该分类暂无卡包，敬请期待 🌟</p>';
         return;
@@ -516,14 +522,14 @@ const filteredPacks = modeConfig.packs.filter(pack => pack.category === currentP
 
     filteredPacks.forEach(function (pack) {
         const packCard = document.createElement('div');
-        packCard.className = 'pack-card';
+        packCard.className = 'pack-card' + (pack.locked ? ' pack-card--locked' : '');
 
         // OCG 卡包显示 packCode，TCG 卡包显示 setCode
         const displayCode = pack.packCode || pack.setCode || pack.packId;
         // OCG 卡包显示卡牌数量（优先使用 totalCards 字段，兼容旧的 cardIds 方式）
         const cardCountInfo = pack.totalCards ? ` | ${pack.totalCards} 种卡` : (pack.cardIds ? ` | ${pack.cardIds.length} 种卡` : '');
 
-        // 价格信息
+        // 价格信息（锁定卡包不显示价格）
         const currencyDef = CurrencySystem.getCurrencyDef(pack.currency || 'gold');
         const priceIcon = currencyDef ? currencyDef.icon : '🪙';
         const priceValue = pack.price || 0;
@@ -540,45 +546,68 @@ const filteredPacks = modeConfig.packs.filter(pack => pack.category === currentP
         // 发售日期
         const releaseDateText = pack.releaseDate || '';
 
-        packCard.innerHTML = `
-            <div class="pack-card__cover">
-                <div class="pack-cover-container">
-                    <img class="pack-cover-img" src="${coverImageUrl}" alt="${packNameDisplay}" loading="lazy"
-                         referrerpolicy="no-referrer"
-                         onerror="handlePackCoverError(this);" />
-                    <span class="pack-icon pack-icon-fallback" style="display:none;">🎴</span>
-                    <button class="pack-card__preview-icon" title="预览卡包内容">🔍</button>
+        // 锁定卡包：不显示价格和预览按钮，显示锁定标志
+        if (pack.locked) {
+            packCard.innerHTML = `
+                <div class="pack-card__cover">
+                    <div class="pack-cover-container">
+                        <img class="pack-cover-img" src="${coverImageUrl}" alt="${packNameDisplay}" loading="lazy"
+                             referrerpolicy="no-referrer"
+                             onerror="handlePackCoverError(this);" />
+                        <span class="pack-icon pack-icon-fallback" style="display:none;">🎴</span>
+                        <span class="pack-card__lock-badge">🔒</span>
+                    </div>
                 </div>
-            </div>
-            <div class="pack-card__info">
-                <div class="pack-card__name">${packNameDisplay}</div>
-                <div class="pack-card__meta">${subInfo}${releaseDateText ? ' · ' + releaseDateText : ''}</div>
-                <div class="pack-card__price"><span class="pack-price-icon">${priceIcon}</span>${priceValue}</div>
-            </div>
-        `;
+                <div class="pack-card__info">
+                    <div class="pack-card__name">${packNameDisplay}</div>
+                    <div class="pack-card__meta">${subInfo}${releaseDateText ? ' · ' + releaseDateText : ''}</div>
+                    <div class="pack-card__locked-hint">即将推出</div>
+                </div>
+            `;
+            // 锁定卡包绑定封面图数据（供 onerror 使用）
+            const imgEl = packCard.querySelector('.pack-cover-img');
+            if (imgEl) imgEl._packData = pack;
+        } else {
+            packCard.innerHTML = `
+                <div class="pack-card__cover">
+                    <div class="pack-cover-container">
+                        <img class="pack-cover-img" src="${coverImageUrl}" alt="${packNameDisplay}" loading="lazy"
+                             referrerpolicy="no-referrer"
+                             onerror="handlePackCoverError(this);" />
+                        <span class="pack-icon pack-icon-fallback" style="display:none;">🎴</span>
+                        <button class="pack-card__preview-icon" title="预览卡包内容">🔍</button>
+                    </div>
+                </div>
+                <div class="pack-card__info">
+                    <div class="pack-card__name">${packNameDisplay}</div>
+                    <div class="pack-card__meta">${subInfo}${releaseDateText ? ' · ' + releaseDateText : ''}</div>
+                    <div class="pack-card__price"><span class="pack-price-icon">${priceIcon}</span>${priceValue}</div>
+                </div>
+            `;
 
-        // 将 pack 数据绑定到 DOM 元素上，供 onerror 回调使用
-        const imgEl = packCard.querySelector('.pack-cover-img');
-        if (imgEl) imgEl._packData = pack;
+            // 将 pack 数据绑定到 DOM 元素上，供 onerror 回调使用
+            const imgEl = packCard.querySelector('.pack-cover-img');
+            if (imgEl) imgEl._packData = pack;
 
-        // 预览按钮点击事件（卡图右上角放大镜图标，阻止冒泡）
-        const previewBtn = packCard.querySelector('.pack-card__preview-icon');
-        previewBtn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            showCardPreview(pack);
-        });
+            // 预览按钮点击事件（卡图右上角放大镜图标，阻止冒泡）
+            const previewBtn = packCard.querySelector('.pack-card__preview-icon');
+            previewBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                showCardPreview(pack);
+            });
 
-        // 点击卡图封面区域也触发预览（阻止冒泡，不触发开包）
-        const coverArea = packCard.querySelector('.pack-card__cover');
-        coverArea.addEventListener('click', function (e) {
-            e.stopPropagation();
-            showCardPreview(pack);
-        });
+            // 点击卡图封面区域也触发预览（阻止冒泡，不触发开包）
+            const coverArea = packCard.querySelector('.pack-card__cover');
+            coverArea.addEventListener('click', function (e) {
+                e.stopPropagation();
+                showCardPreview(pack);
+            });
 
-        // 点击卡包整体（右侧信息区域）触发开包
-        packCard.addEventListener('click', function () {
-            selectPack(pack);
-        });
+            // 点击卡包整体（右侧信息区域）触发开包
+            packCard.addEventListener('click', function () {
+                selectPack(pack);
+            });
+        }
         packListEl.appendChild(packCard);
 
         // OCG 卡包：预加载 cardFile 获取首卡 ID，缓存到 pack 对象上（Promise 供 onerror 回调等待）
@@ -1777,6 +1806,34 @@ function updateOpenPackPriceInfo() {
         } else {
             openAgainMultiBtn.classList.remove('insufficient');
             openAgainMultiBtn.textContent = price > 0 ? `🎴×10 再开十包 (${currDef.icon} ${totalPriceMulti})` : '🎴×10 再开十包';
+        }
+    }
+
+    // 更新「开整盒」（30包）按钮的可用状态
+    const boxCount = 30;
+    const totalPriceBox = price * boxCount;
+    const canAffordBox = totalPriceBox <= 0 || CurrencySystem.canAfford(currency, totalPriceBox);
+
+    const openBoxBtn = document.getElementById('btn-open-box');
+    const openAgainBoxBtn = document.getElementById('btn-open-again-box');
+
+    if (openBoxBtn) {
+        if (!canAffordBox) {
+            openBoxBtn.classList.add('insufficient');
+            openBoxBtn.textContent = `🪙 余额不足 (需要 ${totalPriceBox} ${currDef.icon})`;
+        } else {
+            openBoxBtn.classList.remove('insufficient');
+            openBoxBtn.textContent = price > 0 ? `📦×30 开整盒 (${currDef.icon} ${totalPriceBox})` : '📦×30 开整盒';
+        }
+    }
+
+    if (openAgainBoxBtn) {
+        if (!canAffordBox) {
+            openAgainBoxBtn.classList.add('insufficient');
+            openAgainBoxBtn.textContent = `🪙 余额不足 (需要 ${totalPriceBox} ${currDef.icon})`;
+        } else {
+            openAgainBoxBtn.classList.remove('insufficient');
+            openAgainBoxBtn.textContent = price > 0 ? `📦×30 再开整盒 (${currDef.icon} ${totalPriceBox})` : '📦×30 再开整盒';
         }
     }
 }

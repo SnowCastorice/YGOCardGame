@@ -34,7 +34,7 @@
       "totalCards": 32,
       "cardFile": "ocg_26pp.json",
       "category": "concept",
-      "hidden": true,
+      "locked": true,
       "packScheme": "legacy",
       "rarityRates": {
         "UR": 1,
@@ -97,7 +97,7 @@
       },
       "guaranteedRareSlot": true,
       "category": "structure",
-      "hidden": true,
+      "locked": true,
       "price": 1430,
       "currency": "gold",
       "_说明": "2026年1月OCG记事卡组（精灵术的使者），共42张卡，稀有度待补充",
@@ -123,7 +123,7 @@
       },
       "guaranteedRareSlot": true,
       "category": "special",
-      "hidden": true,
+      "locked": true,
       "price": 100,
       "currency": "gold",
       "_说明": "2025年12月OCG决斗者盒SPECIAL PACK，共60张卡，稀有度待补充"

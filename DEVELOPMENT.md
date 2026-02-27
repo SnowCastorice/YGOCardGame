@@ -405,6 +405,18 @@ pack_references/konami_official_products/
 
 ## 📝 近期变更记录
 
+### v1.5.1（2026-02-27）— 新增「开整盒」（30包）选项
+- 开包界面和结果界面新增「📦×30 开整盒」按钮，价格为单包价格 ×30
+- 整盒按钮下方配有「整盒购入赠送 +1 辅助包」文字说明
+- 按钮采用紫金渐变 + 光效动画样式，宽度 90%（大于开一包/开十包的 75%），形成视觉层级
+- 余额不足时自动变灰并提示所需金额
+
+### v1.5.0（2026-02-27）— 卡包锁定状态 UI
+- 未开放的卡包（26PP、CH02、25DB）现以锁定状态展示，封面灰度 + 锁图标
+- 锁定卡包无价格显示、无卡片预览、不可点击开包，显示"即将推出"提示
+- packs.json 新增 `locked` 字段（布尔值），替代之前的 `hidden` 字段
+- 新增 CSS 样式：`.pack-card--locked`（BEM 修饰符）、`.pack-card__lock-badge`（锁图标）、`.pack-card__locked-hint`（提示文字）
+
 ### v1.4.9（2026-02-27）— 开包界面新增收藏预览按钮
 - 开包界面标题旁新增🔍收藏预览按钮，点击可直接预览当前卡包的所有卡片收集情况
 - 复用已有的 `showCardPreview` 功能，无需返回卡包列表即可查看
@@ -475,3 +487,23 @@ pack_references/konami_official_products/
      - **方案 B**：移除或禁用 KONAMI 卡图源，避免用户看到 "Coming Soon" 造成困惑
      - **方案 C**：通过浏览器预下载真实卡图，存储到自有 CDN（如 Cloudflare R2）
    - 待用户决定处理方案
+
+4. **🟢 图片资源自建 CDN 方案（Cloudflare R2）**（后续规划，当前维持现状）
+   - **当前状态（方案 C）**：使用第三方 CDN 加载图片，暂时够用
+     - OCG 卡图：YGOCDB CDN (`cdn.233.momobako.com`)
+     - 卡包封面：KONAMI 官网 (`img.yugioh-card.com`)
+     - TCG 卡图：YugiohMeta S3 (`s3.duellinksmeta.com`) + YGOProDeck CDN (`images.ygoprodeck.com`)
+   - **后续方案（方案 A）**：迁移到 Cloudflare R2 对象存储 + 自定义域名
+     - **为什么选 R2**：项目已部署在 Cloudflare Pages，R2 零配置集成，免费额度充足（10GB 存储 + 每月 1000 万次读取）
+     - **实施步骤**：
+       1. Cloudflare 后台创建 R2 存储桶，绑定自定义域名（如 `cdn.ygocardgame.pages.dev`）
+       2. 编写 Python 脚本批量下载卡图 → 压缩为 WebP（~20KB/张）→ 上传到 R2
+       3. 修改代码中的 `CDN_SOURCES`，指向自有 CDN
+       4. 保留原有图源作为 fallback
+     - **预期收益**：
+       - 图片加载速度提升（Cloudflare 全球 CDN 节点）
+       - 可统一转 WebP + 压缩，体积减少约 60%
+       - 彻底摆脱第三方 CDN 下线/封禁/防盗链风险
+       - 解决 KONAMI 卡图 WAF 拦截问题（预下载后托管到 R2）
+     - **触发时机**：当活跃卡包超过 10 个、或第三方 CDN 出现不稳定时启动
+     - **成本**：免费（当前图片规模远低于 R2 免费额度）
