@@ -867,14 +867,14 @@ body {
 .btn-secondary {
     display: block;
     margin: 16px auto 0;
-    padding: 10px 24px;
+    padding: 6px 16px;
     background: transparent;
     border: 1px solid var(--text-secondary);
     color: var(--text-secondary);
     border-radius: 8px;
     cursor: pointer;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
+    font-size: .75rem;
+    transition: all .3s ease;
 }
 
 .btn-secondary:hover,

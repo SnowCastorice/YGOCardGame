@@ -904,6 +904,23 @@ function switchSection(sectionId) {
  * 4. 根据稀有度权重随机抽取卡牌
  * 5. 展示抽到的卡牌（含卡图）
  */
+
+/**
+ * 根据开包模式切换结果界面的按钮显示
+ * @param {'pack'|'box'} mode - 'pack' 只显示再开1包，'box' 只显示再开1盒
+ */
+function toggleResultButtons(mode) {
+    const againBtn = document.getElementById('btn-open-again');
+    const againBoxBtn = document.getElementById('btn-open-again-box');
+    if (mode === 'pack') {
+        if (againBtn) againBtn.style.display = '';
+        if (againBoxBtn) againBoxBtn.style.display = 'none';
+    } else {
+        if (againBtn) againBtn.style.display = 'none';
+        if (againBoxBtn) againBoxBtn.style.display = '';
+    }
+}
+
 async function openPack() {
     if (!currentPack || !currentPackCards) return;
 
@@ -933,6 +950,9 @@ async function openPack() {
 
     // 6. 展示结果
     await showResults(drawnCards);
+
+    // 根据开包模式显示/隐藏对应的再开按钮
+    toggleResultButtons('pack');
 
     // 更新价格信息（余额可能变化）
     updateOpenPackPriceInfo();
@@ -987,6 +1007,9 @@ async function openMultiPacks(count) {
 
     // 6. 展示汇总结果
     await showResults(allCards);
+
+    // 根据开盒模式显示/隐藏对应的再开按钮
+    toggleResultButtons('box');
 
     // 更新价格信息（余额可能变化）
     updateOpenPackPriceInfo();
