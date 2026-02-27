@@ -1446,6 +1446,12 @@ async function showResults(cards) {
             .map(r => `<span class="rarity-stats__item rarity-stats__item--${r}">${r} ×${rarityStats[r]}</span>`)
             .join('');
         statsEl.innerHTML = items;
+        // 强制确保统计行在标题之后、卡片之前
+        const resultSection = document.getElementById('result-section');
+        const cardsDisplay = document.getElementById('cards-display');
+        if (resultSection && cardsDisplay) {
+            resultSection.insertBefore(statsEl, cardsDisplay);
+        }
     }
 
     switchSection('result-section');
