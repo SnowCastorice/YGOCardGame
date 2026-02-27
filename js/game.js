@@ -325,14 +325,8 @@ function bindGameEvents() {
     // 开包按钮
     bindEvent('btn-open-pack', 'click', openPack);
 
-    // 开十包按钮
-    bindEvent('btn-open-multi', 'click', function () { openMultiPacks(10); });
-
     // 再开一包
     bindEvent('btn-open-again', 'click', openPack);
-
-    // 再开十包
-    bindEvent('btn-open-again-multi', 'click', function () { openMultiPacks(10); });
 
     // 开整盒（30包）
     bindEvent('btn-open-box', 'click', function () { openMultiPacks(30); });
@@ -1778,34 +1772,6 @@ function updateOpenPackPriceInfo() {
         } else {
             openAgainBtn.classList.remove('insufficient');
             openAgainBtn.textContent = price > 0 ? `再开一包 (${currDef.icon} ${price})` : '再开一包';
-        }
-    }
-
-    // 更新「开十包」按钮的可用状态
-    const multiCount = 10;
-    const totalPriceMulti = price * multiCount;
-    const canAffordMulti = totalPriceMulti <= 0 || CurrencySystem.canAfford(currency, totalPriceMulti);
-
-    const openMultiBtn = document.getElementById('btn-open-multi');
-    const openAgainMultiBtn = document.getElementById('btn-open-again-multi');
-
-    if (openMultiBtn) {
-        if (!canAffordMulti) {
-            openMultiBtn.classList.add('insufficient');
-            openMultiBtn.textContent = `余额不足 (需要 ${totalPriceMulti} ${currDef.icon})`;
-        } else {
-            openMultiBtn.classList.remove('insufficient');
-            openMultiBtn.textContent = price > 0 ? `×10 开十包 (${currDef.icon} ${totalPriceMulti})` : '×10 开十包';
-        }
-    }
-
-    if (openAgainMultiBtn) {
-        if (!canAffordMulti) {
-            openAgainMultiBtn.classList.add('insufficient');
-            openAgainMultiBtn.textContent = `余额不足 (需要 ${totalPriceMulti} ${currDef.icon})`;
-        } else {
-            openAgainMultiBtn.classList.remove('insufficient');
-            openAgainMultiBtn.textContent = price > 0 ? `×10 再开十包 (${currDef.icon} ${totalPriceMulti})` : '×10 再开十包';
         }
     }
 

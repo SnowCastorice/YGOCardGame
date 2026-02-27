@@ -775,14 +775,6 @@ body {
     gap: 10px;
 }
 
-/* 开一包 + 开十包横排容器 */
-.btn-row {
-    display: flex;
-    gap: 10px;
-    width: 90%;
-    justify-content: center;
-}
-
 /* 返回按钮在按钮组内的样式 */
 .open-btn-container .btn-secondary {
     margin-top: 4px;
@@ -790,10 +782,10 @@ body {
 }
 
 .btn-open-pack {
-    flex: 1;
+    width: 90%;
     white-space: nowrap;
-    padding: 14px 12px;
-    font-size: 1rem;
+    padding: 14px 36px;
+    font-size: 1.1rem;
     font-weight: bold;
     color: #000;
     background: linear-gradient(135deg, var(--accent-gold), #ffaa00);
@@ -812,44 +804,6 @@ body {
 
 .btn-open-pack:active {
     transform: scale(0.98);
-}
-
-/* 开十包按钮（渐变蓝色风格，与开一包区分） */
-.btn-open-multi {
-    flex: 1;
-    white-space: nowrap;
-    padding: 14px 12px;
-    font-size: 1rem;
-    font-weight: bold;
-    color: #fff;
-    background: linear-gradient(135deg, #4a9eff, #2d6fd6);
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all .3s ease;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, .3);
-    box-shadow: 0 4px 15px rgba(74, 158, 255, .4);
-}
-
-.btn-open-multi:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 25px rgba(74, 158, 255, .6);
-}
-
-.btn-open-multi:active {
-    transform: scale(0.98);
-}
-
-.btn-open-multi.insufficient {
-    background: linear-gradient(135deg, #555, #777);
-    box-shadow: none;
-    cursor: not-allowed;
-}
-
-.btn-open-multi.insufficient:hover,
-.btn-open-multi.insufficient:active {
-    transform: none;
-    box-shadow: none;
 }
 
 /* 开整盒（30包）按钮（紫金渐变风格，宽度更大，突出高级感） */
@@ -1193,10 +1147,6 @@ body {
 }
 
 .result-actions .btn-open-pack {
-    margin-bottom: 0;
-}
-
-.result-actions .btn-open-multi {
     margin-bottom: 0;
 }
 
