@@ -1431,6 +1431,23 @@ async function showResults(cards) {
         resultTitle.textContent = packCount > 1 ? `开包结果 (×${packCount})` : '开包结果';
     }
 
+    // 统计各稀有度的数量（使用原始cards数组而非合并后的displayCards）
+    const rarityStats = {};
+    for (const card of cards) {
+        const r = card.rarityCode || 'N';
+        rarityStats[r] = (rarityStats[r] || 0) + 1;
+    }
+    // 按稀有度从高到低排序后渲染统计行
+    const rarityOrder = ['PSER', 'UTR', 'SER', 'UR', 'SR', 'R', 'NR', 'N'];
+    const statsEl = document.getElementById('rarity-stats');
+    if (statsEl) {
+        const items = rarityOrder
+            .filter(r => rarityStats[r])
+            .map(r => `<span class="rarity-stats__item rarity-stats__item--${r}">${r} ×${rarityStats[r]}</span>`)
+            .join('');
+        statsEl.innerHTML = items;
+    }
+
     switchSection('result-section');
 
     // 滚动到顶部，方便查看结果

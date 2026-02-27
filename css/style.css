@@ -944,8 +944,33 @@ body {
     flex-wrap: wrap;
     justify-content: center;
     gap: 8px;
-    margin-bottom: 32px;
+    margin-bottom: 12px;
 }
+
+/* 稀有度统计行 */
+.rarity-stats {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 10px;
+    margin-bottom: 20px;
+    padding: 8px 12px;
+}
+
+.rarity-stats__item {
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .5px;
+}
+
+.rarity-stats__item--N { color: var(--rarity-N); }
+.rarity-stats__item--NR { color: var(--rarity-NR); }
+.rarity-stats__item--R { color: var(--rarity-R); }
+.rarity-stats__item--SR { color: var(--rarity-SR); }
+.rarity-stats__item--UR { color: var(--rarity-UR); }
+.rarity-stats__item--SER { color: var(--rarity-SER); }
+.rarity-stats__item--UTR { color: var(--rarity-UTR); }
+.rarity-stats__item--PSER { color: var(--rarity-PSER); }
 
 .card-item {
     width: 105px;
