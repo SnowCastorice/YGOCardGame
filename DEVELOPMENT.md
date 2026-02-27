@@ -405,6 +405,10 @@ pack_references/konami_official_products/
 
 ## 📝 近期变更记录
 
+### v1.4.9（2026-02-27）— 开包界面新增收藏预览按钮
+- 开包界面标题旁新增🔍收藏预览按钮，点击可直接预览当前卡包的所有卡片收集情况
+- 复用已有的 `showCardPreview` 功能，无需返回卡包列表即可查看
+
 ### v1.4.8（2026-02-27）— 卡包分类选项卡 + 新增 PREMIUM PACK 2026
 - 主页卡包列表新增分类选项卡：补充包、主题卡组、系列补充包、特殊包
 - 分类字段 `category` 加入 packs.json 数据结构，支持 booster/structure/concept/special 四类

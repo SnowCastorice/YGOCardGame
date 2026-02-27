@@ -338,6 +338,11 @@ function bindGameEvents() {
     bindEvent('btn-back-to-packs', 'click', showPackSelect);
     bindEvent('btn-back-from-result', 'click', showPackSelect);
 
+    // 开包界面收藏预览按钮（和卡包列表的放大镜是同一个功能）
+    bindEvent('btn-pack-preview', 'click', function () {
+        if (currentPack) showCardPreview(currentPack);
+    });
+
     // 卡片预览（关闭按钮 + 遮罩层点击关闭）
     bindEvent('btn-close-card-preview', 'click', hideCardPreview);
     bindEvent('card-preview-modal', 'click', function (e) {

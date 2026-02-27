@@ -641,6 +641,48 @@ body {
     margin-bottom: 16px;
 }
 
+/* 开包界面标题行（标题 + 收藏预览按钮） */
+.pack-title-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pack-title-row .section-title {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 收藏预览按钮（放大镜） */
+.btn-pack-preview {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(74, 158, 255, .2);
+  border: 1.5px solid rgba(74, 158, 255, .5);
+  border-radius: 50%;
+  font-size: 1rem;
+  color: var(--accent-blue);
+  cursor: pointer;
+  transition: background .25s ease, border-color .25s ease, transform .2s ease;
+  line-height: 1;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.btn-pack-preview:active {
+  background: rgba(74, 158, 255, .45);
+  border-color: var(--accent-blue);
+  transform: translateY(-50%) scale(.9);
+}
+
 /* 开包界面的卡包封面图 */
 .pack-cover-wrapper {
   display: flex;
