@@ -503,7 +503,7 @@ function renderPackList() {
     }
 
     // 按当前分类筛选卡包
-    const filteredPacks = modeConfig.packs.filter(pack => pack.category === currentPackCategory);
+const filteredPacks = modeConfig.packs.filter(pack => pack.category === currentPackCategory && !pack.hidden);
     if (filteredPacks.length === 0) {
         packListEl.innerHTML = '<p style="text-align:center;color:var(--text-secondary);padding:40px 0;">该分类暂无卡包，敬请期待 🌟</p>';
         return;

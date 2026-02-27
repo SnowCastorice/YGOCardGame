@@ -118,6 +118,7 @@
       },
       "guaranteedRareSlot": true,
       "category": "special",
+      "hidden": true,
       "price": 100,
       "currency": "gold",
       "_说明": "2025年12月OCG决斗者盒SPECIAL PACK，共60张卡，稀有度待补充"
