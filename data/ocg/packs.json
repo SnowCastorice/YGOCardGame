@@ -34,6 +34,7 @@
       "totalCards": 32,
       "cardFile": "ocg_26pp.json",
       "category": "concept",
+      "hidden": true,
       "packScheme": "legacy",
       "rarityRates": {
         "UR": 1,
@@ -96,6 +97,7 @@
       },
       "guaranteedRareSlot": true,
       "category": "structure",
+      "hidden": true,
       "price": 1430,
       "currency": "gold",
       "_说明": "2026年1月OCG记事卡组（精灵术的使者），共42张卡，稀有度待补充",
