@@ -775,6 +775,14 @@ body {
     gap: 10px;
 }
 
+/* 开一包 + 开十包横排容器 */
+.btn-row {
+    display: flex;
+    gap: 10px;
+    width: 90%;
+    justify-content: center;
+}
+
 /* 返回按钮在按钮组内的样式 */
 .open-btn-container .btn-secondary {
     margin-top: 4px;
@@ -782,10 +790,10 @@ body {
 }
 
 .btn-open-pack {
-    width: 75%;
+    flex: 1;
     white-space: nowrap;
-    padding: 14px 36px;
-    font-size: 1.1rem;
+    padding: 14px 12px;
+    font-size: 1rem;
     font-weight: bold;
     color: #000;
     background: linear-gradient(135deg, var(--accent-gold), #ffaa00);
@@ -808,10 +816,10 @@ body {
 
 /* 开十包按钮（渐变蓝色风格，与开一包区分） */
 .btn-open-multi {
-    width: 75%;
+    flex: 1;
     white-space: nowrap;
-    padding: 14px 36px;
-    font-size: 1.1rem;
+    padding: 14px 12px;
+    font-size: 1rem;
     font-weight: bold;
     color: #fff;
     background: linear-gradient(135deg, #4a9eff, #2d6fd6);
@@ -848,8 +856,8 @@ body {
 .btn-open-box {
     width: 90%;
     white-space: nowrap;
-    padding: 16px 36px;
-    font-size: 1.2rem;
+    padding: 14px 36px;
+    font-size: 1.1rem;
     font-weight: bold;
     color: #fff;
     background: linear-gradient(135deg, #c850c0, #ff6ec7, #ffd700);
@@ -1178,18 +1186,22 @@ body {
 
 .result-actions {
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
 }
 
 .result-actions .btn-open-pack {
-    margin-bottom: 8px;
+    margin-bottom: 0;
 }
 
 .result-actions .btn-open-multi {
-    margin-bottom: 8px;
+    margin-bottom: 0;
 }
 
 .result-actions .btn-open-box {
-    margin-bottom: 4px;
+    margin-bottom: 0;
 }
 
 /* ============================================

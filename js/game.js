@@ -1764,20 +1764,20 @@ function updateOpenPackPriceInfo() {
     if (openBtn) {
         if (!canAfford) {
             openBtn.classList.add('insufficient');
-            openBtn.textContent = `🪙 余额不足 (需要 ${price} ${currDef.icon})`;
+            openBtn.textContent = `余额不足 (需要 ${price} ${currDef.icon})`;
         } else {
             openBtn.classList.remove('insufficient');
-            openBtn.textContent = price > 0 ? `🎴 开启卡包 (${currDef.icon} ${price})` : '🎴 开启卡包';
+            openBtn.textContent = price > 0 ? `开启卡包 (${currDef.icon} ${price})` : '开启卡包';
         }
     }
 
     if (openAgainBtn) {
         if (!canAfford) {
             openAgainBtn.classList.add('insufficient');
-            openAgainBtn.textContent = `🪙 余额不足 (需要 ${price} ${currDef.icon})`;
+            openAgainBtn.textContent = `余额不足 (需要 ${price} ${currDef.icon})`;
         } else {
             openAgainBtn.classList.remove('insufficient');
-            openAgainBtn.textContent = price > 0 ? `🎴 再开一包 (${currDef.icon} ${price})` : '🎴 再开一包';
+            openAgainBtn.textContent = price > 0 ? `再开一包 (${currDef.icon} ${price})` : '再开一包';
         }
     }
 
@@ -1792,20 +1792,20 @@ function updateOpenPackPriceInfo() {
     if (openMultiBtn) {
         if (!canAffordMulti) {
             openMultiBtn.classList.add('insufficient');
-            openMultiBtn.textContent = `🪙 余额不足 (需要 ${totalPriceMulti} ${currDef.icon})`;
+            openMultiBtn.textContent = `余额不足 (需要 ${totalPriceMulti} ${currDef.icon})`;
         } else {
             openMultiBtn.classList.remove('insufficient');
-            openMultiBtn.textContent = price > 0 ? `🎴×10 开十包 (${currDef.icon} ${totalPriceMulti})` : '🎴×10 开十包';
+            openMultiBtn.textContent = price > 0 ? `×10 开十包 (${currDef.icon} ${totalPriceMulti})` : '×10 开十包';
         }
     }
 
     if (openAgainMultiBtn) {
         if (!canAffordMulti) {
             openAgainMultiBtn.classList.add('insufficient');
-            openAgainMultiBtn.textContent = `🪙 余额不足 (需要 ${totalPriceMulti} ${currDef.icon})`;
+            openAgainMultiBtn.textContent = `余额不足 (需要 ${totalPriceMulti} ${currDef.icon})`;
         } else {
             openAgainMultiBtn.classList.remove('insufficient');
-            openAgainMultiBtn.textContent = price > 0 ? `🎴×10 再开十包 (${currDef.icon} ${totalPriceMulti})` : '🎴×10 再开十包';
+            openAgainMultiBtn.textContent = price > 0 ? `×10 再开十包 (${currDef.icon} ${totalPriceMulti})` : '×10 再开十包';
         }
     }
 
@@ -1820,20 +1820,20 @@ function updateOpenPackPriceInfo() {
     if (openBoxBtn) {
         if (!canAffordBox) {
             openBoxBtn.classList.add('insufficient');
-            openBoxBtn.textContent = `🪙 余额不足 (需要 ${totalPriceBox} ${currDef.icon})`;
+            openBoxBtn.textContent = `余额不足 (需要 ${totalPriceBox} ${currDef.icon})`;
         } else {
             openBoxBtn.classList.remove('insufficient');
-            openBoxBtn.textContent = price > 0 ? `📦×30 开整盒 (${currDef.icon} ${totalPriceBox})` : '📦×30 开整盒';
+            openBoxBtn.textContent = price > 0 ? `×30 开整盒 (${currDef.icon} ${totalPriceBox})` : '×30 开整盒';
         }
     }
 
     if (openAgainBoxBtn) {
         if (!canAffordBox) {
             openAgainBoxBtn.classList.add('insufficient');
-            openAgainBoxBtn.textContent = `🪙 余额不足 (需要 ${totalPriceBox} ${currDef.icon})`;
+            openAgainBoxBtn.textContent = `余额不足 (需要 ${totalPriceBox} ${currDef.icon})`;
         } else {
             openAgainBoxBtn.classList.remove('insufficient');
-            openAgainBoxBtn.textContent = price > 0 ? `📦×30 再开整盒 (${currDef.icon} ${totalPriceBox})` : '📦×30 再开整盒';
+            openAgainBoxBtn.textContent = price > 0 ? `×30 再开整盒 (${currDef.icon} ${totalPriceBox})` : '×30 再开整盒';
         }
     }
 }
