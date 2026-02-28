@@ -189,6 +189,12 @@ function applyRarityColors(raritiesData) {
 
         // 生成 .rarity-color-{code} 颜色类（用于 JS 动态渲染文本颜色）
         dynamicCSS += '.rarity-color-' + r.code + ' { color: var(--rarity-' + r.code + '); }\n';
+
+        // 生成角标实心背景色样式（覆盖所有稀有度，包括动态新增的）
+        var badgeSelectors = ['.card-rarity-badge', '.inventory-rarity-badge', '.preview-rarity-badge'];
+        badgeSelectors.forEach(function (sel) {
+            dynamicCSS += sel + '.rarity-' + r.code + ' { background-color: var(--rarity-' + r.code + '); }\n';
+        });
     });
 
     // 将动态生成的颜色类注入到页面中

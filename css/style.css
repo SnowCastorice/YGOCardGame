@@ -1095,23 +1095,22 @@ body {
     position: absolute;
     top: 4px;
     left: 4px;
-    padding: 1px 5px;
-    border-radius: 6px;
-    font-size: .6rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: .65rem;
     font-weight: bold;
-    background: rgba(0, 0, 0, .7);
-    backdrop-filter: blur(4px);
+    color: #000;
     z-index: 2;
 }
 
-.card-rarity-badge.rarity-N { color: var(--rarity-N); border: 1px solid var(--rarity-N); }
-.card-rarity-badge.rarity-NR { color: var(--rarity-NR); border: 1px solid var(--rarity-NR); }
-.card-rarity-badge.rarity-R { color: var(--rarity-R); border: 1px solid var(--rarity-R); }
-.card-rarity-badge.rarity-SR { color: var(--rarity-SR); border: 1px solid var(--rarity-SR); }
-.card-rarity-badge.rarity-UR { color: var(--rarity-UR); border: 1px solid var(--rarity-UR); }
-.card-rarity-badge.rarity-SER { color: var(--rarity-SER); border: 1px solid var(--rarity-SER); }
-.card-rarity-badge.rarity-UTR { color: var(--rarity-UTR); border: 1px solid var(--rarity-UTR); }
-.card-rarity-badge.rarity-PSER { color: var(--rarity-PSER); border: 1px solid var(--rarity-PSER); }
+.card-rarity-badge.rarity-N { background-color: var(--rarity-N); }
+.card-rarity-badge.rarity-NR { background-color: var(--rarity-NR); }
+.card-rarity-badge.rarity-R { background-color: var(--rarity-R); }
+.card-rarity-badge.rarity-SR { background-color: var(--rarity-SR); }
+.card-rarity-badge.rarity-UR { background-color: var(--rarity-UR); }
+.card-rarity-badge.rarity-SER { background-color: var(--rarity-SER); }
+.card-rarity-badge.rarity-UTR { background-color: var(--rarity-UTR); }
+.card-rarity-badge.rarity-PSER { background-color: var(--rarity-PSER); }
 
 /* 合并数量角标（十连开包相同卡片合并时显示） */
 .card-count-badge {
@@ -2283,52 +2282,43 @@ body {
     position: absolute;
     top: 4px;
     left: 4px;
-    padding: 1px 5px;
-    border-radius: 6px;
-    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: .65rem;
     font-weight: bold;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(4px);
+    color: #000;
 }
 
 .inventory-rarity-badge.rarity-PSER {
-    color: var(--rarity-PSER);
-    border: 1px solid var(--rarity-PSER);
+    background-color: var(--rarity-PSER);
 }
 
 .inventory-rarity-badge.rarity-UTR {
-    color: var(--rarity-UTR);
-    border: 1px solid var(--rarity-UTR);
+    background-color: var(--rarity-UTR);
 }
 
 .inventory-rarity-badge.rarity-SER {
-    color: var(--rarity-SER);
-    border: 1px solid var(--rarity-SER);
+    background-color: var(--rarity-SER);
 }
 
 .inventory-rarity-badge.rarity-UR {
-    color: var(--rarity-UR);
-    border: 1px solid var(--rarity-UR);
+    background-color: var(--rarity-UR);
 }
 
 .inventory-rarity-badge.rarity-SR {
-    color: var(--rarity-SR);
-    border: 1px solid var(--rarity-SR);
+    background-color: var(--rarity-SR);
 }
 
 .inventory-rarity-badge.rarity-R {
-    color: var(--rarity-R);
-    border: 1px solid var(--rarity-R);
+    background-color: var(--rarity-R);
 }
 
 .inventory-rarity-badge.rarity-NR {
-    color: var(--rarity-NR);
-    border: 1px solid var(--rarity-NR);
+    background-color: var(--rarity-NR);
 }
 
 .inventory-rarity-badge.rarity-N {
-    color: var(--rarity-N);
-    border: 1px solid var(--rarity-N);
+    background-color: var(--rarity-N);
 }
 
 /* --- 数量角标 --- */
@@ -2728,60 +2718,54 @@ body {
     position: absolute;
     top: 4px;
     left: 4px;
-    padding: 1px 5px;
-    border-radius: 6px;
-    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: .65rem;
     font-weight: bold;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(4px);
+    color: #000;
 }
 
 .preview-rarity-badge.rarity-PSER {
-    color: var(--rarity-PSER);
-    border: 1px solid var(--rarity-PSER);
+    background-color: var(--rarity-PSER);
 }
 
 .preview-rarity-badge.rarity-UTR {
-    color: var(--rarity-UTR);
-    border: 1px solid var(--rarity-UTR);
+    background-color: var(--rarity-UTR);
 }
 
 .preview-rarity-badge.rarity-SER {
-    color: var(--rarity-SER);
-    border: 1px solid var(--rarity-SER);
+    background-color: var(--rarity-SER);
 }
 
 .preview-rarity-badge.rarity-UR {
-    color: var(--rarity-UR);
-    border: 1px solid var(--rarity-UR);
+    background-color: var(--rarity-UR);
 }
 
 .preview-rarity-badge.rarity-SR {
-    color: var(--rarity-SR);
-    border: 1px solid var(--rarity-SR);
+    background-color: var(--rarity-SR);
 }
 
 .preview-rarity-badge.rarity-R {
-    color: var(--rarity-R);
-    border: 1px solid var(--rarity-R);
+    background-color: var(--rarity-R);
 }
 
 .preview-rarity-badge.rarity-NR {
-    color: var(--rarity-NR);
-    border: 1px solid var(--rarity-NR);
+    background-color: var(--rarity-NR);
 }
 
 .preview-rarity-badge.rarity-N {
-    color: var(--rarity-N);
-    border: 1px solid var(--rarity-N);
+    background-color: var(--rarity-N);
 }
 
-/* --- 多版本稀有度角标 --- */
+/* --- 多版本稀有度角标（多个稀有度用分隔符显示，保留暗色背景+彩色文字） --- */
 .preview-rarity-badge.preview-rarity-multi {
     display: inline-flex;
     align-items: center;
     gap: 1px;
     padding: 1px 4px;
+    color: inherit;
+    background: rgba(0, 0, 0, .7);
+    backdrop-filter: blur(4px);
     border: 1px solid rgba(255, 255, 255, .25);
 }
 
@@ -2806,8 +2790,8 @@ body {
 
 /* 单版本未收集角标 */
 .preview-rarity-badge.rarity-uncollected {
-  color: #666;
-  border: 1px solid #555;
+  background-color: #555;
+  color: #999;
   opacity: .6;
 }
 
