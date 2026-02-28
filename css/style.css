@@ -12,14 +12,14 @@
     --accent-gold: #ffd700;
     --accent-blue: #4a9eff;
     --accent-red: #ff4757;
-    --rarity-N: #a0a0a0;
-    --rarity-NR: #c0c0d0;
+    --rarity-N: #8e8e8e;
+    --rarity-NR: #a8b4c8;
     --rarity-R: #4a9eff;
-    --rarity-SR: #c850c0;
-    --rarity-UR: #ffd700;
-    --rarity-SER: #00e5ff;
-    --rarity-UTR: #e0e0e0;
-    --rarity-PSER: #ff6ec7;
+    --rarity-SR: #b464e0;
+    --rarity-UR: #f5c842;
+    --rarity-SER: #ff6fa8;
+    --rarity-UTR: #e8a030;
+    --rarity-PSER: #ff44cc;
     --border-color: #2a2a5e;
     --shadow-glow: 0 0 20px rgba(74, 158, 255, 0.3);
 }
@@ -814,13 +814,13 @@ body {
     font-size: 1.1rem;
     font-weight: bold;
     color: #fff;
-    background: linear-gradient(135deg, #c850c0, #ff6ec7, #ffd700);
+    background: linear-gradient(135deg, #b464e0, #ff44cc, #f5c842);
     border: 2px solid rgba(255, 215, 0, .5);
     border-radius: 14px;
     cursor: pointer;
     transition: all .3s ease;
     text-shadow: 0 1px 3px rgba(0, 0, 0, .4);
-    box-shadow: 0 4px 20px rgba(200, 80, 192, .5);
+    box-shadow: 0 4px 20px rgba(180, 100, 224, .5);
     background-size: 200% 200%;
     animation: box-btn-shimmer 3s ease infinite;
 }
@@ -861,7 +861,7 @@ body {
     font-weight: normal;
     opacity: .85;
     margin-top: 2px;
-    color: #ffd700;
+    color: #f5c842;
 }
 
 .btn-secondary {

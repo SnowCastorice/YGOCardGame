@@ -28,9 +28,9 @@ let currentPackCategory = 'booster';  // 当前选中的卡包分类（booster/s
 
 // ====== 稀有度排序常量 ======
 // 升序排序（N在前，PSER在后）—— 用于开包结果展示，营造惊喜感
-const RARITY_ORDER_ASC = { 'N': 0, 'NR': 1, 'R': 2, 'SR': 3, 'UR': 4, 'SER': 5, 'UTR': 6, 'PSER': 7 };
+const RARITY_ORDER_ASC = { 'N': 0, 'NR': 1, 'R': 2, 'SR': 3, 'UR': 4, 'UTR': 5, 'SER': 6, 'PSER': 7 };
 // 降序排序（PSER在前，N在后）—— 用于预览/背包等列表，稀有卡优先展示
-const RARITY_ORDER_DESC = { 'PSER': 8, 'UTR': 7, 'SER': 6, 'UR': 5, 'SR': 4, 'R': 3, 'NR': 2, 'N': 1 };
+const RARITY_ORDER_DESC = { 'PSER': 8, 'SER': 7, 'UTR': 6, 'UR': 5, 'SR': 4, 'R': 3, 'NR': 2, 'N': 1 };
 
 // ====== 页面加载完成后初始化 ======
 document.addEventListener('DOMContentLoaded', async function () {
@@ -1857,7 +1857,7 @@ async function showResults(cards, bonusCards) {
         rarityStats[r] = (rarityStats[r] || 0) + 1;
     }
     // 按稀有度从高到低排序后渲染统计行
-    const rarityOrder = ['PSER', 'UTR', 'SER', 'UR', 'SR', 'R', 'NR', 'N'];
+const rarityOrder = ['PSER', 'SER', 'UTR', 'UR', 'SR', 'R', 'NR', 'N'];
     const statsEl = document.getElementById('rarity-stats');
     if (statsEl) {
         const items = rarityOrder

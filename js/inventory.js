@@ -18,8 +18,8 @@ const InventorySystem = (function () {
     // ====== 稀有度 → 价格映射（临时固定价格，后续可替换为API价格） ======
     const RARITY_PRICES = {
         'PSER': 2000, // 棱镜秘密闪：2000 金币
-        'UTR':  1500, // 终极闪：1500 金币
-        'SER':  1000, // 秘密闪：1000 金币
+        'SER':  1500, // 秘密闪：1500 金币
+        'UTR':  1000, // 终极闪：1000 金币
         'UR':   500,  // 极稀有：500 金币
         'SR':   200,  // 超稀有：200 金币
         'R':    50,   // 稀有：50 金币
@@ -406,7 +406,7 @@ const InventorySystem = (function () {
      * @returns {Array} 排序后的数组
      */
     function sortCards(cards, sortBy) {
-        const rarityOrder = { 'PSER': 8, 'UTR': 7, 'SER': 6, 'UR': 5, 'SR': 4, 'R': 3, 'NR': 2, 'N': 1 };
+        const rarityOrder = { 'PSER': 8, 'SER': 7, 'UTR': 6, 'UR': 5, 'SR': 4, 'R': 3, 'NR': 2, 'N': 1 };
         const sorted = cards.slice(); // 复制一份
 
         switch (sortBy) {
