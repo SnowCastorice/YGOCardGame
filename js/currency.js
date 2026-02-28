@@ -339,9 +339,21 @@ const CurrencySystem = (function () {
         console.log('💰 货币系统已重置为初始状态:', JSON.stringify(balances));
     }
 
+    /**
+     * 重新加载货币数据（清除后重新从 localStorage 读取）
+     * 供缓存管理模块在清除货币数据后调用
+     */
+    function reload() {
+        balances = {};
+        initialized = false;
+        init();
+        console.log('💰 货币系统已重新加载');
+    }
+
     // ====== 公开 API ======
     return {
         init: init,
+        reload: reload,
         getBalance: getBalance,
         getAllBalances: getAllBalances,
         addBalance: addBalance,

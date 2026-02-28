@@ -473,9 +473,21 @@ const InventorySystem = (function () {
         console.log('🎒 背包已清空');
     }
 
+    /**
+     * 重新加载背包数据（清除后重新从 localStorage 读取）
+     * 供缓存管理模块在清除背包数据后调用
+     */
+    function reload() {
+        inventory = {};
+        initialized = false;
+        init();
+        console.log('🎒 背包系统已重新加载');
+    }
+
     // ====== 公开 API ======
     return {
         init: init,
+        reload: reload,
         addCards: addCards,
         getCard: getCard,
         getCardVersions: getCardVersions,

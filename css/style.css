@@ -1513,13 +1513,13 @@ body {
    ============================================ */
 .cache-summary {
     margin-bottom: 16px;
-    padding-bottom: 16px;
+    padding-bottom: 12px;
     border-bottom: 1px solid var(--border-color);
 }
 
 .cache-summary p {
     color: var(--text-secondary);
-    font-size: 0.9rem;
+    font-size: .9rem;
     line-height: 1.8;
 }
 
@@ -1527,9 +1527,29 @@ body {
     color: var(--accent-gold);
 }
 
+/* 缓存板块标题 */
+.cache-section {
+    margin-bottom: 16px;
+}
+
+.cache-section-title {
+    color: var(--text-primary);
+    font-size: .9rem;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cache-section-size {
+    font-size: .8rem;
+    color: var(--accent-gold);
+    font-weight: normal;
+}
+
 .cache-list h3 {
     color: var(--text-primary);
-    font-size: 0.95rem;
+    font-size: .95rem;
     margin-bottom: 12px;
 }
 
@@ -1544,15 +1564,59 @@ body {
     margin-bottom: 8px;
 }
 
+/* 缓存项的行布局（名称 + 删除按钮） */
+.cache-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
 .cache-item-name {
     color: var(--text-primary);
-    font-size: 0.85rem;
+    font-size: .85rem;
     font-weight: bold;
 }
 
 .cache-item-info {
     color: var(--text-secondary);
-    font-size: 0.8rem;
+    font-size: .8rem;
+}
+
+/* 缓存项删除按钮 */
+.cache-item-delete {
+    background: none;
+    border: 1px solid rgba(255, 107, 107, .3);
+    color: #ff6b6b;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    font-size: .75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .2s ease;
+    flex-shrink: 0;
+}
+
+.cache-item-delete:active {
+    background: rgba(255, 107, 107, .2);
+    border-color: #ff6b6b;
+}
+
+/* 缓存空状态和提示 */
+.cache-empty {
+    color: var(--text-secondary);
+    font-size: .85rem;
+    margin: 8px 0;
+}
+
+.cache-hint {
+    color: var(--text-secondary);
+    font-size: .8rem;
+    line-height: 1.6;
+    margin: 4px 0;
 }
 
 /* ============================================
@@ -2895,12 +2959,13 @@ body {
 }
 
 .preview-card-name {
-    font-size: 0.68rem;
+    font-size: .68rem;
     color: var(--text-primary);
     line-height: 1.3;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    text-align: center;
 }
 
 .not-owned-card .preview-card-name {

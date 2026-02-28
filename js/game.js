@@ -2451,36 +2451,124 @@ async function showCacheManage() {
 
     try {
         const status = await TCG_API.getCacheStatus();
+        const fmt = TCG_API.formatBytes;
 
         let html = '';
 
-        // 总体信息
+        // ─── 总览信息 ───
+        const totalSize = status.indexedDBSize + status.localStorage.totalSize;
         html += `<div class="cache-summary">`;
-        html += `<p>📊 已缓存 <strong>${status.cardSets.length}</strong> 个卡包，共 <strong>${status.totalCards}</strong> 张卡牌数据</p>`;
-        html += `<p>🖼️ 图片缓存：${status.imageCacheAvailable ? '✅ 可用' : '❌ 浏览器不支持'}</p>`;
+        html += `<p>💾 总存储占用：<strong>${fmt(totalSize)}</strong></p>`;
         html += `<p>🎮 当前模式：<strong>${currentGameMode.toUpperCase()}</strong></p>`;
         html += `</div>`;
 
-        // 各卡包详情
-        if (status.cardSets.length > 0) {
+        // ─── 板块1：本地存储数据（localStorage） ───
+        html += `<div class="cache-section">`;
+        html += `<h3 class="cache-section-title">📦 本地存储 <span class="cache-section-size">${fmt(status.localStorage.totalSize)}</span></h3>`;
+
+        if (status.localStorage.items.length > 0) {
             html += `<div class="cache-list">`;
-            html += `<h3>已缓存的卡包：</h3>`;
-            status.cardSets.forEach(function (set) {
-                const sourceIcon = set.dataSource === 'ygocdb' ? '🎌' : set.dataSource === 'ygoprodeck' ? '🌎' : '📦';
+            status.localStorage.items.forEach(function (item) {
+                const extra = item.cardCount !== null ? ` · ${item.cardCount} 种卡` : '';
+                // 背包和货币数据可以独立清除
+                const canDelete = item.key === 'ygo_inventory_data' || item.key === 'ygo_currency_data';
                 html += `<div class="cache-item">`;
-                html += `<span class="cache-item-name">${sourceIcon} ${set.setCode}</span>`;
-                html += `<span class="cache-item-info">${set.cardCount} 张 | ${set.dataSource || '未知来源'} | ${set.fetchedAt}</span>`;
+                html += `<div class="cache-item-row">`;
+                html += `<span class="cache-item-name">${item.label}</span>`;
+                if (canDelete) {
+                    html += `<button class="cache-item-delete" data-ls-key="${item.key}" title="清除此项">✕</button>`;
+                }
+                html += `</div>`;
+                html += `<span class="cache-item-info">${fmt(item.size)}${extra}</span>`;
                 html += `</div>`;
             });
             html += `</div>`;
         } else {
-            html += `<p style="color:var(--text-secondary);margin-top:12px;">暂无缓存数据。选择一个卡包后会自动缓存。</p>`;
+            html += `<p class="cache-empty">暂无本地存储数据。</p>`;
         }
+        html += `</div>`;
+
+        // ─── 板块2：API 缓存（IndexedDB） ───
+        html += `<div class="cache-section">`;
+        html += `<h3 class="cache-section-title">🌐 API 缓存 <span class="cache-section-size">${fmt(status.indexedDBSize)}</span></h3>`;
+
+        if (status.cardSets.length > 0) {
+            html += `<div class="cache-list">`;
+            status.cardSets.forEach(function (set) {
+                const sourceIcon = set.dataSource === 'ygocdb' ? '🎌' : set.dataSource === 'ygoprodeck' ? '🌎' : '📦';
+                html += `<div class="cache-item">`;
+                html += `<div class="cache-item-row">`;
+                html += `<span class="cache-item-name">${sourceIcon} ${set.setCode}</span>`;
+                html += `<button class="cache-item-delete" data-idb-set="${set.setCode}" title="清除此卡包缓存">✕</button>`;
+                html += `</div>`;
+                html += `<span class="cache-item-info">${set.cardCount} 张 · ${fmt(set.size)} · ${set.dataSource} · ${set.fetchedAt}</span>`;
+                html += `</div>`;
+            });
+            html += `</div>`;
+        } else {
+            html += `<p class="cache-empty">暂无 API 缓存数据。</p>`;
+            html += `<p class="cache-hint">💡 当前 OCG 卡包使用本地内嵌数据，无需 API 缓存。</p>`;
+        }
+        html += `</div>`;
+
+        // ─── 板块3：图片缓存说明 ───
+        html += `<div class="cache-section">`;
+        html += `<h3 class="cache-section-title">🖼️ 图片缓存</h3>`;
+        html += `<p class="cache-hint">卡图由浏览器 HTTP 缓存管理，清除浏览器缓存即可释放空间。</p>`;
+        html += `</div>`;
 
         container.innerHTML = html;
+
+        // ─── 绑定各条目的删除按钮事件 ───
+        bindCacheItemDeleteEvents(container);
+
     } catch (error) {
         container.innerHTML = `<p style="color:#ff6b6b;">获取缓存信息失败: ${error.message}</p>`;
     }
+}
+
+/**
+ * 为缓存管理弹窗中的删除按钮绑定事件（事件委托）
+ */
+function bindCacheItemDeleteEvents(container) {
+    container.addEventListener('click', async function (e) {
+        const btn = e.target.closest('.cache-item-delete');
+        if (!btn) return;
+
+        // localStorage 项删除
+        const lsKey = btn.getAttribute('data-ls-key');
+        if (lsKey) {
+            const labelMap = {
+                'ygo_inventory_data': '背包数据',
+                'ygo_currency_data': '货币数据'
+            };
+            const label = labelMap[lsKey] || lsKey;
+            if (!confirm(`确定要清除「${label}」吗？\n\n此操作不可恢复！`)) return;
+
+            TCG_API.clearLocalStorageItem(lsKey);
+
+            // 如果清除了背包，重新初始化背包系统
+            if (lsKey === 'ygo_inventory_data' && typeof InventorySystem !== 'undefined') {
+                InventorySystem.reload();
+            }
+            // 如果清除了货币，重新初始化货币系统
+            if (lsKey === 'ygo_currency_data' && typeof CurrencySystem !== 'undefined') {
+                CurrencySystem.reload();
+                CurrencySystem.updateUI();
+            }
+
+            showCacheManage(); // 刷新界面
+            return;
+        }
+
+        // IndexedDB 卡包缓存删除
+        const setCode = btn.getAttribute('data-idb-set');
+        if (setCode) {
+            if (!confirm(`确定要清除卡包「${setCode}」的缓存吗？`)) return;
+            await TCG_API.refreshCardSetCache(setCode);
+            showCacheManage(); // 刷新界面
+        }
+    });
 }
 
 /** 关闭缓存管理弹窗 */
@@ -2488,15 +2576,15 @@ function hideCacheManage() {
     document.getElementById('cache-modal').classList.remove('active');
 }
 
-/** 清除所有缓存 */
+/** 清除所有缓存（IndexedDB + Cache API，不含 localStorage 用户数据） */
 async function handleClearCache() {
-    if (!confirm('确定要清除所有缓存数据吗？\n\n清除后下次打开卡包需要重新从网络下载数据。')) {
+    if (!confirm('确定要清除所有 API 缓存数据吗？\n\n• 清除 IndexedDB 中的卡包缓存\n• 清除浏览器 Cache API 数据\n\n⚠️ 不会清除背包和货币数据。')) {
         return;
     }
 
     const success = await TCG_API.clearAllCache();
     if (success) {
-        alert('✅ 缓存已清除！');
+        alert('✅ API 缓存已清除！');
         showCacheManage(); // 刷新显示
     } else {
         alert('❌ 清除缓存失败，请重试。');
@@ -3671,7 +3759,7 @@ const rarityWeight = RARITY_ORDER_ASC;
         }
 
         html += `
-            <div class="preview-card-item ${isOwned ? 'owned' : 'not-owned-card'} rarity-border-${highestRarity}" data-card-id="${card.id}">
+            <div class="preview-card-item ${isOwned ? 'owned' : 'not-owned-card'} rarity-border-${highestRarity}" data-card-id="${card.id}" data-rarity="${card._expandedRarity || rarityCode}">
                 <div class="preview-card-img-wrapper">
                     ${imageHtml}
                     ${rarityBadgeHtml}
@@ -3848,11 +3936,31 @@ const rarityWeight = RARITY_ORDER_ASC;
     });
 
     // 绑定卡片点击事件（已拥有的卡可以放大查看，含辅助包卡片）
-    const allPreviewCards = previewCards.concat(previewSupp);
+    // 使用排序/展开后的 sortedCards + 辅助包卡片，确保 LOCH 展开后的 OF 版本能找到正确的卡图
+    const allClickableCards = sortedCards.concat(previewSupp);
     contentEl.querySelectorAll('.preview-card-item').forEach(function (item) {
         item.addEventListener('click', function () {
             const cardId = this.getAttribute('data-card-id');
-            const card = allPreviewCards.find(function (c) { return String(c.id) === String(cardId); });
+            const isSupp = this.getAttribute('data-supp') === '1';
+            // 获取当前卡位的稀有度（从 data-rarity 属性读取）
+            const clickedRarity = this.getAttribute('data-rarity') || '';
+
+            // 在展开后的卡片列表中查找匹配项
+            // 对于 LOCH 展开卡位，需要同时匹配 cardId 和稀有度
+            let card;
+            if (isSupp) {
+                card = previewSupp.find(function (c) { return String(c.id) === String(cardId); });
+            } else {
+                // 优先精确匹配（id + 稀有度），再回退到仅 id 匹配
+                card = allClickableCards.find(function (c) {
+                    return String(c.id) === String(cardId) &&
+                           c._expandedRarity === clickedRarity;
+                });
+                if (!card) {
+                    card = allClickableCards.find(function (c) { return String(c.id) === String(cardId); });
+                }
+            }
+
             if (card) {
                 const imgUrl = card.imageLargeUrl || card.imageUrl;
                 if (imgUrl) {
@@ -3865,7 +3973,12 @@ const rarityWeight = RARITY_ORDER_ASC;
                     if (nameEl) {
                         const displayName = card.nameCN || card.name || '';
                         const foreignName = card.nameOriginal || '';
-                        nameEl.textContent = foreignName ? displayName + '  ' + foreignName : displayName;
+                        // 中文名和日文名之间用换行分隔
+                        if (foreignName && foreignName !== displayName) {
+                            nameEl.innerHTML = displayName + '<br><span style="font-size:0.8em;opacity:0.7;">' + foreignName + '</span>';
+                        } else {
+                            nameEl.textContent = displayName;
+                        }
                     }
                     viewer.classList.add('active');
                 }
