@@ -405,6 +405,12 @@ pack_references/konami_official_products/
 
 ## 📝 近期变更记录
 
+### v1.5.4（2026-02-28）— 开包概率修正：NR卡归池 + 单包概率对齐盒规则
+- **单包概率对齐**：`drawCards_OCG` 的非N位改为按 `boxRarityDistribution` 权重概率选择目标稀有度（R 63%/SR 20%/UR 10%/UTR 3.3%/SER 3.3%），不再等概率随机
+- **NR卡归池修正**：NR卡（JP028/JP070/JP080）不进任何卡池（N池/非N池），只作为R位的10%概率变异产出
+- **N卡不再变异**：N卡位直接输出N卡，不再走 `resolveCardVersion` 随机（PSER/NR等高稀有度只在非N位通过概率机制出现）
+- **整盒同步优化**：`drawCardsBox_OCG` 分池逻辑同步排除NR卡
+
 ### v1.5.3（2026-02-28）— 开盒封入规则算法重构
 - **整盒抽卡**：新增 `drawCardsBox_OCG` 函数，按真实封入规则分配30包的非N位稀有度（1SER+1UTR+3UR+6SR+19R）
 - SER卡位有25%概率变为PSER（一箱24盒配6个原盒PSER）

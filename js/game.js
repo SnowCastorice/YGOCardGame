@@ -1134,21 +1134,30 @@ function drawCards_OCG(pack, cards) {
     const results = [];
     const usedSetNumbers = new Set(); // 已选编号，防止同包重复
 
-    // 按基础稀有度（rarityCode）把卡分成 N池 和 非N池
+    // 获取多版本稀有度概率配置
+    const modeConfig = getCurrentModeConfig();
+    const versionOdds = pack.versionOdds || modeConfig.defaultVersionOdds || {};
+
+    // --- 分池逻辑 ---
+    // N池：rarityCode === 'N' 的卡
+    // 非N池按稀有度分类：{ 'R': [...], 'SR': [...], 'UR': [...] }
+    // NR卡（rarityCode === 'NR'）不进任何池子，只作为R位的变异
     const nPool = [];
-    const nonNPool = [];
+    const poolByRarity = {};  // { 'R': [...], 'SR': [...], 'UR': [...] }
+
     cards.forEach(function (card) {
         const code = card.rarityCode || 'N';
         if (code === 'N') {
             nPool.push(card);
+        } else if (code === 'NR') {
+            // NR卡不进任何池子——它只在R位变异时才会被选中
         } else {
-            nonNPool.push(card);
+            if (!poolByRarity[code]) {
+                poolByRarity[code] = [];
+            }
+            poolByRarity[code].push(card);
         }
     });
-
-    // 获取多版本稀有度概率配置
-    const modeConfig = getCurrentModeConfig();
-    const versionOdds = pack.versionOdds || modeConfig.defaultVersionOdds || {};
 
     // 计算需要抽几张N卡（总数 - 1张非N位）
     const nCount = pack.cardsPerPack - 1;
@@ -1160,48 +1169,104 @@ function drawCards_OCG(pack, cards) {
         const setNum = card.setNumber || card.id;
         if (!usedSetNumbers.has(setNum)) {
             usedSetNumbers.add(setNum);
-            // N卡也可能有多版本（如 NR/PSER），同样走版本随机
-            const finalCard = resolveCardVersion(card, versionOdds);
-            results.push(finalCard);
+            // N卡直接使用，不走版本随机（NR/PSER在非N位处理）
+            results.push({ ...card });
         }
     }
 
-    // N池不够时兜底：用非N池补充
+    // N池不够时兜底：从R池补充
     if (results.length < nCount) {
-        const shuffledNonN = shuffleArray([...nonNPool]);
-        for (let i = 0; i < shuffledNonN.length && results.length < nCount; i++) {
-            const card = shuffledNonN[i];
+        const rPool = poolByRarity['R'] || [];
+        const shuffledR = shuffleArray([...rPool]);
+        for (let i = 0; i < shuffledR.length && results.length < nCount; i++) {
+            const card = shuffledR[i];
             const setNum = card.setNumber || card.id;
             if (!usedSetNumbers.has(setNum)) {
                 usedSetNumbers.add(setNum);
-                const finalCard = resolveCardVersion(card, versionOdds);
-                results.push(finalCard);
+                results.push({ ...card });
             }
         }
     }
 
-    // --- 步骤2：从非N池随机抽 1 张（编号不与已抽的重复）---
-    const availableNonN = nonNPool.filter(function (card) {
-        const setNum = card.setNumber || card.id;
-        return !usedSetNumbers.has(setNum);
+    // --- 步骤2：非N位按盒规则概率选择目标稀有度，再从对应池子中选卡 ---
+    // 盒规则概率（基于 1SER+1UTR+3UR+6SR+19R = 30包）：
+    // R=63.33%, SR=20%, UR=10%, SER=3.33%, UTR=3.33%
+    // 从 boxRarityDistribution 配置中计算概率分布
+    const boxDist = pack.boxRarityDistribution || { SER: 1, UTR: 1, UR: 3, SR: 6, R: 19 };
+    const nrChance = pack.boxNRChance || 0.10;      // R变NR的概率
+    const pserChance = pack.boxPSERChance || 0.25;   // SER变PSER的概率
+
+    // 计算各稀有度在整盒中的权重（即概率分布）
+    const rarityWeights = [];
+    const rarityNames = Object.keys(boxDist).filter(function(k) { return k !== '_说明'; });
+    rarityNames.forEach(function(rarity) {
+        rarityWeights.push({ rarity: rarity, weight: boxDist[rarity] });
+    });
+    const totalWeight = rarityWeights.reduce(function(sum, rw) { return sum + rw.weight; }, 0);
+
+    // 按权重随机选一个目标稀有度
+    let roll = Math.random() * totalWeight;
+    let targetRarity = rarityWeights[rarityWeights.length - 1].rarity; // 兜底
+    for (let i = 0; i < rarityWeights.length; i++) {
+        roll -= rarityWeights[i].weight;
+        if (roll <= 0) {
+            targetRarity = rarityWeights[i].rarity;
+            break;
+        }
+    }
+
+    // SER卡位有概率变为PSER
+    if (targetRarity === 'SER' && Math.random() < pserChance) {
+        targetRarity = 'PSER';
+    }
+
+    // R卡位有概率变为NR
+    if (targetRarity === 'R' && Math.random() < nrChance) {
+        targetRarity = 'NR';
+    }
+
+    // --- 步骤2b：从目标稀有度的卡池中选一张卡 ---
+    let rareCard = null;
+
+    // 查找 rarityVersions 中包含目标稀有度的所有卡
+    function findCardsForTargetRarity(target) {
+        const result = [];
+        cards.forEach(function (card) {
+            const versions = card.rarityVersions || [card.rarityCode || 'N'];
+            if (versions.indexOf(target) >= 0) {
+                result.push(card);
+            }
+        });
+        return result;
+    }
+
+    const candidates = findCardsForTargetRarity(targetRarity);
+    // 过滤掉已被N位选中的编号
+    const available = candidates.filter(function(card) {
+        return !usedSetNumbers.has(card.setNumber || card.id);
     });
 
-    if (availableNonN.length > 0) {
-        const picked = availableNonN[Math.floor(Math.random() * availableNonN.length)];
-        const setNum = picked.setNumber || picked.id;
-        usedSetNumbers.add(setNum);
-        // 对非N卡进行多版本稀有度随机
-        const finalCard = resolveCardVersion(picked, versionOdds);
-        results.push(finalCard);
+    if (available.length > 0) {
+        const picked = available[Math.floor(Math.random() * available.length)];
+        rareCard = { ...picked, rarityCode: targetRarity };
+    } else if (candidates.length > 0) {
+        // 所有候选卡都与N位重复了，允许重复（极低概率）
+        const picked = candidates[Math.floor(Math.random() * candidates.length)];
+        rareCard = { ...picked, rarityCode: targetRarity };
     } else {
-        // 非N池为空的极端情况（理论上不会出现），从N池兜底
-        const fallbackN = nPool.filter(function (card) {
+        // 找不到目标稀有度的卡（数据问题兜底），从所有非N非NR池中随机选
+        const allNonN = Object.values(poolByRarity).reduce(function(acc, arr) { return acc.concat(arr); }, []);
+        const fallback = allNonN.filter(function(card) {
             return !usedSetNumbers.has(card.setNumber || card.id);
         });
-        if (fallbackN.length > 0) {
-            const picked = fallbackN[Math.floor(Math.random() * fallbackN.length)];
-            results.push(resolveCardVersion(picked, versionOdds));
+        if (fallback.length > 0) {
+            const picked = fallback[Math.floor(Math.random() * fallback.length)];
+            rareCard = resolveCardVersion(picked, versionOdds);
         }
+    }
+
+    if (rareCard) {
+        results.push(rareCard);
     }
 
     // --- 步骤3：按稀有度排序（N在前，最稀有的在后面，营造惊喜感）---
@@ -1279,7 +1344,9 @@ function drawCardsBox_OCG(pack, cards) {
     const shuffledSlots = shuffleArray([...rareSlots]);
     
     // --- 步骤2：按分池分类卡池 ---
-    // 按基础稀有度把卡分到对应的池子
+    // N池：rarityCode === 'N' 的卡
+    // 非N池按稀有度分类：{ 'R': [...], 'SR': [...], 'UR': [...] }
+    // NR卡（rarityCode === 'NR'）不进任何池子——只在R位变异时通过 findCardsForTargetRarity 查找
     const nPool = [];
     const poolByRarity = {}; // { 'SR': [...], 'UR': [...], ... }
     
@@ -1287,6 +1354,8 @@ function drawCardsBox_OCG(pack, cards) {
         const baseCode = card.rarityCode || 'N';
         if (baseCode === 'N') {
             nPool.push(card);
+        } else if (baseCode === 'NR') {
+            // NR卡不进任何池子——只作为R位变异的候选
         } else {
             if (!poolByRarity[baseCode]) {
                 poolByRarity[baseCode] = [];
