@@ -1093,24 +1093,25 @@ body {
 
 .card-rarity-badge {
     position: absolute;
-    top: 6px;
-    right: 6px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.65rem;
+    top: 4px;
+    left: 4px;
+    padding: 1px 5px;
+    border-radius: 6px;
+    font-size: .6rem;
     font-weight: bold;
-    color: #000;
+    background: rgba(0, 0, 0, .7);
+    backdrop-filter: blur(4px);
     z-index: 2;
 }
 
-.card-rarity-badge.rarity-N { background-color: var(--rarity-N); }
-.card-rarity-badge.rarity-NR { background-color: var(--rarity-NR); }
-.card-rarity-badge.rarity-R { background-color: var(--rarity-R); }
-.card-rarity-badge.rarity-SR { background-color: var(--rarity-SR); }
-.card-rarity-badge.rarity-UR { background-color: var(--rarity-UR); }
-.card-rarity-badge.rarity-SER { background-color: var(--rarity-SER); }
-.card-rarity-badge.rarity-UTR { background-color: var(--rarity-UTR); color: #333; }
-.card-rarity-badge.rarity-PSER { background-color: var(--rarity-PSER); }
+.card-rarity-badge.rarity-N { color: var(--rarity-N); border: 1px solid var(--rarity-N); }
+.card-rarity-badge.rarity-NR { color: var(--rarity-NR); border: 1px solid var(--rarity-NR); }
+.card-rarity-badge.rarity-R { color: var(--rarity-R); border: 1px solid var(--rarity-R); }
+.card-rarity-badge.rarity-SR { color: var(--rarity-SR); border: 1px solid var(--rarity-SR); }
+.card-rarity-badge.rarity-UR { color: var(--rarity-UR); border: 1px solid var(--rarity-UR); }
+.card-rarity-badge.rarity-SER { color: var(--rarity-SER); border: 1px solid var(--rarity-SER); }
+.card-rarity-badge.rarity-UTR { color: var(--rarity-UTR); border: 1px solid var(--rarity-UTR); }
+.card-rarity-badge.rarity-PSER { color: var(--rarity-PSER); border: 1px solid var(--rarity-PSER); }
 
 /* 合并数量角标（十连开包相同卡片合并时显示） */
 .card-count-badge {
