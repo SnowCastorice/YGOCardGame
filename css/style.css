@@ -1096,11 +1096,13 @@ body {
     top: 4px;
     left: 4px;
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: 5px;
     font-size: .65rem;
     font-weight: bold;
-    color: #000;
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, .5);
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, .25) 0%, transparent 60%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 1px 3px rgba(0, 0, 0, .5);
     z-index: 2;
 }
 
@@ -2284,11 +2286,13 @@ body {
     top: 4px;
     left: 4px;
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: 5px;
     font-size: .65rem;
     font-weight: bold;
-    color: #000;
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, .5);
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, .25) 0%, transparent 60%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 1px 3px rgba(0, 0, 0, .5);
 }
 
 .inventory-rarity-badge.rarity-PSER {
@@ -2721,11 +2725,13 @@ body {
     top: 4px;
     left: 4px;
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: 5px;
     font-size: .65rem;
     font-weight: bold;
-    color: #000;
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, .5);
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, .25) 0%, transparent 60%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 1px 3px rgba(0, 0, 0, .5);
 }
 
 .preview-rarity-badge.rarity-PSER {
@@ -2773,11 +2779,13 @@ body {
 .rarity-version-item {
   display: inline-block;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: 5px;
   font-size: .65rem;
   font-weight: bold;
-  color: #000;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, .5);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, .25) 0%, transparent 60%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 1px 3px rgba(0, 0, 0, .5);
 }
 
 /* 未收集的版本色块：灰色实心背景 */
@@ -2804,9 +2812,11 @@ body {
   font-size: .65rem;
   font-weight: bold;
   padding: 2px 6px;
-  border-radius: 4px;
-  color: #000;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, .5);
+  border-radius: 5px;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, .25) 0%, transparent 60%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 1px 3px rgba(0, 0, 0, .5);
 }
 
 /* 多版本数量角标：多个实心色块并列 */
@@ -2822,11 +2832,13 @@ body {
 .owned-version-count {
   display: inline-block;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: 5px;
   font-size: .65rem;
   font-weight: bold;
-  color: #000;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, .5);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, .25) 0%, transparent 60%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 1px 3px rgba(0, 0, 0, .5);
 }
 
 /* --- 未拥有锁定图标 --- */

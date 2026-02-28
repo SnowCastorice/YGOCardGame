@@ -183,9 +183,29 @@ function applyRarityColors(raritiesData) {
     const root = document.documentElement;
     let dynamicCSS = '';
 
+    // 根据十六进制颜色计算相对亮度，判断应使用白色还是黑色文字
+    function getTextColorForBg(hexColor) {
+        var hex = hexColor.replace('#', '');
+        if (hex.length === 3) {
+            hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        }
+        var r = parseInt(hex.substring(0, 2), 16);
+        var g = parseInt(hex.substring(2, 4), 16);
+        var b = parseInt(hex.substring(4, 6), 16);
+        // 使用 W3C 推荐的相对亮度公式
+        var luminance = (r * 299 + g * 587 + b * 114) / 1000;
+        return luminance > 160 ? '#000' : '#fff';
+    }
+
     raritiesData.rarities.forEach(function (r) {
         // 注入 CSS 变量到 :root（如 --rarity-UR: #f5c842）
         root.style.setProperty('--rarity-' + r.code, r.cssColor);
+
+        // 计算该稀有度对应的文字颜色（亮背景用黑字，暗背景用白字）
+        var textColor = getTextColorForBg(r.cssColor);
+        var textShadow = textColor === '#fff'
+            ? '0 1px 2px rgba(0, 0, 0, .6)'
+            : '0 1px 1px rgba(255, 255, 255, .4)';
 
         // 生成 .rarity-color-{code} 颜色类（用于 JS 动态渲染文本颜色）
         dynamicCSS += '.rarity-color-' + r.code + ' { color: var(--rarity-' + r.code + '); }\n';
@@ -193,7 +213,7 @@ function applyRarityColors(raritiesData) {
         // 生成角标实心背景色样式（覆盖所有稀有度，包括动态新增的）
         var badgeSelectors = ['.card-rarity-badge', '.inventory-rarity-badge', '.preview-rarity-badge', '.rarity-version-item', '.preview-owned-badge', '.owned-version-count'];
         badgeSelectors.forEach(function (sel) {
-            dynamicCSS += sel + '.rarity-' + r.code + ' { background-color: var(--rarity-' + r.code + '); }\n';
+            dynamicCSS += sel + '.rarity-' + r.code + ' { background-color: var(--rarity-' + r.code + '); color: ' + textColor + '; text-shadow: ' + textShadow + '; }\n';
         });
     });
 
