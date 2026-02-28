@@ -755,7 +755,8 @@ async function getOCGCardSetData(packConfig, onProgress) {
             totalCards: cards.length,
             fetchedAt: Date.now(),
             dataSource: 'local',
-            language: 'local'
+            language: 'local',
+            imageMap: imageMap  // 保存映射表引用，供开包时按稀有度获取对应卡图
         };
 
         const suppInfo = supplementCards.length > 0 ? `，辅助包 ${supplementCards.length} 张` : '';
@@ -770,17 +771,23 @@ async function getOCGCardSetData(packConfig, onProgress) {
 
 /**
  * 获取卡图URL —— 优先使用映射表（S3 CDN），回退到默认 YGOCDB CDN
+ * 支持按稀有度获取不同版本的卡图（如 LOCH 卡包中 OF 超框卡版本使用超框卡图）
  * 
  * @param {number|string} cardId - 卡片密码（password）
- * @param {object|null} imageMap - 卡图映射表（password → {metaId, name}），null 时使用默认图源
+ * @param {object|null} imageMap - 卡图映射表（password → {metaId, name, altMetaId?}），null 时使用默认图源
  * @param {string} size - 图片尺寸：'small' = 列表用（200px）, 'large' = 大图（420px）
+ * @param {string} [rarityCode] - 可选，稀有度代码（如 'UR-OF'、'GMR-OF'），用于查找该稀有度的替代卡图
  * @returns {string} 图片URL
  */
-function getCardImageUrl(cardId, imageMap, size) {
+function getCardImageUrl(cardId, imageMap, size, rarityCode) {
     const pw = String(cardId);
     // 如果映射表中有该卡的 metaId，使用 YugiohMeta S3 CDN
     if (imageMap && imageMap[pw] && imageMap[pw].metaId) {
-        const metaId = imageMap[pw].metaId;
+        // 优先检查该稀有度是否有替代卡图（如 LOCH 的 OF 超框卡版本使用超框卡图）
+        let metaId = imageMap[pw].metaId;
+        if (rarityCode && imageMap[pw].altMetaId && imageMap[pw].altMetaId[rarityCode]) {
+            metaId = imageMap[pw].altMetaId[rarityCode];
+        }
         const sizeSuffix = size === 'large'
             ? API_CONFIG.YUGIOHMETA.SIZE_LARGE   // _w420
             : API_CONFIG.YUGIOHMETA.SIZE_SMALL;  // _w200
@@ -865,7 +872,8 @@ function buildOCGCardsFromLocalData(packConfig, imageMap) {
             // 卡图URL：优先使用映射表（S3 CDN），回退到默认 YGOCDB CDN
             imageUrl: getCardImageUrl(cardDef.id, imageMap, 'small'),
             imageLargeUrl: getCardImageUrl(cardDef.id, imageMap, 'large'),
-            dataSource: 'local'
+            dataSource: 'local',
+            _imageMap: imageMap  // 保存映射表引用，用于开包时按稀有度动态获取对应卡图
         });
     });
 

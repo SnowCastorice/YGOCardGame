@@ -327,14 +327,20 @@ const InventorySystem = (function () {
             const rarityCode = (card.rarityVersions || ['N'])[0];
             const displayName = card.nameCN || card.name || card.nameOriginal || '未知卡片';
 
-            // 卡图 HTML
+            // 卡图 HTML —— 带 fallback 机制：主图源失败时自动尝试备用 CDN
+            // 备用图源：YGOProDeck CDN（小图）
+            const fallbackUrl = 'https://images.ygoprodeck.com/images/cards_small/' + card.id + '.jpg';
             let imageHtml;
             if (card.imageUrl) {
                 imageHtml = `<img class="inventory-card-image" src="${card.imageUrl}" alt="${displayName}" loading="lazy"
-                                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                                  data-fallback="${fallbackUrl}"
+                                  onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src=this.dataset.fallback;}else{this.style.display='none';this.nextElementSibling.style.display='flex';}">
                              <div class="inventory-card-placeholder" style="display:none;">🃏</div>`;
             } else {
-                imageHtml = `<div class="inventory-card-placeholder">🃏</div>`;
+                // 无 imageUrl 时直接用 fallback 图源尝试加载
+                imageHtml = `<img class="inventory-card-image" src="${fallbackUrl}" alt="${displayName}" loading="lazy"
+                                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                             <div class="inventory-card-placeholder" style="display:none;">🃏</div>`;
             }
 
             html += `

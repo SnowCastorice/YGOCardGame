@@ -432,6 +432,8 @@ function bindGameEvents() {
     // 返回选择卡包（两个返回按钮）
     bindEvent('btn-back-to-packs', 'click', showPackSelect);
     bindEvent('btn-back-from-result', 'click', showPackSelect);
+    // 开包结果左上角返回按钮
+    bindEvent('btn-result-back', 'click', showPackSelect);
 
     // 开包界面收藏预览按钮（和卡包列表的放大镜是同一个功能）
     bindEvent('btn-pack-preview', 'click', function () {
@@ -1109,7 +1111,8 @@ async function openPack() {
     // 4. 抽取卡牌
     const drawnCards = drawCards(currentPack, currentPackCards);
 
-    // 5. 将抽到的卡片存入背包
+    // 5. 根据稀有度更新卡图URL后存入背包
+    updateCardsImageUrl(drawnCards);
     InventorySystem.addCards(drawnCards);
 
     // 6. 展示结果
@@ -1216,9 +1219,11 @@ async function openMultiPacks(count) {
         console.warn('⚠️ 当前卡包没有辅助包卡池数据，跳过+1辅助包');
     }
 
-    // 6. 将所有卡片（含辅助包）存入背包
+    // 6. 根据稀有度更新卡图URL后存入背包
+    updateCardsImageUrl(allCards);
     InventorySystem.addCards(allCards);
     if (bonusCards.length > 0) {
+        updateCardsImageUrl(bonusCards);
         InventorySystem.addCards(bonusCards);
     }
 
@@ -1230,6 +1235,26 @@ async function openMultiPacks(count) {
 
     // 更新价格信息（余额可能变化）
     updateOpenPackPriceInfo();
+}
+
+/**
+ * 根据卡片的 _imageMap 和最终稀有度，更新卡片的 imageUrl / imageLargeUrl
+ * 
+ * 【用途】
+ * 在存入背包之前调用，确保背包中保存的是正确的 CDN 图片地址。
+ * 例如 LOCH 卡包的 OF 超框卡版本需要使用对应的超框卡图。
+ * 
+ * @param {Array} cards - 卡片数组（会直接修改其中的 imageUrl / imageLargeUrl）
+ */
+function updateCardsImageUrl(cards) {
+    if (!Array.isArray(cards)) return;
+    cards.forEach(function (card) {
+        if (card._imageMap) {
+            const rarity = (card.rarityVersions || ['N'])[0];
+            card.imageUrl = getCardImageUrl(card.id, card._imageMap, 'small', rarity);
+            card.imageLargeUrl = getCardImageUrl(card.id, card._imageMap, 'large', rarity);
+        }
+    });
 }
 
 /**
@@ -1778,6 +1803,15 @@ function drawCards_LOCH(pack, cards) {
                (RARITY_ORDER_ASC[(b.rarityVersions || ['N'])[0]] || 0);
     });
 
+    // --- 根据最终稀有度更新卡图URL（LOCH 的 OF 超框卡版本使用不同卡图）---
+    results.forEach(function(card) {
+        if (card._imageMap) {
+            const rarity = (card.rarityVersions || ['N'])[0];
+            card.imageUrl = getCardImageUrl(card.id, card._imageMap, 'small', rarity);
+            card.imageLargeUrl = getCardImageUrl(card.id, card._imageMap, 'large', rarity);
+        }
+    });
+
     return results;
 }
 
@@ -1950,6 +1984,15 @@ function drawCardsBox_LOCH(pack, cards) {
 
         allCards.push(...packCards);
     }
+
+    // --- 根据最终稀有度更新卡图URL（LOCH 的 OF 超框卡版本使用不同卡图）---
+    allCards.forEach(function(card) {
+        if (card._imageMap) {
+            const rarity = (card.rarityVersions || ['N'])[0];
+            card.imageUrl = getCardImageUrl(card.id, card._imageMap, 'small', rarity);
+            card.imageLargeUrl = getCardImageUrl(card.id, card._imageMap, 'large', rarity);
+        }
+    });
 
     // 返回格式与 drawCardsBox_OCG 一致
     return { allCards: allCards, boxHasPSER: false };
@@ -3341,7 +3384,42 @@ function renderCardPreview(sortBy, cards, pack, supplementCards) {
     }
 
     // 获取当前卡包的所有卡片
-    const allCards = previewCards.slice();
+    let allCards = previewCards.slice();
+
+    // --- LOCH 卡包图鉴特殊处理：每种稀有度单独展示为一个卡位 ---
+    // 同编号下，稀有度权重更大的排在前面
+    const isLochSpecial = previewPack && previewPack.packScheme === 'loch_special';
+    if (isLochSpecial) {
+        const expandedCards = [];
+        allCards.forEach(function(card) {
+            let versions = card.rarityVersions || ['N'];
+            // 同时有N和NR时只保留NR
+            if (versions.includes('N') && versions.includes('NR')) {
+                versions = versions.filter(function(v) { return v !== 'N'; });
+            }
+            // 按稀有度权重从高到低排序（降序）
+            const sorted = versions.slice().sort(function(a, b) {
+                return (RARITY_ORDER_DESC[b] || 0) - (RARITY_ORDER_DESC[a] || 0);
+            });
+            sorted.forEach(function(rarity) {
+                // 为每个稀有度版本创建独立的卡位对象
+                const expanded = Object.assign({}, card, {
+                    rarityVersions: [rarity],
+                    // 使用对应稀有度的卡图URL（OF超框卡版本使用超框卡图，普通版使用普通卡图）
+                    imageUrl: card._imageMap
+                        ? getCardImageUrl(card.id, card._imageMap, 'small', rarity)
+                        : card.imageUrl,
+                    imageLargeUrl: card._imageMap
+                        ? getCardImageUrl(card.id, card._imageMap, 'large', rarity)
+                        : card.imageLargeUrl,
+                    // 标记用于区分展开后的卡位（用于收集判断）
+                    _expandedRarity: rarity
+                });
+                expandedCards.push(expanded);
+            });
+        });
+        allCards = expandedCards;
+    }
 
     // 从背包系统获取已拥有的卡片信息（含各版本收集数量）
     const ownedMap = {};
@@ -3379,8 +3457,13 @@ function renderCardPreview(sortBy, cards, pack, supplementCards) {
     switch (sortBy) {
         case 'id':
             // 按卡包内编号序号（如 BLZD-JP001 → 1, JP002 → 2）从小到大排序
+            // LOCH 展开后同编号下按稀有度权重从高到低排列
             sortedCards.sort(function (a, b) {
-                return (Number(a.setNumber) || 0) - (Number(b.setNumber) || 0);
+                const numDiff = (Number(a.setNumber) || 0) - (Number(b.setNumber) || 0);
+                if (numDiff !== 0) return numDiff;
+                // 同编号：稀有度权重高的排前面（降序）
+                return (RARITY_ORDER_DESC[(b.rarityVersions || ['N'])[0]] || 0) -
+                       (RARITY_ORDER_DESC[(a.rarityVersions || ['N'])[0]] || 0);
             });
             break;
         case 'rarity':
@@ -3505,9 +3588,14 @@ const rarityDisplayOrder = RARITY_CODES_DESC;
 const rarityWeight = RARITY_ORDER_ASC;
     html += '<div class="preview-card-grid">';
     sortedCards.forEach(function (card) {
-        const isOwned = !!ownedMap[card.id];
+        let isOwned = !!ownedMap[card.id];
         const ownedQty = ownedMap[card.id] || 0;
         const rarityCode = (card.rarityVersions || ['N'])[0];
+
+        // LOCH 展开卡位：根据具体稀有度版本判断是否拥有
+        if (card._expandedRarity && ownedVersionsMap[card.id]) {
+            isOwned = !!(ownedVersionsMap[card.id][card._expandedRarity] && ownedVersionsMap[card.id][card._expandedRarity] > 0);
+        }
         // 如果同时存在 N 和 NR，只保留 NR（NR 是 N 的上位，无需并列展示）
         let versions = card.rarityVersions || [rarityCode];
         if (versions.indexOf('N') !== -1 && versions.indexOf('NR') !== -1) {
@@ -3562,9 +3650,12 @@ const rarityWeight = RARITY_ORDER_ASC;
                     ownedBadgeHtml = '<span class="preview-owned-badge preview-owned-multi">' + parts.join('') + '</span>';
                 }
             } else {
-                // 单版本：实心色块显示总数
+                // 单版本：实心色块显示总数（LOCH展开卡位显示该版本的数量）
                 const singleRarityForBadge = sortedVersions[0] || rarityCode;
-                ownedBadgeHtml = `<span class="preview-owned-badge rarity-${singleRarityForBadge}">×${ownedQty}</span>`;
+                const badgeQty = (card._expandedRarity && ownedVersionsMap[card.id])
+                    ? (ownedVersionsMap[card.id][card._expandedRarity] || 0)
+                    : ownedQty;
+                ownedBadgeHtml = `<span class="preview-owned-badge rarity-${singleRarityForBadge}">×${badgeQty}</span>`;
             }
         }
 

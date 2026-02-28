@@ -2,6 +2,17 @@
 
 > 从 DEVELOPMENT.md 拆分，记录各版本的变更和待处理事项。
 
+## v1.5.30（2026-02-28）— LOCH 多稀有度卡图支持 + 图鉴展开卡位
+- **扩展卡图映射表**：`loch_image_map.json` 新增 `altMetaId` 字段，支持每张卡不同稀有度使用不同的卡图（OF 超框卡版本使用超框卡图，普通版使用普通卡图）
+- 从 yugiohmeta.com 网页提取全部 346 张图片数据（108 个唯一 metaId），建立完整的稀有度→卡图映射
+- **`getCardImageUrl` 增强**：新增可选的 `rarityCode` 参数，根据稀有度查找对应的 `altMetaId`，加载正确版本的卡图
+- **开包逻辑更新**：`drawCards_LOCH` 和 `drawCardsBox_LOCH` 在排序后、返回前，根据实际抽到的稀有度更新 `imageUrl` 和 `imageLargeUrl`
+- **图鉴 LOCH 特殊处理**：每张卡的每个稀有度版本展开为独立卡位（共 318 个卡位），同编号下稀有度权重从高到低排列（GMR-OF > PSER-OF > SER > UR-OF > UR ...）
+- 图鉴中每个展开卡位显示对应稀有度的卡图、独立的收集状态和数量
+- `buildOCGCardsFromLocalData` 在每张卡对象上保存 `_imageMap` 引用，`setData` 中也保存 `imageMap`
+- **涉及修改文件**：`api.js`、`game.js`、`loch_image_map.json`、`CHANGELOG.md`
+- **新增工具脚本**：`test_output/generate_loch_rarity_map.py`（从网页数据生成完整映射表）
+
 ## v1.5.29（2026-02-28）— LOCH 散包 GMR-OF 概率修正：1/2160
 - **修正 `ofTypeOdds` 权重**：从 `{PSER-OF:6, UR-OF:17, GMR-OF:1}`（总24）改为 `{PSER-OF:36, UR-OF:107, GMR-OF:1}`（总144）
 - GMR-OF 是 6 箱（6×24盒×15包 = 2160 包）才出 1 张，正确概率为 **1/2160 ≈ 0.046%**

@@ -428,6 +428,44 @@ body {
   text-shadow: 0 0 8px rgba(255, 215, 0, .3);
 }
 
+/* 开包结果顶部：返回按钮 + 标题 */
+.result-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.result-header .section-title {
+  margin-bottom: 0;
+}
+
+.result-header__back {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid rgba(255, 255, 255, .15);
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .2s ease;
+}
+
+.result-header__back:active {
+  background: rgba(255, 255, 255, .18);
+  color: var(--accent-gold);
+  border-color: var(--accent-gold);
+}
+
 .section-subtitle {
   text-align: center;
   color: var(--text-secondary);
