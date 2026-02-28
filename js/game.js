@@ -214,6 +214,13 @@ function applyRarityColors(raritiesData) {
         badgeSelectors.forEach(function (sel) {
             dynamicCSS += sel + '.rarity-' + r.code + ' { background-color: var(--rarity-' + r.code + '); color: ' + textColor + '; text-shadow: ' + textShadow + '; }\n';
         });
+
+        // 生成图鉴进度条标签颜色（rarity-tag-{code}）
+        dynamicCSS += '.rarity-detail-label.rarity-tag-' + r.code + ' { color: var(--rarity-' + r.code + '); }\n';
+        // 生成图鉴统计标签描边样式（preview-rarity-tag）
+        dynamicCSS += '.preview-rarity-tag.rarity-tag-' + r.code + ' { color: var(--rarity-' + r.code + '); border: 1px solid var(--rarity-' + r.code + '); }\n';
+        // 生成图鉴进度条填充颜色（rarity-fill-{code}）
+        dynamicCSS += '.rarity-fill-' + r.code + ' { background: var(--rarity-' + r.code + '); }\n';
     });
 
     // 将动态生成的颜色类注入到页面中
@@ -2363,8 +2370,10 @@ function updateOpenPackPriceInfo() {
             openBoxBtn.classList.add('insufficient');
             openBoxBtn.innerHTML = `余额不足 (需要 ${totalPriceBox} ${currDef.icon})`;
         } else {
-            openBoxBtn.classList.remove('insufficient');
-            openBoxBtn.innerHTML = price > 0 ? `开1盒 (${boxCount}包 ${currDef.icon} ${totalPriceBox})<span class="btn-box-sub">赠送 +1 辅助包</span>` : `开1盒 (${boxCount}包)<span class="btn-box-sub">赠送 +1 辅助包</span>`;
+        openBoxBtn.classList.remove('insufficient');
+            const hasSupp = currentPack && currentPack.supplementPack;
+            const suppHtml = hasSupp ? '<span class="btn-box-sub">赠送 +1 辅助包</span>' : '';
+            openBoxBtn.innerHTML = price > 0 ? `开1盒 (${boxCount}包 ${currDef.icon} ${totalPriceBox})${suppHtml}` : `开1盒 (${boxCount}包)${suppHtml}`;
         }
     }
 
@@ -2373,8 +2382,10 @@ function updateOpenPackPriceInfo() {
             openAgainBoxBtn.classList.add('insufficient');
             openAgainBoxBtn.innerHTML = `余额不足 (需要 ${totalPriceBox} ${currDef.icon})`;
         } else {
-            openAgainBoxBtn.classList.remove('insufficient');
-            openAgainBoxBtn.innerHTML = price > 0 ? `再开1盒 (${boxCount}包 ${currDef.icon} ${totalPriceBox})<span class="btn-box-sub">赠送 +1 辅助包</span>` : `再开1盒 (${boxCount}包)<span class="btn-box-sub">赠送 +1 辅助包</span>`;
+        openAgainBoxBtn.classList.remove('insufficient');
+            const hasSuppAgain = currentPack && currentPack.supplementPack;
+            const suppHtmlAgain = hasSuppAgain ? '<span class="btn-box-sub">赠送 +1 辅助包</span>' : '';
+            openAgainBoxBtn.innerHTML = price > 0 ? `再开1盒 (${boxCount}包 ${currDef.icon} ${totalPriceBox})${suppHtmlAgain}` : `再开1盒 (${boxCount}包)${suppHtmlAgain}`;
         }
     }
 }
