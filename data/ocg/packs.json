@@ -24,6 +24,7 @@
   },
   "_packScheme说明": {
     "ocg_default": "OCG默认方案：4张N卡 + 1张非N稀有卡，同一包编号不重复。非N卡若有多个稀有度版本，按versionOdds概率随机。",
+    "loch_special": "LOCH专用方案：1包4张（1号位SR+2号位SR+3号位UR+4号位全卡池随机），同包不出完全相同的卡。整盒15包的4号位按boxSlot4Distribution强制分配稀有度。",
     "legacy": "旧版方案：所有位置按rarityRates权重随机稀有度，兼容TCG和未配置方案的卡包。"
   },
   "packs": [
@@ -39,14 +40,12 @@
       "cardsPerPack": 4,
       "totalCards": 80,
       "cardFile": "ocg_loch.json",
+      "imageMapFile": "loch_image_map.json",
       "category": "special",
       "locked": false,
-      "packScheme": "legacy",
-      "rarityRates": {
-        "UR": 38,
-        "SR": 62
-      },
+      "packScheme": "loch_special",
       "versionOdds": {
+        "_说明": "LOCH多版本稀有度概率权重（散包4号位不使用此项，而是复用boxSlot4Distribution+ofTypeOdds的整盒概率分布）",
         "UR": 70,
         "UR-OF": 2,
         "SR": 70,
@@ -57,11 +56,25 @@
         "UTR": 8,
         "CR": 8
       },
-      "guaranteedRareSlot": false,
+      "boxSlot4Distribution": {
+        "_说明": "整盒15包中4号位的稀有度强制分配：1OF+1PSER+2UTR+2CR+9SER=15包",
+        "OF": 1,
+        "PSER": 1,
+        "UTR": 2,
+        "CR": 2,
+        "SER": 9
+      },
+      "ofTypeOdds": {
+        "_说明": "OF卡位中不同OF类型的概率权重（以6箱=144个OF位为基数）：PSER-OF=36/144(25%), UR-OF=107/144(74.3%), GMR-OF=1/144(0.69%)。散包GMR-OF概率=1/15×1/144=1/2160",
+        "PSER-OF": 36,
+        "UR-OF": 107,
+        "GMR-OF": 1
+      },
       "price": 385,
       "currency": "gold",
       "packsPerBox": 15,
-      "_说明": "2026年2月OCG特殊包（主角篇），1包4张/1盒15包。全80种（38UR+42SR），无N/R。稀有度组合：18种UR有5版本(UR/UR-OF/SER/PSER-OF/GMR-OF)、20种UR有3版本(UR/SER/PSER)、21种SR有CR版(SR/CR/SER/PSER)、21种SR有UTR版(SR/UTR/SER/PSER)。GMR-OF为限量100张附序列号",
+      "_说明": "2026年2月OCG特殊包（主角篇），1包4张/1盒15包。全80种（38UR+42SR），无N/R。1号位必出SR，2号位必出SR，3号位必出UR，4号位全卡池随机。整盒4号位封入：1OF+1PSER+2UTR+2CR+9SER。同包4个卡位不得出现完全相同的卡（同编号不同版本不算重复）。",
+      "_稀有度组合": "18种UR有5版本(UR/UR-OF/SER/PSER-OF/GMR-OF)、20种UR有3版本(UR/SER/PSER)、21种SR有CR版(SR/CR/SER/PSER)、21种SR有UTR版(SR/UTR/SER/PSER)",
       "_价格来源": "KONAMI官网含税价格: 1包 385日元"
     },
     {

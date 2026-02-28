@@ -99,5 +99,19 @@
 - SER 位 25% 概率变 PSER
 - 辅助包 PSER 与原盒 PSER 互斥（同盒最多 1 张 PSER）
 
+### LOCH 专用方案（`packScheme: "loch_special"`，v1.5.28+）
+- 全稀有包（38种UR + 42种SR），无 N/R 卡
+- 每包 4 张：1号位SR + 2号位SR + 3号位UR + 4号位全卡池随机
+- 1-3号位必出基础稀有度（SR/SR/UR），不走版本概率
+- 4号位按 `versionOdds` 概率随机决定最终稀有度版本
+- 去重规则：同包4个卡位不出完全相同的卡（同编号不同稀有度版本 ≠ 相同）
+
+### LOCH 整盒模式（`drawCardsBox_LOCH`，15包）
+- 1-3号位与散包相同
+- 4号位按 `boxSlot4Distribution` 强制分配：1OF + 1PSER + 2UTR + 2CR + 9SER
+- OF卡按 `ofTypeOdds` 概率决定类型：PSER-OF(25%) / UR-OF(71%) / GMR-OF(0.69%)
+- 整盒4号位编号不重复（不同稀有度版本不算重复）
+- 无辅助包（+1包）
+
 ### 旧版方案（`packScheme: "legacy"`）
 - TCG 和未配置方案的卡包使用

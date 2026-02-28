@@ -1,0 +1,409 @@
+{
+  "_说明": "LOCH 卡图映射表 — 卡片密码(password) → YugiohMeta S3 CDN 图片ID",
+  "_图片URL格式": "https://s3.duellinksmeta.com/cards/{metaId}_w{尺寸}.webp",
+  "_可用尺寸": "w100, w140, w200, w260, w360, w420",
+  "_数据来源": "从 yugiohmeta.com/articles/sets/ocg/loch 页面提取",
+  "_更新时间": "2026-02-28",
+  "cards": {
+    "100256001": {
+      "metaId": "69486c39131604f9a8437d13",
+      "name": "Dark Magician, the Pharaoh's Servant",
+      "setNumber": "LOCH-JP001"
+    },
+    "100256002": {
+      "metaId": "69a15fabebc6ba57ea226e3e",
+      "name": "Multiplying Kuriboh!",
+      "setNumber": "LOCH-JP002"
+    },
+    "100256003": {
+      "metaId": "69a15fe60c46bf1a132b10ec",
+      "name": "Dark Magical Curtain",
+      "setNumber": "LOCH-JP003"
+    },
+    "100256004": {
+      "metaId": "69a160098f8cbf98a4c80878",
+      "name": "Favorite HERO Shining Flare Wingman",
+      "setNumber": "LOCH-JP004"
+    },
+    "100256005": {
+      "metaId": "69a1602d30626f425bb8c799",
+      "name": "Favorite HERO Flame Wingman",
+      "setNumber": "LOCH-JP005"
+    },
+    "100256006": {
+      "metaId": "69a1605495af605565618e5a",
+      "name": "Winged Kuriboh Sabatiel LV10",
+      "setNumber": "LOCH-JP006"
+    },
+    "100256007": {
+      "metaId": "69a160773a5983362c9b58e5",
+      "name": "Stardust Dragon - Victim Sanctuary",
+      "setNumber": "LOCH-JP007"
+    },
+    "100256008": {
+      "metaId": "69a160a671d7e2f8145eb5ed",
+      "name": "Starjunk Synchron",
+      "setNumber": "LOCH-JP008"
+    },
+    "100256009": {
+      "metaId": "69a160ca38bd7bd36297d9f9",
+      "name": "Synchro Emergency",
+      "setNumber": "LOCH-JP009"
+    },
+    "100256010": {
+      "metaId": "69a160ed8f8cbf98a4c80a19",
+      "name": "Number 39: Utopia the Envoy of Light",
+      "setNumber": "LOCH-JP010"
+    },
+    "100256011": {
+      "metaId": "69a160f7ccd9119f5dbe826e",
+      "name": "Gagaga Magician - Gagaga Magic",
+      "setNumber": "LOCH-JP011"
+    },
+    "100256012": {
+      "metaId": "69a160ffc064194636d37858",
+      "name": "Gagaga Girl - Cell Phone Subtraction",
+      "setNumber": "LOCH-JP012"
+    },
+    "100256013": {
+      "metaId": "69a1610f30626f425bb8ca0c",
+      "name": "Odd-Eyes Pendulum Dragon of the Four Heavenly Dragons",
+      "setNumber": "LOCH-JP013"
+    },
+    "100256014": {
+      "metaId": "69a16118d8c34705d06d9ac2",
+      "name": "Horoscope Sorcerer, the Stargazer Magician",
+      "setNumber": "LOCH-JP014"
+    },
+    "100256015": {
+      "metaId": "69a161276dd1798949025a58",
+      "name": "Astrograph Sorcerer, the Star Magician",
+      "setNumber": "LOCH-JP015"
+    },
+    "100256016": {
+      "metaId": "69a1612fb4acf1e9c446ef82",
+      "name": "Decode Talker Integration",
+      "setNumber": "LOCH-JP016"
+    },
+    "100256017": {
+      "metaId": "69a16138211547f9667024b1",
+      "name": "Cyberse Code Magician",
+      "setNumber": "LOCH-JP017"
+    },
+    "100256018": {
+      "metaId": "69a161413a5983362c9b5a61",
+      "name": "Cyberse Contract Witch",
+      "setNumber": "LOCH-JP018"
+    },
+    "100256019": {
+      "metaId": "694875e734407dc060a04be8",
+      "name": "Underworld Circle",
+      "setNumber": "LOCH-JP019"
+    },
+    "100256020": {
+      "metaId": "699317801e1e98f458b6ce8e",
+      "name": "Orichalcos Sword of Sealing",
+      "setNumber": "LOCH-JP020"
+    },
+    "100256021": {
+      "metaId": "699317db67288245fc68bb0c",
+      "name": "Rainbow Bridge Bifrost",
+      "setNumber": "LOCH-JP021"
+    },
+    "100256022": {
+      "metaId": "699318271e1e98f458b6cfe2",
+      "name": "Malefic Force",
+      "setNumber": "LOCH-JP022"
+    },
+    "100256023": {
+      "metaId": "69931b371c07d7474854db33",
+      "name": "Malefic Paradigm Shift",
+      "setNumber": "LOCH-JP023"
+    },
+    "100256024": {
+      "metaId": "69931761a8ccf2a075b2af3a",
+      "name": "Assault Blackwing - Kusanagi the Gathering Storm",
+      "setNumber": "LOCH-JP024"
+    },
+    "100256025": {
+      "metaId": "69486dc17fff721c2d2ab34f",
+      "name": "Master Spirit Tech Force - Pendulum Ruler",
+      "setNumber": "LOCH-JP025"
+    },
+    "100201001": {
+      "metaId": "698451cccd341e76339cc0af",
+      "name": "W:P Fancy Ball",
+      "setNumber": "LOCH-JP026"
+    },
+    "65741786": {
+      "metaId": "698451154580b534f0889ca7",
+      "name": "I:P Masquerena",
+      "setNumber": "LOCH-JP027"
+    },
+    "29301450": {
+      "metaId": "69845124ae09650287fba880",
+      "name": "S:P Little Knight",
+      "setNumber": "LOCH-JP028"
+    },
+    "21522601": {
+      "metaId": "69a16736c6b06f7caddbd753",
+      "name": "Witchcrafter Madame Verre",
+      "setNumber": "LOCH-JP029"
+    },
+    "72270339": {
+      "metaId": "6983b335952466cf6d37a3c0",
+      "name": "Diabellstar the Black Witch",
+      "setNumber": "LOCH-JP030"
+    },
+    "14391625": {
+      "metaId": "699319c8ce44cd72ea36fc97",
+      "name": "Visas Samsara",
+      "setNumber": "LOCH-JP031"
+    },
+    "94677445": {
+      "metaId": "699319f6946fea90719975f4",
+      "name": "Ib the World Chalice Justiciar",
+      "setNumber": "LOCH-JP032"
+    },
+    "90448279": {
+      "metaId": "69a16760c6f106084c30adba",
+      "name": "Divine Arsenal AA-ZEUS - Sky Thunder",
+      "setNumber": "LOCH-JP033"
+    },
+    "59242457": {
+      "metaId": "69931a224f241633125ed353",
+      "name": "Exosisters Magnifica",
+      "setNumber": "LOCH-JP034"
+    },
+    "21887175": {
+      "metaId": "69931a4fbd8db41d05ddda9c",
+      "name": "Mekk-Knight Crusadia Avramax",
+      "setNumber": "LOCH-JP035"
+    },
+    "4731783": {
+      "metaId": "6995c2dfabf90aebae0850ed",
+      "name": "A Bao A Qu, the Lightless Shadow",
+      "setNumber": "LOCH-JP036"
+    },
+    "63166095": {
+      "metaId": "697a0b736e58fb3757c39a26",
+      "name": "Sky Striker Mobilize - Engage!",
+      "setNumber": "LOCH-JP037"
+    },
+    "54693926": {
+      "metaId": "69931a7d866e8d87c0fa0c1d",
+      "name": "Dark Ruler No More",
+      "setNumber": "LOCH-JP038"
+    },
+    "15771991": {
+      "metaId": "60c2b3aba0e24f2d54a52536",
+      "name": "Guardian Slime",
+      "setNumber": "LOCH-JP039"
+    },
+    "2563463": {
+      "metaId": "6265e6d53ecc89b0e4f3052d",
+      "name": "Wandering Gryphon Rider",
+      "setNumber": "LOCH-JP040"
+    },
+    "45659520": {
+      "metaId": "60c2b3aaa0e24f2d54a52030",
+      "name": "Evil HERO Sinister Necrom",
+      "setNumber": "LOCH-JP041"
+    },
+    "60764609": {
+      "metaId": "65ef2abfa96c38cc7f2002c9",
+      "name": "Fiendsmith Engraver",
+      "setNumber": "LOCH-JP042"
+    },
+    "87209160": {
+      "metaId": "60c2b3aca0e24f2d54a53b76",
+      "name": "Tri-Brigade Fraktall",
+      "setNumber": "LOCH-JP043"
+    },
+    "16428514": {
+      "metaId": "60c2b3aca0e24f2d54a5382a",
+      "name": "Subterror Guru",
+      "setNumber": "LOCH-JP044"
+    },
+    "28803166": {
+      "metaId": "669a5f474d5f5fd7b2abaed4",
+      "name": "Lacrima the Crimson Tears",
+      "setNumber": "LOCH-JP045"
+    },
+    "84192580": {
+      "metaId": "661bce466ec87b0f4bd79a25",
+      "name": "Mulcharmy Purulia",
+      "setNumber": "LOCH-JP046"
+    },
+    "42141493": {
+      "metaId": "668e7b81f41bde5827d1a22d",
+      "name": "Mulcharmy Fuwalos",
+      "setNumber": "LOCH-JP047"
+    },
+    "87126721": {
+      "metaId": "6713a5e9bc976516c1d27e40",
+      "name": "Mulcharmy Meowls",
+      "setNumber": "LOCH-JP048"
+    },
+    "48017189": {
+      "metaId": "652fcfec6dd9a84bf7678315",
+      "name": "EM:P Meowmine",
+      "setNumber": "LOCH-JP049"
+    },
+    "25148255": {
+      "metaId": "60c2b3aba0e24f2d54a527de",
+      "name": "Junk Anchor",
+      "setNumber": "LOCH-JP050"
+    },
+    "20357457": {
+      "metaId": "655728058e692d8e1ffd8ee8",
+      "name": "Pillar of the Future - Cyanos",
+      "setNumber": "LOCH-JP051"
+    },
+    "88753594": {
+      "metaId": "60c2b3aba0e24f2d54a52a0e",
+      "name": "Lunalight Sabre Dancer",
+      "setNumber": "LOCH-JP052"
+    },
+    "73452089": {
+      "metaId": "60c2b3aaa0e24f2d54a51bf3",
+      "name": "Dark Cavalry",
+      "setNumber": "LOCH-JP053"
+    },
+    "39402797": {
+      "metaId": "60c2b3aca0e24f2d54a53bb6",
+      "name": "Trident Dragion",
+      "setNumber": "LOCH-JP054"
+    },
+    "63265554": {
+      "metaId": "62e0316e5f0fd2a1fe373774",
+      "name": "Power Tool Braver Dragon",
+      "setNumber": "LOCH-JP055"
+    },
+    "45742626": {
+      "metaId": "60c2b3aca0e24f2d54a53113",
+      "name": "Pilgrim Reaper",
+      "setNumber": "LOCH-JP056"
+    },
+    "45852939": {
+      "metaId": "6704df48a250ffc82814b093",
+      "name": "Eclipse Twins",
+      "setNumber": "LOCH-JP057"
+    },
+    "42752141": {
+      "metaId": "60c2b3aaa0e24f2d54a5206a",
+      "name": "Evolzar Dolkka",
+      "setNumber": "LOCH-JP058"
+    },
+    "11398059": {
+      "metaId": "60c2b3aba0e24f2d54a5286b",
+      "name": "King of the Feral Imps",
+      "setNumber": "LOCH-JP059"
+    },
+    "32530043": {
+      "metaId": "60c2b3aaa0e24f2d54a522c4",
+      "name": "Gallant Granite",
+      "setNumber": "LOCH-JP060"
+    },
+    "90809975": {
+      "metaId": "60c2b3aca0e24f2d54a53af3",
+      "name": "Toadally Awesome",
+      "setNumber": "LOCH-JP061"
+    },
+    "54191698": {
+      "metaId": "60c2b3aba0e24f2d54a52e95",
+      "name": "Number 29: Mannequin Cat",
+      "setNumber": "LOCH-JP062"
+    },
+    "52698008": {
+      "metaId": "60c2b3aaa0e24f2d54a51b35",
+      "name": "Cyberse Wicckid",
+      "setNumber": "LOCH-JP063"
+    },
+    "40216089": {
+      "metaId": "60c2b3aca0e24f2d54a5312c",
+      "name": "Platinum Gadget",
+      "setNumber": "LOCH-JP064"
+    },
+    "61668670": {
+      "metaId": "62de1eaae9066c4257aa951d",
+      "name": "G Golem Crystal Heart",
+      "setNumber": "LOCH-JP065"
+    },
+    "49867899": {
+      "metaId": "65ef2ba586dad12f01d138a8",
+      "name": "Fiendsmith's Sequence",
+      "setNumber": "LOCH-JP066"
+    },
+    "46411259": {
+      "metaId": "60c2b3aba0e24f2d54a52c52",
+      "name": "Metamorphosis",
+      "setNumber": "LOCH-JP067"
+    },
+    "93600443": {
+      "metaId": "60c2b3aba0e24f2d54a52b5d",
+      "name": "Mask Change II",
+      "setNumber": "LOCH-JP068"
+    },
+    "71344451": {
+      "metaId": "60c2b3aca0e24f2d54a5365e",
+      "name": "Slash Draw",
+      "setNumber": "LOCH-JP069"
+    },
+    "78665705": {
+      "metaId": "60c2b3a9a0e24f2d54a51488",
+      "name": "Ancient Chant",
+      "setNumber": "LOCH-JP070"
+    },
+    "51697825": {
+      "metaId": "60c2b3aba0e24f2d54a527a3",
+      "name": "Jack-In-The-Hand",
+      "setNumber": "LOCH-JP071"
+    },
+    "3285551": {
+      "metaId": "61ef0edf39cb086ec8b2b51e",
+      "name": "Rite of Aramesir",
+      "setNumber": "LOCH-JP072"
+    },
+    "98567237": {
+      "metaId": "65ef2bc786dad12f01d13dc6",
+      "name": "Fiendsmith's Tract",
+      "setNumber": "LOCH-JP073"
+    },
+    "58570206": {
+      "metaId": "66e55ddd21d86b033a2cc34d",
+      "name": "Heavy Polymerization",
+      "setNumber": "LOCH-JP074"
+    },
+    "35480699": {
+      "metaId": "60c2b3a9a0e24f2d54a517b6",
+      "name": "Book of Eclipse",
+      "setNumber": "LOCH-JP075"
+    },
+    "5253985": {
+      "metaId": "60c2b3aca0e24f2d54a536b5",
+      "name": "Soul Crossing",
+      "setNumber": "LOCH-JP076"
+    },
+    "80845034": {
+      "metaId": "64a64fc26cee34962d2172f3",
+      "name": "WANTED: Seeker of Sinful Spoils",
+      "setNumber": "LOCH-JP077"
+    },
+    "21862633": {
+      "metaId": "6126b426f9d784006595dd66",
+      "name": "Piercing the Darkness",
+      "setNumber": "LOCH-JP078"
+    },
+    "90846359": {
+      "metaId": "60c2b3aca0e24f2d54a533e4",
+      "name": "Rivalry of Warlords",
+      "setNumber": "LOCH-JP079"
+    },
+    "23626223": {
+      "metaId": "60c2b3aca0e24f2d54a537c9",
+      "name": "Statue of Anguish Pattern",
+      "setNumber": "LOCH-JP080"
+    }
+  }
+}

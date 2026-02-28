@@ -2,6 +2,21 @@
 
 > 从 DEVELOPMENT.md 拆分，记录各版本的变更和待处理事项。
 
+## v1.5.29（2026-02-28）— LOCH 散包 GMR-OF 概率修正：1/2160
+- **修正 `ofTypeOdds` 权重**：从 `{PSER-OF:6, UR-OF:17, GMR-OF:1}`（总24）改为 `{PSER-OF:36, UR-OF:107, GMR-OF:1}`（总144）
+- GMR-OF 是 6 箱（6×24盒×15包 = 2160 包）才出 1 张，正确概率为 **1/2160 ≈ 0.046%**
+- 修正前 GMR-OF 概率 = 1/15 × 1/24 = 1/360 ≈ 0.28%（偏高约 6 倍）
+- 修正后 GMR-OF 概率 = 1/15 × 1/144 = **1/2160 ≈ 0.046%** ✅
+- 以 6 箱 = 144 个 OF 位为基数：PSER-OF = 36个(25%)，UR-OF = 107个(74.3%)，GMR-OF = 1个(0.69%)
+- **涉及修改文件**：`packs.json`、`game.js`、`CHANGELOG.md`
+
+## v1.5.28（2026-02-28）— LOCH 散包4号位修复：与整盒概率完全一致
+- **修复散包4号位逻辑**：不再使用 `versionOdds` 权重随机，改为复用整盒分布概率
+- 散包4号位现在按 `boxSlot4Distribution`（OF:1, PSER:1, UTR:2, CR:2, SER:9）比例概率决定版本类型
+- 命中 OF 后再按 `ofTypeOdds` 决定 OF 子类型
+- 最后从拥有该版本的卡池中随机选一张卡，确保散包和整盒的出货概率完全一致
+- **涉及修改文件**：`game.js`、`packs.json`、`CHANGELOG.md`
+
 ## v1.5.27（2026-02-28）— 版本号统一管理 + 更新日志补全
 - 新增全局版本号变量 `APP_VERSION`，所有资源缓存参数、页脚版本号、console 输出统一从此变量读取
 - 更新版本时只需修改 `index.html` 中 `window.APP_VERSION = 'x.x.x'` 这一行
@@ -152,7 +167,7 @@
 - 数据结构：统一使用 `rarityVersions` 数组（已移除冗余的 `rarityCode` 字段）
 - **全局稀有度定义**：`data/common/rarities.json`，12种稀有度完整定义
 - 12种稀有度 UI 支持（含破框版本 UR-OF / PSER-OF / GMR-OF）
-- **待用户确认**：`versionOdds` 各稀有度的实际概率权重
+- **已确认**：散包4号位复用整盒概率分布（`boxSlot4Distribution` + `ofTypeOdds`），不使用 `versionOdds`，概率与整盒完全一致
 
 ## 🔴 KONAMI 卡图代理无法获取真实卡图（挂起）
 - 根本原因：KONAMI Imperva WAF 要求 JS 挑战验证，服务端代理无法通过

@@ -1170,6 +1170,12 @@ async function openMultiPacks(count) {
         allCards = boxResult.allCards;
         boxHasPSER = boxResult.boxHasPSER;
         console.log(`📦 整盒抽卡完成：${allCards.length}张卡，PSER=${boxHasPSER ? '是' : '否'}`);
+    } else if (scheme === 'loch_special' && count === ((currentPack && currentPack.packsPerBox) || 15)) {
+        // LOCH整盒方案：15包4号位按封入规则分配 1OF+1PSER+2UTR+2CR+9SER
+        const boxResult = drawCardsBox_LOCH(currentPack, currentPackCards);
+        allCards = boxResult.allCards;
+        boxHasPSER = boxResult.boxHasPSER;
+        console.log(`📦 LOCH整盒抽卡完成：${allCards.length}张卡`);
     } else {
         // 非OCG方案或非整盒：沿用逐包抽卡
         for (let i = 0; i < count; i++) {
@@ -1231,6 +1237,7 @@ async function openMultiPacks(count) {
  * 
  * 【方案说明】
  * - ocg_default：OCG 默认方案 → 4张N卡 + 1张非N稀有卡，同包编号不重复，支持多版本稀有度随机
+ * - loch_special：LOCH 专用方案 → 1SR+1SR+1UR+1全卡池随机，无N/R，4卡位不出完全相同的卡
  * - legacy：旧版方案 → 所有位置按 rarityRates 权重随机稀有度（兼容 TCG 和未配置的卡包）
  */
 function drawCards(pack, cards) {
@@ -1238,6 +1245,9 @@ function drawCards(pack, cards) {
 
     if (scheme === 'ocg_default') {
         return drawCards_OCG(pack, cards);
+    }
+    if (scheme === 'loch_special') {
+        return drawCards_LOCH(pack, cards);
     }
     return drawCards_Legacy(pack, cards);
 }
@@ -1620,6 +1630,329 @@ function drawCardsBox_OCG(pack, cards) {
     }
     
     return { allCards: allCards, boxHasPSER: boxHasPSER };
+}
+
+// ============================================
+// LOCH 专用方案：全稀有包（38UR+42SR），4卡位特殊规则
+// ============================================
+
+/**
+ * LOCH 专用单包抽卡方案
+ * 
+ * 【规则】
+ * - 1号位：从42种SR中随机1张，必出SR（基础稀有度）
+ * - 2号位：从42种SR中随机1张，必出SR（基础稀有度），与1号位不同卡
+ * - 3号位：从38种UR中随机1张，必出UR（基础稀有度）
+ * - 4号位：从全80种中随机1张，按 versionOdds 概率随机决定版本
+ * - 去重规则：4个卡位不得出现完全相同的卡（同编号不同稀有度版本 ≠ 相同）
+ * 
+ * 「完全相同」的定义：编号相同 且 稀有度版本相同
+ */
+function drawCards_LOCH(pack, cards) {
+    const results = [];
+    // usedCards 记录已选的 "编号+稀有度" 组合，用于去重
+    const usedCards = new Set();
+
+    // 获取多版本稀有度概率配置
+    const modeConfig = getCurrentModeConfig();
+    const versionOdds = pack.versionOdds || modeConfig.defaultVersionOdds || {};
+
+    // --- 分池：SR池（基础稀有度为SR的42种）和UR池（基础稀有度为UR的38种）---
+    const srPool = [];
+    const urPool = [];
+    cards.forEach(function(card) {
+        const baseRarity = (card.rarityVersions || ['N'])[0];
+        if (baseRarity === 'SR') {
+            srPool.push(card);
+        } else if (baseRarity === 'UR') {
+            urPool.push(card);
+        }
+    });
+
+    // 生成唯一标识：编号 + 稀有度版本
+    function cardKey(setNumber, rarity) {
+        return setNumber + '|' + rarity;
+    }
+
+    // 从池子中随机选一张，排除 usedCards 中已有的 "编号+稀有度" 组合
+    function pickFromPool(pool, forcedRarity) {
+        const available = pool.filter(function(card) {
+            const sn = card.setNumber || card.id;
+            return !usedCards.has(cardKey(sn, forcedRarity));
+        });
+        if (available.length === 0) return null;
+        const picked = available[Math.floor(Math.random() * available.length)];
+        return { ...picked, rarityVersions: [forcedRarity] };
+    }
+
+    // --- 1号位：SR池随机1张，必出SR ---
+    const slot1 = pickFromPool(srPool, 'SR');
+    if (slot1) {
+        usedCards.add(cardKey(slot1.setNumber || slot1.id, 'SR'));
+        results.push(slot1);
+    }
+
+    // --- 2号位：SR池随机1张，必出SR，不与1号位完全相同 ---
+    const slot2 = pickFromPool(srPool, 'SR');
+    if (slot2) {
+        usedCards.add(cardKey(slot2.setNumber || slot2.id, 'SR'));
+        results.push(slot2);
+    }
+
+    // --- 3号位：UR池随机1张，必出UR ---
+    const slot3 = pickFromPool(urPool, 'UR');
+    if (slot3) {
+        usedCards.add(cardKey(slot3.setNumber || slot3.id, 'UR'));
+        results.push(slot3);
+    }
+
+    // --- 4号位：按整盒分布概率决定版本类型，再从对应卡池随机选卡 ---
+    // 散包4号位与整盒概率完全一致：
+    //   先按 boxSlot4Distribution (OF:1, PSER:1, UTR:2, CR:2, SER:9) 概率决定版本
+    //   如果命中OF，再按 ofTypeOdds (PSER-OF:36, UR-OF:107, GMR-OF:1) 决定OF子类型
+    //   最后从拥有该版本的卡池中随机选一张卡
+    //   GMR-OF概率 = 1/15 × 1/144 = 1/2160（6箱出1张）
+    const boxSlot4Dist = pack.boxSlot4Distribution || { OF: 1, PSER: 1, UTR: 2, CR: 2, SER: 9 };
+    const ofTypeOdds = pack.ofTypeOdds || { 'PSER-OF': 36, 'UR-OF': 107, 'GMR-OF': 1 };
+
+    // 步骤1：按 boxSlot4Distribution 比例概率选择版本类型
+    const slot4Types = Object.keys(boxSlot4Dist).filter(function(k) { return k !== '_说明'; });
+    const slot4Weights = slot4Types.map(function(t) { return boxSlot4Dist[t]; });
+    const slot4TotalWeight = slot4Weights.reduce(function(s, w) { return s + w; }, 0);
+
+    function rollSlot4Rarity() {
+        var roll = Math.random() * slot4TotalWeight;
+        for (var i = 0; i < slot4Types.length; i++) {
+            roll -= slot4Weights[i];
+            if (roll <= 0) return slot4Types[i];
+        }
+        return slot4Types[slot4Types.length - 1]; // 兜底
+    }
+
+    var targetRarity = rollSlot4Rarity();
+
+    // 步骤2：如果命中OF，按 ofTypeOdds 概率决定具体OF子类型
+    if (targetRarity === 'OF') {
+        var ofTypes = Object.keys(ofTypeOdds).filter(function(k) { return k !== '_说明'; });
+        var ofWeights = ofTypes.map(function(t) { return ofTypeOdds[t]; });
+        var ofTotal = ofWeights.reduce(function(s, w) { return s + w; }, 0);
+        var ofRoll = Math.random() * ofTotal;
+        targetRarity = ofTypes[ofTypes.length - 1]; // 兜底
+        for (var i = 0; i < ofTypes.length; i++) {
+            ofRoll -= ofWeights[i];
+            if (ofRoll <= 0) {
+                targetRarity = ofTypes[i];
+                break;
+            }
+        }
+    }
+
+    // 步骤3：从拥有该版本的卡中随机选一张（排除包内重复）
+    var candidates = cards.filter(function(card) {
+        var versions = card.rarityVersions || ['N'];
+        return versions.indexOf(targetRarity) >= 0;
+    });
+    var available = candidates.filter(function(card) {
+        var sn = card.setNumber || card.id;
+        return !usedCards.has(cardKey(sn, targetRarity));
+    });
+
+    let slot4 = null;
+    if (available.length > 0) {
+        var picked = available[Math.floor(Math.random() * available.length)];
+        slot4 = { ...picked, rarityVersions: [targetRarity] };
+    } else if (candidates.length > 0) {
+        // 兜底：忽略包内去重
+        var picked = candidates[Math.floor(Math.random() * candidates.length)];
+        slot4 = { ...picked, rarityVersions: [targetRarity] };
+    } else {
+        // 极端兜底：全卡池SER
+        var picked = cards[Math.floor(Math.random() * cards.length)];
+        slot4 = { ...picked, rarityVersions: ['SER'] };
+    }
+    results.push(slot4);
+
+    // --- 按稀有度排序（低→高，营造惊喜感）---
+    results.sort(function(a, b) {
+        return (RARITY_ORDER_ASC[(a.rarityVersions || ['N'])[0]] || 0) -
+               (RARITY_ORDER_ASC[(b.rarityVersions || ['N'])[0]] || 0);
+    });
+
+    return results;
+}
+
+/**
+ * LOCH 专用整盒抽卡方案（15包）
+ * 
+ * 【规则】
+ * - 1-3号位：每包与散包相同（1号位SR，2号位SR，3号位UR）
+ * - 4号位：15包按 boxSlot4Distribution 强制分配稀有度
+ *   1张OF + 1张PSER + 2张UTR + 2张CR + 9张SER = 15包
+ * - OF卡按 ofTypeOdds 概率决定具体OF类型（PSER-OF / UR-OF / GMR-OF）
+ * - 4号位的15张卡编号不重复（同编号不同版本不算重复）
+ * - 每包内4个卡位不出完全相同的卡（同编号不同版本不算重复）
+ */
+function drawCardsBox_LOCH(pack, cards) {
+    const allCards = [];
+
+    // 获取配置
+    const modeConfig = getCurrentModeConfig();
+    const versionOdds = pack.versionOdds || modeConfig.defaultVersionOdds || {};
+    const boxSlot4Dist = pack.boxSlot4Distribution || { OF: 1, PSER: 1, UTR: 2, CR: 2, SER: 9 };
+    const ofTypeOdds = pack.ofTypeOdds || { 'PSER-OF': 36, 'UR-OF': 107, 'GMR-OF': 1 };
+
+    // --- 分池 ---
+    const srPool = [];
+    const urPool = [];
+    cards.forEach(function(card) {
+        const baseRarity = (card.rarityVersions || ['N'])[0];
+        if (baseRarity === 'SR') srPool.push(card);
+        else if (baseRarity === 'UR') urPool.push(card);
+    });
+
+    // --- 步骤1：生成15包4号位的稀有度分配列表 ---
+    const slot4Rarities = [];
+
+    // OF卡位：按ofTypeOdds概率决定具体OF类型
+    for (let i = 0; i < (boxSlot4Dist.OF || 0); i++) {
+        const ofTypes = Object.keys(ofTypeOdds).filter(function(k) { return k !== '_说明'; });
+        const ofWeights = ofTypes.map(function(t) { return ofTypeOdds[t]; });
+        const ofTotal = ofWeights.reduce(function(s, w) { return s + w; }, 0);
+        let ofRoll = Math.random() * ofTotal;
+        let pickedOF = ofTypes[ofTypes.length - 1]; // 兜底
+        for (let j = 0; j < ofTypes.length; j++) {
+            ofRoll -= ofWeights[j];
+            if (ofRoll <= 0) {
+                pickedOF = ofTypes[j];
+                break;
+            }
+        }
+        slot4Rarities.push(pickedOF);
+    }
+    // PSER
+    for (let i = 0; i < (boxSlot4Dist.PSER || 0); i++) {
+        slot4Rarities.push('PSER');
+    }
+    // UTR
+    for (let i = 0; i < (boxSlot4Dist.UTR || 0); i++) {
+        slot4Rarities.push('UTR');
+    }
+    // CR
+    for (let i = 0; i < (boxSlot4Dist.CR || 0); i++) {
+        slot4Rarities.push('CR');
+    }
+    // SER
+    for (let i = 0; i < (boxSlot4Dist.SER || 0); i++) {
+        slot4Rarities.push('SER');
+    }
+
+    // 打乱4号位的稀有度分配顺序
+    const shuffledSlot4 = shuffleArray([...slot4Rarities]);
+
+    // 4号位已用编号集合（同编号不重复，不同版本不算重复）
+    const usedSlot4SetNumbers = new Set();
+
+    // 辅助函数：生成唯一标识
+    function cardKey(setNumber, rarity) {
+        return setNumber + '|' + rarity;
+    }
+
+    // 辅助函数：找到rarityVersions包含目标稀有度的卡
+    function findCardsWithRarity(targetRarity) {
+        return cards.filter(function(card) {
+            const versions = card.rarityVersions || ['N'];
+            return versions.indexOf(targetRarity) >= 0;
+        });
+    }
+
+    // --- 步骤2：逐包生成卡片 ---
+    for (let packIdx = 0; packIdx < shuffledSlot4.length; packIdx++) {
+        const packCards = [];
+        // 当前包内已用的 "编号+稀有度" 组合
+        const usedInPack = new Set();
+
+        // 从池子中随机选一张（排除包内重复）
+        function pickFromPool(pool, forcedRarity) {
+            const available = pool.filter(function(card) {
+                const sn = card.setNumber || card.id;
+                return !usedInPack.has(cardKey(sn, forcedRarity));
+            });
+            if (available.length === 0) return null;
+            const picked = available[Math.floor(Math.random() * available.length)];
+            return { ...picked, rarityVersions: [forcedRarity] };
+        }
+
+        // --- 1号位：SR ---
+        const slot1 = pickFromPool(srPool, 'SR');
+        if (slot1) {
+            usedInPack.add(cardKey(slot1.setNumber || slot1.id, 'SR'));
+            packCards.push(slot1);
+        }
+
+        // --- 2号位：SR ---
+        const slot2 = pickFromPool(srPool, 'SR');
+        if (slot2) {
+            usedInPack.add(cardKey(slot2.setNumber || slot2.id, 'SR'));
+            packCards.push(slot2);
+        }
+
+        // --- 3号位：UR ---
+        const slot3 = pickFromPool(urPool, 'UR');
+        if (slot3) {
+            usedInPack.add(cardKey(slot3.setNumber || slot3.id, 'UR'));
+            packCards.push(slot3);
+        }
+
+        // --- 4号位：按整盒分配的目标稀有度 ---
+        const targetRarity = shuffledSlot4[packIdx];
+        let slot4 = null;
+
+        // 找所有 rarityVersions 包含该目标稀有度的卡
+        const candidates = findCardsWithRarity(targetRarity);
+        // 过滤掉：1) 包内已有完全相同的卡 2) 整盒4号位已用的编号
+        const available = candidates.filter(function(card) {
+            const sn = card.setNumber || card.id;
+            return !usedInPack.has(cardKey(sn, targetRarity)) &&
+                   !usedSlot4SetNumbers.has(sn);
+        });
+
+        if (available.length > 0) {
+            const picked = available[Math.floor(Math.random() * available.length)];
+            slot4 = { ...picked, rarityVersions: [targetRarity] };
+        } else if (candidates.length > 0) {
+            // 放宽条件：忽略整盒编号去重限制（极低概率兜底）
+            const fallback = candidates.filter(function(card) {
+                const sn = card.setNumber || card.id;
+                return !usedInPack.has(cardKey(sn, targetRarity));
+            });
+            if (fallback.length > 0) {
+                const picked = fallback[Math.floor(Math.random() * fallback.length)];
+                slot4 = { ...picked, rarityVersions: [targetRarity] };
+            } else {
+                // 极端兜底
+                const picked = candidates[Math.floor(Math.random() * candidates.length)];
+                slot4 = { ...picked, rarityVersions: [targetRarity] };
+            }
+        }
+
+        if (slot4) {
+            const sn = slot4.setNumber || slot4.id;
+            usedSlot4SetNumbers.add(sn);
+            usedInPack.add(cardKey(sn, targetRarity));
+            packCards.push(slot4);
+        }
+
+        // --- 按稀有度排序（低→高）---
+        packCards.sort(function(a, b) {
+            return (RARITY_ORDER_ASC[(a.rarityVersions || ['N'])[0]] || 0) -
+                   (RARITY_ORDER_ASC[(b.rarityVersions || ['N'])[0]] || 0);
+        });
+
+        allCards.push(...packCards);
+    }
+
+    // 返回格式与 drawCardsBox_OCG 一致
+    return { allCards: allCards, boxHasPSER: false };
 }
 
 /**

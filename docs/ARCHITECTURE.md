@@ -12,7 +12,8 @@
 | **卡牌收录** | `data/ocg/cards/*.json` | 每个卡包独立文件，含 cardIds + cardData |
 | **卡牌详情** | `cardData` 节点（本地） | 由 `build_pack_data.py` 从 `cards.json` 提取注入 |
 | **中文名** | `cardData.cn_name`（本地） | 不再调用 YGOCDB API |
-| **卡图** | YGOCDB CDN (`cdn.233.momobako.com`) | 日文版卡图（仅卡图从 CDN 加载） |
+| **卡图** | YGOCDB CDN (`cdn.233.momobako.com`) | 日文版卡图（默认图源），新卡包可通过 `imageMapFile` 切换到 S3 CDN |
+| **卡图映射** | `data/ocg/loch_image_map.json`（可选） | 卡密→S3 CDN objectId 映射表，解决新卡包图源更新不及时问题（v1.5.28+） |
 | **稀有度** | `cardIds[].rarityVersions` | 手动配置在卡包文件中，定义参见 `data/common/rarities.json` |
 | **API 回退** | YGOProDeck + YGOCDB | 仅当卡包未构建本地数据时才调用 |
 

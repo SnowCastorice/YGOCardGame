@@ -726,7 +726,24 @@ async function getOCGCardSetData(packConfig, onProgress) {
     if (hasLocalData) {
         // 🎉 本地数据模式：零 API 调用，直接构建卡牌信息
         console.log(`📦 [本地数据] 加载 OCG 卡包 [${packConfig.packName}]，共 ${cardIds.length} 张卡`);
-        const cards = buildOCGCardsFromLocalData(packConfig);
+
+        // 加载卡图映射表（如果配置了 imageMapFile，用于替代默认 CDN 图源）
+        let imageMap = null;
+        if (packConfig.imageMapFile) {
+            try {
+                const mapUrl = `data/ocg/${packConfig.imageMapFile}`;
+                const mapResp = await fetch(mapUrl);
+                if (mapResp.ok) {
+                    const mapData = await mapResp.json();
+                    imageMap = mapData.cards || null;
+                    console.log(`🗺️ 已加载卡图映射表 [${packConfig.imageMapFile}]，共 ${Object.keys(imageMap).length} 条`);
+                }
+            } catch (e) {
+                console.warn(`⚠️ 卡图映射表 [${packConfig.imageMapFile}] 加载失败，使用默认图源:`, e);
+            }
+        }
+
+        const cards = buildOCGCardsFromLocalData(packConfig, imageMap);
 
         // 构建辅助包卡池（如果存在）
         const supplementCards = buildSupplementCardsFromLocalData(packConfig);
@@ -752,6 +769,28 @@ async function getOCGCardSetData(packConfig, onProgress) {
 }
 
 /**
+ * 获取卡图URL —— 优先使用映射表（S3 CDN），回退到默认 YGOCDB CDN
+ * 
+ * @param {number|string} cardId - 卡片密码（password）
+ * @param {object|null} imageMap - 卡图映射表（password → {metaId, name}），null 时使用默认图源
+ * @param {string} size - 图片尺寸：'small' = 列表用（200px）, 'large' = 大图（420px）
+ * @returns {string} 图片URL
+ */
+function getCardImageUrl(cardId, imageMap, size) {
+    const pw = String(cardId);
+    // 如果映射表中有该卡的 metaId，使用 YugiohMeta S3 CDN
+    if (imageMap && imageMap[pw] && imageMap[pw].metaId) {
+        const metaId = imageMap[pw].metaId;
+        const sizeSuffix = size === 'large'
+            ? API_CONFIG.YUGIOHMETA.SIZE_LARGE   // _w420
+            : API_CONFIG.YUGIOHMETA.SIZE_SMALL;  // _w200
+        return `${API_CONFIG.YUGIOHMETA.CDN_BASE}/${metaId}${sizeSuffix}.webp`;
+    }
+    // 回退到默认 YGOCDB CDN（百鸽日文卡图）
+    return `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardId}.jpg`;
+}
+
+/**
  * 从本地 cardData 构建 OCG 卡牌数组（零 API 调用）
  * 
  * 将 cardIds 中每张卡的 cardData 节点转换为网页统一格式
@@ -760,7 +799,7 @@ async function getOCGCardSetData(packConfig, onProgress) {
  * @param {object} packConfig - 卡包配置
  * @returns {Array} 统一格式的卡牌数组
  */
-function buildOCGCardsFromLocalData(packConfig) {
+function buildOCGCardsFromLocalData(packConfig, imageMap) {
     const rarityNames = {
         'PSER': 'Prismatic Secret Rare', 'UTR': 'Ultimate Rare',
         'SER': 'Secret Rare', 'UR': 'Ultra Rare', 'SR': 'Super Rare',
@@ -823,9 +862,9 @@ function buildOCGCardsFromLocalData(packConfig) {
             rarityVersions: rarityVersions,
             cardSetCode: typeof setNumber === 'string' ? setNumber : (packCode + '-JP' + String(idx).padStart(3, '0')),
             setNumber: idx,
-            // OCG 使用日文版卡图（YGOCDB CDN）
-            imageUrl: `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardDef.id}.jpg`,
-            imageLargeUrl: `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardDef.id}.jpg`,
+            // 卡图URL：优先使用映射表（S3 CDN），回退到默认 YGOCDB CDN
+            imageUrl: getCardImageUrl(cardDef.id, imageMap, 'small'),
+            imageLargeUrl: getCardImageUrl(cardDef.id, imageMap, 'large'),
             dataSource: 'local'
         });
     });
