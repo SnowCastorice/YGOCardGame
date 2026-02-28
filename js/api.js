@@ -736,7 +736,11 @@ async function getOCGCardSetData(packConfig, onProgress) {
                 if (mapResp.ok) {
                     const mapData = await mapResp.json();
                     imageMap = mapData.cards || null;
-                    console.log(`🗺️ 已加载卡图映射表 [${packConfig.imageMapFile}]，共 ${Object.keys(imageMap).length} 条`);
+                    // 如果配置了本地图片目录，附加到 imageMap 供 getCardImageUrl 优先使用本地图片
+                    if (imageMap && packConfig.localImagesDir) {
+                        imageMap._localDir = packConfig.localImagesDir;
+                    }
+                    console.log(`🗺️ 已加载卡图映射表 [${packConfig.imageMapFile}]，共 ${Object.keys(imageMap).length} 条${packConfig.localImagesDir ? '（本地图片优先）' : ''}`);
                 }
             } catch (e) {
                 console.warn(`⚠️ 卡图映射表 [${packConfig.imageMapFile}] 加载失败，使用默认图源:`, e);
@@ -781,7 +785,7 @@ async function getOCGCardSetData(packConfig, onProgress) {
  */
 function getCardImageUrl(cardId, imageMap, size, rarityCode) {
     const pw = String(cardId);
-    // 如果映射表中有该卡的 metaId，使用 YugiohMeta S3 CDN
+    // 如果映射表中有该卡的 metaId，使用映射表图源
     if (imageMap && imageMap[pw] && imageMap[pw].metaId) {
         // 优先检查该稀有度是否有替代卡图（如 LOCH 的 OF 超框卡版本使用超框卡图）
         let metaId = imageMap[pw].metaId;
@@ -791,6 +795,10 @@ function getCardImageUrl(cardId, imageMap, size, rarityCode) {
         const sizeSuffix = size === 'large'
             ? API_CONFIG.YUGIOHMETA.SIZE_LARGE   // _w420
             : API_CONFIG.YUGIOHMETA.SIZE_SMALL;  // _w200
+        // 优先使用本地图片（如果配置了 localImagesDir），回退到 S3 CDN
+        if (imageMap._localDir) {
+            return `${imageMap._localDir}/${metaId}${sizeSuffix}.webp`;
+        }
         return `${API_CONFIG.YUGIOHMETA.CDN_BASE}/${metaId}${sizeSuffix}.webp`;
     }
     // 回退到默认 YGOCDB CDN（百鸽日文卡图）
@@ -1421,51 +1429,118 @@ async function preloadCardImages(cards, onProgress) {
 // ====== 缓存管理工具函数 ======
 
 /**
+ * 计算字符串占用的字节数（UTF-8 编码）
+ */
+function getByteSize(str) {
+    try {
+        return new Blob([str]).size;
+    } catch (e) {
+        return str.length * 2; // 兜底估算
+    }
+}
+
+/**
+ * 格式化字节数为可读的文件大小
+ */
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + units[i];
+}
+
+/**
  * 获取缓存状态信息
+ * 同时统计 IndexedDB（API 缓存）和 localStorage（背包/货币/设置）
  */
 async function getCacheStatus() {
     const status = {
+        // IndexedDB 中的 API 缓存卡包
         cardSets: [],
         totalCards: 0,
-        imageCacheAvailable: 'caches' in window
+        imageCacheAvailable: 'caches' in window,
+        // localStorage 存储明细
+        localStorage: {
+            items: [],
+            totalSize: 0
+        },
+        // IndexedDB 总大小估算
+        indexedDBSize: 0
     };
 
+    // === 1. 统计 IndexedDB 中的卡包缓存 ===
     try {
         const db = await openDatabase();
         const tx = db.transaction('cardSets', 'readonly');
         const store = tx.objectStore('cardSets');
 
-        return new Promise(function (resolve) {
+        await new Promise(function (resolve) {
             const request = store.openCursor();
             request.onsuccess = function (event) {
                 const cursor = event.target.result;
                 if (cursor) {
                     const data = cursor.value;
+                    // 估算此条记录的大小
+                    const recordSize = getByteSize(JSON.stringify(data));
                     status.cardSets.push({
                         setCode: data.setCode,
                         cardCount: data.cards.length,
                         fetchedAt: new Date(data.fetchedAt).toLocaleDateString('zh-CN'),
-                        dataSource: data.dataSource || 'unknown'
+                        dataSource: data.dataSource || 'unknown',
+                        size: recordSize
                     });
                     status.totalCards += data.cards.length;
+                    status.indexedDBSize += recordSize;
                     cursor.continue();
                 } else {
                     db.close();
-                    resolve(status);
+                    resolve();
                 }
             };
             request.onerror = function () {
                 db.close();
-                resolve(status);
+                resolve();
             };
         });
     } catch (error) {
-        return status;
+        // IndexedDB 不可用时静默跳过
     }
+
+    // === 2. 统计 localStorage 使用情况 ===
+    try {
+        // 定义需要统计的 localStorage key 及其显示名称
+        const knownKeys = [
+            { key: 'ygo_inventory_data', label: '🎒 背包数据' },
+            { key: 'ygo_currency_data', label: '🪙 货币数据' },
+            { key: 'ygo_game_mode', label: '🎮 游戏模式' },
+            { key: 'ygo_tcg_enabled', label: '🔧 TCG 开关' },
+            { key: 'ygo_ocg_language', label: '🌐 OCG 语言' }
+        ];
+
+        knownKeys.forEach(function (item) {
+            const val = localStorage.getItem(item.key);
+            if (val !== null) {
+                const size = getByteSize(val);
+                status.localStorage.items.push({
+                    key: item.key,
+                    label: item.label,
+                    size: size,
+                    // 为背包数据额外提供卡片计数
+                    cardCount: item.key === 'ygo_inventory_data' ? Object.keys(JSON.parse(val) || {}).length : null
+                });
+                status.localStorage.totalSize += size;
+            }
+        });
+    } catch (error) {
+        // localStorage 不可用时静默跳过
+    }
+
+    return status;
 }
 
 /**
- * 清除所有缓存数据
+ * 清除所有缓存数据（IndexedDB + Cache API）
+ * 注意：不清除 localStorage（背包/货币等用户数据）
  */
 async function clearAllCache() {
     try {
@@ -1475,10 +1550,24 @@ async function clearAllCache() {
             await caches.delete(API_CONFIG.IMAGE_CACHE_NAME);
         }
 
-        console.log('🗑️ 所有缓存已清除');
+        console.log('🗑️ 所有缓存已清除（IndexedDB + Cache API）');
         return true;
     } catch (error) {
         console.error('❌ 清除缓存失败:', error);
+        return false;
+    }
+}
+
+/**
+ * 清除指定的 localStorage 项
+ */
+function clearLocalStorageItem(key) {
+    try {
+        localStorage.removeItem(key);
+        console.log(`🗑️ 已清除 localStorage: ${key}`);
+        return true;
+    } catch (error) {
+        console.error(`❌ 清除 localStorage [${key}] 失败:`, error);
         return false;
     }
 }
@@ -1508,6 +1597,8 @@ window.TCG_API = {
     getCacheStatus: getCacheStatus,
     clearAllCache: clearAllCache,
     refreshCardSetCache: refreshCardSetCache,
+    clearLocalStorageItem: clearLocalStorageItem,
+    formatBytes: formatBytes,
 
     // 稀有度映射
     mapRarityToCode: mapRarityToCode,

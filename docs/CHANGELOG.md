@@ -2,6 +2,15 @@
 
 > 从 DEVELOPMENT.md 拆分，记录各版本的变更和待处理事项。
 
+## v1.5.33（2026-03-01）— LOCH 卡图本地化
+- **LOCH 卡图本地化**：所有 98 个唯一 metaId（80 张普通版 + 18 张 OF 超框版）的小图（_w200）和大图（_w420）共 196 个文件已下载到 `data/ocg/images/loch/`
+- 总大小约 7.3MB，部署到 Cloudflare Pages 后从国内访问速度大幅提升
+- **新增 `localImagesDir` 机制**：`packs.json` 中可为卡包配置 `localImagesDir` 字段，指定本地卡图目录
+- `getCardImageUrl` 加载优先级：本地图片（`localImagesDir`）→ S3 CDN → YGOCDB CDN
+- imageMap 加载时自动附加 `_localDir` 属性，无需修改函数签名，现有所有调用点自动生效
+- **新增工具脚本**：`tools/download_loch_images.py`（从映射表批量下载卡图到本地目录，支持断点续传和重试）
+- **涉及修改文件**：`api.js`、`packs.json`、`index.html`、`changelog.json`、`CHANGELOG.md`、`ARCHITECTURE.md`、`TOOLS.md`
+
 ## v1.5.30（2026-02-28）— LOCH 多稀有度卡图支持 + 图鉴展开卡位
 - **扩展卡图映射表**：`loch_image_map.json` 新增 `altMetaId` 字段，支持每张卡不同稀有度使用不同的卡图（OF 超框卡版本使用超框卡图，普通版使用普通卡图）
 - 从 yugiohmeta.com 网页提取全部 346 张图片数据（108 个唯一 metaId），建立完整的稀有度→卡图映射

@@ -41,6 +41,7 @@
       "totalCards": 80,
       "cardFile": "ocg_loch.json",
       "imageMapFile": "loch_image_map.json",
+      "localImagesDir": "data/ocg/images/loch",
       "category": "special",
       "locked": false,
       "packScheme": "loch_special",

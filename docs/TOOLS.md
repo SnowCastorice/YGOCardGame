@@ -55,3 +55,13 @@
 | `python fetch_yugiohmeta.py build "<setCode>"` | 为指定卡包构建映射 |
 | `python fetch_yugiohmeta.py test <password>` | 测试单张卡映射 |
 | `python fetch_yugiohmeta.py info` | 查看映射表信息 |
+
+## `download_loch_images.py` — LOCH 卡图本地化下载
+
+从 `loch_image_map.json` 读取所有 metaId / altMetaId，批量下载两个尺寸（_w200 小图 + _w420 大图）的 webp 图片到 `data/ocg/images/loch/` 目录。
+
+| 命令 | 说明 |
+|------|------|
+| `python tools/download_loch_images.py` | 下载所有 LOCH 卡图（已存在的自动跳过） |
+
+> 💡 支持断点续传：已存在且大小 > 0 的文件会自动跳过，中断后重新运行即可继续下载。
