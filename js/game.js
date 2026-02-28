@@ -563,10 +563,12 @@ const filteredPacks = modeConfig.packs.filter(pack => pack.category === currentP
         const packCode = pack.packCode || pack.setCode || '';
         const coverImageUrl = getPackCoverImageUrl(pack, packCode);
 
-        // 卡包名称：OCG 优先日文名，TCG 使用英文名
-        const packNameDisplay = (currentGameMode === 'ocg' && pack.packNameJP) ? pack.packNameJP : pack.packName;
-        // 副标题：编码
-        const subInfo = displayCode;
+        // 卡包名称：OCG 优先中文名 > 日文名，TCG 使用英文名
+        const packNameDisplay = (currentGameMode === 'ocg' && pack.packNameCN) ? pack.packNameCN
+            : (currentGameMode === 'ocg' && pack.packNameJP) ? pack.packNameJP : pack.packName;
+        // 副标题：英文缩写 + 数字编号，如 BLZD（1304）
+        const packNumberInfo = pack.packNumber ? `${displayCode}（${pack.packNumber}）` : displayCode;
+        const subInfo = packNumberInfo;
         // 发售日期
         const releaseDateText = pack.releaseDate || '';
 
@@ -584,7 +586,8 @@ const filteredPacks = modeConfig.packs.filter(pack => pack.category === currentP
                 </div>
                 <div class="pack-card__info">
                     <div class="pack-card__name">${packNameDisplay}</div>
-                    <div class="pack-card__meta">${subInfo}${releaseDateText ? ' · ' + releaseDateText : ''}</div>
+                    <div class="pack-card__meta">${subInfo}</div>
+                    ${releaseDateText ? `<div class="pack-card__date">${releaseDateText}</div>` : ''}
                     <div class="pack-card__locked-hint">即将推出</div>
                 </div>
             `;
@@ -603,9 +606,10 @@ const filteredPacks = modeConfig.packs.filter(pack => pack.category === currentP
                     </div>
                 </div>
                 <div class="pack-card__info">
-                    <div class="pack-card__name">${packNameDisplay}</div>
-                    <div class="pack-card__meta">${subInfo}${releaseDateText ? ' · ' + releaseDateText : ''}</div>
                     <div class="pack-card__price"><span class="pack-price-icon">${priceIcon}</span>${priceValue}</div>
+                    <div class="pack-card__name">${packNameDisplay}</div>
+                    <div class="pack-card__meta">${subInfo}</div>
+                    ${releaseDateText ? `<div class="pack-card__date">${releaseDateText}</div>` : ''}
                 </div>
             `;
 
@@ -832,8 +836,27 @@ async function selectPack(pack) {
 
         // 更新开包界面信息
         const offlineTag = setData.isOfflineData ? ' [离线模式]' : '';
-        const modeTag = currentGameMode === 'ocg' ? ' [OCG]' : ' [TCG]';
-        document.getElementById('current-pack-name').textContent = pack.packName + modeTag + offlineTag;
+        // 卡包详情页标题：第一行中文名·缩写（编号），第二行日文名，第三行英文名
+        const detailCode = pack.packCode || pack.setCode || pack.packId;
+        const detailNumberInfo = pack.packNumber ? `${detailCode}（${pack.packNumber}）` : detailCode;
+        const detailCNName = (currentGameMode === 'ocg' && pack.packNameCN) ? pack.packNameCN : '';
+        const detailTitle = detailCNName
+            ? `${detailCNName}·${detailNumberInfo}`
+            : `${pack.packName}·${detailNumberInfo}`;
+        const offlineLabel = (typeof offlineTag !== 'undefined' && offlineTag) ? offlineTag : '';
+        document.getElementById('current-pack-name').textContent = detailTitle + offlineLabel;
+        // 日文名（第二行）
+        const jpNameEl = document.getElementById('current-pack-name-jp');
+        if (jpNameEl) {
+            jpNameEl.textContent = (currentGameMode === 'ocg' && pack.packNameJP) ? pack.packNameJP : '';
+            jpNameEl.style.display = pack.packNameJP ? '' : 'none';
+        }
+        // 英文名（第三行）
+        const enNameEl = document.getElementById('current-pack-name-en');
+        if (enNameEl) {
+            enNameEl.textContent = pack.packName || '';
+            enNameEl.style.display = pack.packName ? '' : 'none';
+        }
 
         // 设置卡包封面图（直接用 img.src，利用浏览器 HTTP 缓存秒显）
         const packCode = pack.packCode || pack.setCode || pack.packId;
@@ -1615,7 +1638,7 @@ function drawCards_Legacy(pack, cards) {
         }
     }
 
-    // 按稀有度排序：N → NR → R → SR → UR → SER → UTR → PSER
+    // 按稀有度排序：N → NR → R → SR → UR → UTR → SER → PSER
     results.sort(function (a, b) {
         return (RARITY_ORDER_ASC[a.rarityCode] || 0) - (RARITY_ORDER_ASC[b.rarityCode] || 0);
     });
@@ -1702,8 +1725,8 @@ async function showResults(cards, bonusCards) {
         'R': 2,
         'SR': 3,
         'UR': 4,
-        'SER': 5,
-        'UTR': 6,
+        'UTR': 5,
+        'SER': 6,
         'PSER': 7
     };
 
