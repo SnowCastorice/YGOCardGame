@@ -405,6 +405,14 @@ pack_references/konami_official_products/
 
 ## 📝 近期变更记录
 
+### v1.5.5（2026-02-28）— NR 卡归池修正：NR 属于 N 卡卡池
+- **NR 卡归属修正**：NR 卡（JP028/JP070/JP080）的 `rarityCode` 改为 `"N"`，回到 N 卡卡池
+- NR 卡的选中概率为普通 N 卡的 20%（通过加权随机实现，由 `nrWeightRatio` 配置控制）
+- `rarityVersions` 保留 NR 标记（如 `["N", "NR", "PSER"]`），用于展示和背包系统识别
+- **非 N 位不再产出 NR**：移除了旧的 "R 位 10% 变 NR" 逻辑（`boxNRChance` 已废弃）
+- NR 只在每包的 4 张 N 卡位以低概率出现
+- **新增配置**：`packs.json` 新增 `nrWeightRatio`（默认 0.2），替代旧的 `boxNRChance`
+
 ### v1.5.4（2026-02-28）— 开包概率修正：NR卡归池 + 单包概率对齐盒规则
 - **单包概率对齐**：`drawCards_OCG` 的非N位改为按 `boxRarityDistribution` 权重概率选择目标稀有度（R 63%/SR 20%/UR 10%/UTR 3.3%/SER 3.3%），不再等概率随机
 - **NR卡归池修正**：NR卡（JP028/JP070/JP080）不进任何卡池（N池/非N池），只作为R位的10%概率变异产出

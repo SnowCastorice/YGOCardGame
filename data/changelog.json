@@ -2,6 +2,17 @@
   "_说明": "版本更新日志。每次更新都会在这里记录，网页上也会显示这些信息。格式：版本号、日期、更新内容列表。",
   "versions": [
     {
+      "version": "1.5.5",
+      "date": "2026-02-28",
+      "title": "NR 卡归池修正：NR 属于 N 卡卡池（低概率出现）",
+      "changes": [
+        "🃏 NR 卡归属修正：NR 卡（JP028/JP070/JP080）现在属于 N 卡卡池，选中概率为普通 N 卡的 20%",
+        "🎲 非 N 位不再有 R→NR 变异，NR 只在 N 卡位以低概率出现",
+        "⚙️ 新增 nrWeightRatio 配置（替代旧的 boxNRChance），控制 NR 卡在 N 池中的权重比例",
+        "📊 NR 卡 rarityCode 改为 N，rarityVersions 新增 N 标记（如 [N, NR, PSER]）"
+      ]
+    },
+    {
       "version": "1.5.4",
       "date": "2026-02-28",
       "title": "开包概率修正：NR卡归池 + 单包概率对齐盒规则",

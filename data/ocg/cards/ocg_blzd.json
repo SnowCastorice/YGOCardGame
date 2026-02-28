@@ -726,8 +726,9 @@
     {
       "id": 6361316,
       "setNumber": "BLZD-JP028",
-      "rarityCode": "NR",
+      "rarityCode": "N",
       "rarityVersions": [
+        "N",
         "NR",
         "PSER"
       ],
@@ -1840,8 +1841,9 @@
     {
       "id": 71275181,
       "setNumber": "BLZD-JP070",
-      "rarityCode": "NR",
+      "rarityCode": "N",
       "rarityVersions": [
+        "N",
         "NR"
       ],
       "name_hint": "2选1",
@@ -2103,8 +2105,9 @@
     {
       "id": 5208118,
       "setNumber": "BLZD-JP080",
-      "rarityCode": "NR",
+      "rarityCode": "N",
       "rarityVersions": [
+        "N",
         "NR"
       ],
       "name_hint": "动点的心慌灵摆",
