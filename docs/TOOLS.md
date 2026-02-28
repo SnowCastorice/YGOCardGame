@@ -2,6 +2,22 @@
 
 > 从 DEVELOPMENT.md 拆分，详述各 Python 工具脚本的用法。
 
+## `update_cards_db.py` — 百鸽(YGOCDB) 卡牌数据库更新脚本
+
+从百鸽 API (`ygocdb.com/api/v0/cards.zip`) 下载全量卡牌数据库，替换本地 `data/common/cards.json`。
+使用 MD5 校验实现增量更新，只有数据有变化时才重新下载。
+
+| 命令 | 说明 |
+|------|------|
+| `python update_cards_db.py` | 检查更新并下载（有更新才下载） |
+| `python update_cards_db.py --force` | 强制重新下载（跳过 MD5 检查） |
+| `python update_cards_db.py --check` | 只检查是否有更新，不下载 |
+| `python update_cards_db.py --rebuild` | 下载后自动运行 build_pack_data.py 重建所有卡包 |
+| `python update_cards_db.py --info` | 查看本地 cards.json 信息和远程 MD5 |
+
+> 💡 推荐工作流：`python update_cards_db.py --rebuild`（一键更新数据库 + 重建卡包）
+> ⚠️ 百鸽服务器是作者自费维护的，请合理使用，不要频繁调用。
+
 ## `build_pack_data.py` — OCG 卡包数据构建脚本
 
 从 `data/common/cards.json`（YGOCDB 全量数据库）提取卡牌详情，注入到 `data/ocg/cards/*.json` 中。

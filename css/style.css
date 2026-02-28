@@ -12,14 +12,7 @@
     --accent-gold: #ffd700;
     --accent-blue: #4a9eff;
     --accent-red: #ff4757;
-    --rarity-N: #8e8e8e;
-    --rarity-NR: #a8b4c8;
-    --rarity-R: #4a9eff;
-    --rarity-SR: #b464e0;
-    --rarity-UR: #f5c842;
-    --rarity-SER: #ff6fa8;
-    --rarity-UTR: #e8a030;
-    --rarity-PSER: #ff44cc;
+    /* 稀有度颜色变量 --rarity-* 现在由 JS 从 rarities.json 动态注入，无需在此硬编码 */
     --border-color: #2a2a5e;
     --shadow-glow: 0 0 20px rgba(74, 158, 255, 0.3);
 }
@@ -2802,38 +2795,7 @@ body {
     margin: 0 1px;
 }
 
-/* 多版本角标内各稀有度颜色 */
-.rarity-color-PSER {
-    color: var(--rarity-PSER);
-}
-
-.rarity-color-UTR {
-    color: var(--rarity-UTR);
-}
-
-.rarity-color-SER {
-    color: var(--rarity-SER);
-}
-
-.rarity-color-UR {
-    color: var(--rarity-UR);
-}
-
-.rarity-color-SR {
-    color: var(--rarity-SR);
-}
-
-.rarity-color-R {
-    color: var(--rarity-R);
-}
-
-.rarity-color-NR {
-    color: var(--rarity-NR);
-}
-
-.rarity-color-N {
-  color: var(--rarity-N);
-}
+/* 稀有度颜色类 .rarity-color-{code} 现在由 JS 从 rarities.json 动态注入，无需在此硬编码 */
 
 /* --- 未收集的稀有度版本（灰色） --- */
 .rarity-color-uncollected {

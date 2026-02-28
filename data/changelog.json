@@ -9,7 +9,7 @@
         "🃏 NR 卡归属修正：NR 卡（JP028/JP070/JP080）现在属于 N 卡卡池，选中概率为普通 N 卡的 20%",
         "🎲 非 N 位不再有 R→NR 变异，NR 只在 N 卡位以低概率出现",
         "⚙️ 新增 nrWeightRatio 配置（替代旧的 boxNRChance），控制 NR 卡在 N 池中的权重比例",
-        "📊 NR 卡 rarityCode 改为 N，rarityVersions 新增 N 标记（如 [N, NR, PSER]）"
+        "📊 NR 卡基础稀有度改为 N，rarityVersions 新增 N 标记（如 [N, NR, PSER]）"
       ]
     },
     {

@@ -9,7 +9,7 @@
     "cardsPerPack": "每包抽取的卡牌数量",
     "packScheme": "抽卡方案：ocg_default = OCG默认(4N+1非N+多版本稀有度), legacy = 旧版(按权重随机)",
     "rarityRates": "（旧版方案用）各稀有度的抽取权重（数字越大越容易抽到）",
-    "versionOdds": "（OCG方案用）多版本稀有度概率：每种稀有度被选中的相对权重",
+    "versionOdds": "（OCG方案用）多版本稀有度概率：每种稀有度被选中的相对权重，稀有度定义参见 data/common/rarities.json",
     "guaranteedRareSlot": "（旧版方案用）是否保底最后一张至少为 R 及以上",
     "boxRarityDistribution": "（整盒方案用）1盒内非N位的稀有度分配，如 {SER:1, UTR:1, UR:3, SR:6, R:19} = 30包",
     "boxPSERChance": "（整盒方案用）原盒SER卡位变PSER的概率，默认0.25（一箱24盒配6个原盒PSER）",
@@ -35,22 +35,31 @@
       "releaseDate": "2026-02-28",
       "ygocdbPackId": "",
       "coverImage": "https://www.yugioh-card.com/japan/products/package/cg2069-pack.png",
-      "cardsPerPack": 5,
-      "totalCards": 0,
+      "cardsPerPack": 4,
+      "totalCards": 80,
       "cardFile": "ocg_loch.json",
       "category": "special",
       "locked": false,
       "packScheme": "legacy",
       "rarityRates": {
-        "UR": 1,
-        "SR": 4,
-        "R": 25,
-        "N": 70
+        "UR": 38,
+        "SR": 62
       },
-      "guaranteedRareSlot": true,
+      "versionOdds": {
+        "UR": 70,
+        "UR-OF": 2,
+        "SR": 70,
+        "SER": 10,
+        "PSER": 3,
+        "PSER-OF": 1,
+        "GMR-OF": 0.5,
+        "UTR": 8,
+        "CR": 8
+      },
+      "guaranteedRareSlot": false,
       "price": 385,
       "currency": "gold",
-      "_说明": "2026年2月OCG特殊包（主角篇），发售日2026-02-28。卡片收录和概率待配置",
+      "_说明": "2026年2月OCG特殊包（主角篇），1包4张/1盒15包。全80种（38UR+42SR），无N/R。稀有度组合：18种UR有5版本(UR/UR-OF/SER/PSER-OF/GMR-OF)、20种UR有3版本(UR/SER/PSER)、21种SR有CR版(SR/CR/SER/PSER)、21种SR有UTR版(SR/UTR/SER/PSER)。GMR-OF为限量100张附序列号",
       "_价格来源": "KONAMI官网含税价格: 1包 385日元"
     },
     {

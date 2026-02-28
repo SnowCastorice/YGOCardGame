@@ -20,5 +20,9 @@ _temp_*.html
 _pack_*_output.json
 _cardids_output.txt
 
+# 卡牌数据库更新工具产生的临时文件
+data/common/.cards_md5
+data/common/cards.json.bak
+
 # 测试截图和输出文件
 test_output/

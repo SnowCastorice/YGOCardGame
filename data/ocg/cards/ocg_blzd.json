@@ -1,7 +1,7 @@
 {
   "_说明": "BLAZING DOMINION (BLZD) 卡包卡牌列表 —— 从 packs.json 拆分独立管理",
   "_数据源": "通过 YGOCDB 自动拉取 (ygocdb.com/pack/1000009559000)，稀有度数据来自 pack_references 手动整理",
-  "_稀有度说明": "rarityVersions 记录该卡所有稀有度版本，rarityCode 为基础稀有度（兼容现有代码）。抽卡规则和概率待后续补充。",
+  "_稀有度说明": "rarityVersions 记录该卡所有稀有度版本。抽卡规则和概率待后续补充。",
   "packId": "ocg_blzd",
   "packCode": "BLZD",
   "totalCards": 80,
@@ -9,7 +9,6 @@
     {
       "id": 83445539,
       "setNumber": "BLZD-JP001",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -35,7 +34,6 @@
     {
       "id": 19434243,
       "setNumber": "BLZD-JP002",
-      "rarityCode": "SR",
       "rarityVersions": [
         "SR",
         "SER"
@@ -62,7 +60,6 @@
     {
       "id": 56838842,
       "setNumber": "BLZD-JP003",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -88,7 +85,6 @@
     {
       "id": 82323997,
       "setNumber": "BLZD-JP004",
-      "rarityCode": "R",
       "rarityVersions": [
         "R"
       ],
@@ -114,7 +110,6 @@
     {
       "id": 18711696,
       "setNumber": "BLZD-JP005",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -140,7 +135,6 @@
     {
       "id": 45116390,
       "setNumber": "BLZD-JP006",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -166,7 +160,6 @@
     {
       "id": 81101309,
       "setNumber": "BLZD-JP007",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -192,7 +185,6 @@
     {
       "id": 18595008,
       "setNumber": "BLZD-JP008",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -218,7 +210,6 @@
     {
       "id": 44994712,
       "setNumber": "BLZD-JP009",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -244,7 +235,6 @@
     {
       "id": 70488851,
       "setNumber": "BLZD-JP010",
-      "rarityCode": "UR",
       "rarityVersions": [
         "UR",
         "PSER"
@@ -271,7 +261,6 @@
     {
       "id": 17473466,
       "setNumber": "BLZD-JP011",
-      "rarityCode": "R",
       "rarityVersions": [
         "R"
       ],
@@ -297,7 +286,6 @@
     {
       "id": 43871165,
       "setNumber": "BLZD-JP012",
-      "rarityCode": "R",
       "rarityVersions": [
         "R"
       ],
@@ -323,7 +311,6 @@
     {
       "id": 10266279,
       "setNumber": "BLZD-JP013",
-      "rarityCode": "R",
       "rarityVersions": [
         "R"
       ],
@@ -349,7 +336,6 @@
     {
       "id": 56651978,
       "setNumber": "BLZD-JP014",
-      "rarityCode": "SR",
       "rarityVersions": [
         "SR",
         "SER",
@@ -377,7 +363,6 @@
     {
       "id": 82159583,
       "setNumber": "BLZD-JP015",
-      "rarityCode": "UR",
       "rarityVersions": [
         "UR",
         "PSER"
@@ -404,7 +389,6 @@
     {
       "id": 19144622,
       "setNumber": "BLZD-JP016",
-      "rarityCode": "SR",
       "rarityVersions": [
         "SR",
         "SER",
@@ -432,7 +416,6 @@
     {
       "id": 82933935,
       "setNumber": "BLZD-JP017",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -458,7 +441,6 @@
     {
       "id": 18321034,
       "setNumber": "BLZD-JP018",
-      "rarityCode": "SR",
       "rarityVersions": [
         "SR",
         "SER"
@@ -485,7 +467,6 @@
     {
       "id": 44716748,
       "setNumber": "BLZD-JP019",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -511,7 +492,6 @@
     {
       "id": 71801447,
       "setNumber": "BLZD-JP020",
-      "rarityCode": "SR",
       "rarityVersions": [
         "SR",
         "SER"
@@ -538,7 +518,6 @@
     {
       "id": 17209452,
       "setNumber": "BLZD-JP021",
-      "rarityCode": "SR",
       "rarityVersions": [
         "SR",
         "SER",
@@ -566,7 +545,6 @@
     {
       "id": 45538320,
       "setNumber": "BLZD-JP022",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -592,7 +570,6 @@
     {
       "id": 44694191,
       "setNumber": "BLZD-JP023",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -618,7 +595,6 @@
     {
       "id": 70088809,
       "setNumber": "BLZD-JP024",
-      "rarityCode": "UTR",
       "rarityVersions": [
         "UTR",
         "SER",
@@ -646,7 +622,6 @@
     {
       "id": 6083904,
       "setNumber": "BLZD-JP025",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -672,7 +647,6 @@
     {
       "id": 43471513,
       "setNumber": "BLZD-JP026",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -698,7 +672,6 @@
     {
       "id": 79966218,
       "setNumber": "BLZD-JP027",
-      "rarityCode": "SR",
       "rarityVersions": [
         "SR",
         "SER",
@@ -726,7 +699,6 @@
     {
       "id": 6361316,
       "setNumber": "BLZD-JP028",
-      "rarityCode": "N",
       "rarityVersions": [
         "N",
         "NR",
@@ -754,7 +726,6 @@
     {
       "id": 42759961,
       "setNumber": "BLZD-JP029",
-      "rarityCode": "SR",
       "rarityVersions": [
         "SR",
         "SER",
@@ -782,7 +753,6 @@
     {
       "id": 78744660,
       "setNumber": "BLZD-JP030",
-      "rarityCode": "R",
       "rarityVersions": [
         "R",
         "SER"
@@ -809,7 +779,6 @@
     {
       "id": 5148778,
       "setNumber": "BLZD-JP031",
-      "rarityCode": "UR",
       "rarityVersions": [
         "UR",
         "PSER"
@@ -836,7 +805,6 @@
     {
       "id": 31533473,
       "setNumber": "BLZD-JP032",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -862,7 +830,6 @@
     {
       "id": 78021082,
       "setNumber": "BLZD-JP033",
-      "rarityCode": "R",
       "rarityVersions": [
         "R",
         "SER"
@@ -889,7 +856,6 @@
     {
       "id": 4026187,
       "setNumber": "BLZD-JP034",
-      "rarityCode": "UR",
       "rarityVersions": [
         "UR",
         "SER",
@@ -917,7 +883,6 @@
     {
       "id": 31411835,
       "setNumber": "BLZD-JP035",
-      "rarityCode": "R",
       "rarityVersions": [
         "R"
       ],
@@ -943,7 +908,6 @@
     {
       "id": 67809530,
       "setNumber": "BLZD-JP036",
-      "rarityCode": "UR",
       "rarityVersions": [
         "UR",
         "SER",
@@ -971,7 +935,6 @@
     {
       "id": 3294539,
       "setNumber": "BLZD-JP037",
-      "rarityCode": "R",
       "rarityVersions": [
         "R"
       ],
@@ -997,7 +960,6 @@
     {
       "id": 30698243,
       "setNumber": "BLZD-JP038",
-      "rarityCode": "UTR",
       "rarityVersions": [
         "UTR",
         "SER",
@@ -1025,7 +987,6 @@
     {
       "id": 66787942,
       "setNumber": "BLZD-JP039",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -1051,7 +1012,6 @@
     {
       "id": 93172951,
       "setNumber": "BLZD-JP040",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -1077,7 +1037,6 @@
     {
       "id": 39576656,
       "setNumber": "BLZD-JP041",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -1103,7 +1062,6 @@
     {
       "id": 65961304,
       "setNumber": "BLZD-JP042",
-      "rarityCode": "UR",
       "rarityVersions": [
         "UR",
         "SER",
@@ -1131,7 +1089,6 @@
     {
       "id": 92359409,
       "setNumber": "BLZD-JP043",
-      "rarityCode": "UR",
       "rarityVersions": [
         "UR",
         "PSER"
@@ -1158,7 +1115,6 @@
     {
       "id": 38354018,
       "setNumber": "BLZD-JP044",
-      "rarityCode": "R",
       "rarityVersions": [
         "R",
         "PSER"
@@ -1185,7 +1141,6 @@
     {
       "id": 65848113,
       "setNumber": "BLZD-JP045",
-      "rarityCode": "R",
       "rarityVersions": [
         "R"
       ],
@@ -1211,7 +1166,6 @@
     {
       "id": 91237821,
       "setNumber": "BLZD-JP046",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -1237,7 +1191,6 @@
     {
       "id": 27632520,
       "setNumber": "BLZD-JP047",
-      "rarityCode": "R",
       "rarityVersions": [
         "R",
         "SER"
@@ -1264,7 +1217,6 @@
     {
       "id": 64626565,
       "setNumber": "BLZD-JP048",
-      "rarityCode": "R",
       "rarityVersions": [
         "R",
         "SER"
@@ -1291,7 +1243,6 @@
     {
       "id": 90011273,
       "setNumber": "BLZD-JP049",
-      "rarityCode": "R",
       "rarityVersions": [
         "R"
       ],
@@ -1317,7 +1268,6 @@
     {
       "id": 27519978,
       "setNumber": "BLZD-JP050",
-      "rarityCode": "UTR",
       "rarityVersions": [
         "UTR",
         "SER",
@@ -1345,7 +1295,6 @@
     {
       "id": 53904087,
       "setNumber": "BLZD-JP051",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -1371,7 +1320,6 @@
     {
       "id": 99398682,
       "setNumber": "BLZD-JP052",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -1397,7 +1345,6 @@
     {
       "id": 26387390,
       "setNumber": "BLZD-JP053",
-      "rarityCode": "R",
       "rarityVersions": [
         "R"
       ],
@@ -1423,7 +1370,6 @@
     {
       "id": 52782439,
       "setNumber": "BLZD-JP054",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -1449,7 +1395,6 @@
     {
       "id": 89176044,
       "setNumber": "BLZD-JP055",
-      "rarityCode": "R",
       "rarityVersions": [
         "R"
       ],
@@ -1475,7 +1420,6 @@
     {
       "id": 25661743,
       "setNumber": "BLZD-JP056",
-      "rarityCode": "R",
       "rarityVersions": [
         "R"
       ],
@@ -1501,7 +1445,6 @@
     {
       "id": 51669847,
       "setNumber": "BLZD-JP057",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -1527,7 +1470,6 @@
     {
       "id": 84054556,
       "setNumber": "BLZD-JP058",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -1553,7 +1495,6 @@
     {
       "id": 20448151,
       "setNumber": "BLZD-JP059",
-      "rarityCode": "R",
       "rarityVersions": [
         "R"
       ],
@@ -1579,7 +1520,6 @@
     {
       "id": 57847269,
       "setNumber": "BLZD-JP060",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -1605,7 +1545,6 @@
     {
       "id": 83232904,
       "setNumber": "BLZD-JP061",
-      "rarityCode": "SR",
       "rarityVersions": [
         "SR"
       ],
@@ -1631,7 +1570,6 @@
     {
       "id": 19326613,
       "setNumber": "BLZD-JP062",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -1657,7 +1595,6 @@
     {
       "id": 56725612,
       "setNumber": "BLZD-JP063",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -1683,7 +1620,6 @@
     {
       "id": 82119326,
       "setNumber": "BLZD-JP064",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -1709,7 +1645,6 @@
     {
       "id": 19504025,
       "setNumber": "BLZD-JP065",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -1735,7 +1670,6 @@
     {
       "id": 45508030,
       "setNumber": "BLZD-JP066",
-      "rarityCode": "R",
       "rarityVersions": [
         "R",
         "PSER"
@@ -1762,7 +1696,6 @@
     {
       "id": 82997779,
       "setNumber": "BLZD-JP067",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -1788,7 +1721,6 @@
     {
       "id": 18482473,
       "setNumber": "BLZD-JP068",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -1814,7 +1746,6 @@
     {
       "id": 44886582,
       "setNumber": "BLZD-JP069",
-      "rarityCode": "UR",
       "rarityVersions": [
         "UR",
         "PSER"
@@ -1841,7 +1772,6 @@
     {
       "id": 71275181,
       "setNumber": "BLZD-JP070",
-      "rarityCode": "N",
       "rarityVersions": [
         "N",
         "NR"
@@ -1868,7 +1798,6 @@
     {
       "id": 17269895,
       "setNumber": "BLZD-JP071",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -1894,7 +1823,6 @@
     {
       "id": 44654994,
       "setNumber": "BLZD-JP072",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -1920,7 +1848,6 @@
     {
       "id": 70058649,
       "setNumber": "BLZD-JP073",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -1946,7 +1873,6 @@
     {
       "id": 6547248,
       "setNumber": "BLZD-JP074",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -1972,7 +1898,6 @@
     {
       "id": 43932352,
       "setNumber": "BLZD-JP075",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -1998,7 +1923,6 @@
     {
       "id": 79936051,
       "setNumber": "BLZD-JP076",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -2024,7 +1948,6 @@
     {
       "id": 6325660,
       "setNumber": "BLZD-JP077",
-      "rarityCode": "UTR",
       "rarityVersions": [
         "UTR",
         "SER",
@@ -2052,7 +1975,6 @@
     {
       "id": 42719764,
       "setNumber": "BLZD-JP078",
-      "rarityCode": "N",
       "rarityVersions": [
         "N"
       ],
@@ -2078,7 +2000,6 @@
     {
       "id": 78114463,
       "setNumber": "BLZD-JP079",
-      "rarityCode": "SR",
       "rarityVersions": [
         "SR",
         "SER"
@@ -2105,7 +2026,6 @@
     {
       "id": 5208118,
       "setNumber": "BLZD-JP080",
-      "rarityCode": "N",
       "rarityVersions": [
         "N",
         "NR"

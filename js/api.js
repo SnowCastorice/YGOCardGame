@@ -555,7 +555,6 @@ function convertYGOCDBCard(ygocdbCard, rarityCode, rarityVersions) {
         race: race,
         attribute: attribute,
         rarity: rarityNames[rarityCode] || 'Common',
-        rarityCode: rarityCode || 'N',
         rarityVersions: rarityVersions || [rarityCode || 'N'],  // 多版本稀有度
         cardSetCode: '',             // YGOCDB 无卡包编号，后续由加载流程补充
         setNumber: 0,                // 编号序号，后续由加载流程补充
@@ -692,7 +691,6 @@ function convertYGOProDeckCard(card, rarityCode, setCode, mode, rarityVersions) 
         race: card.race,
         attribute: card.attribute,
         rarity: rarity,
-        rarityCode: code,
         rarityVersions: rarityVersions || [code],  // 多版本稀有度（如 ["SR", "SER", "PSER"]）
         cardSetCode: cardSetCode,    // 卡包内编号（如 "BLZD-JP001"）
         setNumber: setNumber,        // 编号序号（如 1, 2, 3...），用于排序
@@ -773,8 +771,8 @@ function buildOCGCardsFromLocalData(packConfig) {
 
     (packConfig.cardIds || []).forEach(function (cardDef, index) {
         const d = cardDef.cardData || {};
-        const rarityCode = cardDef.rarityCode || 'N';
-        const rarityVersions = cardDef.rarityVersions || [rarityCode];
+        const rarityVersions = cardDef.rarityVersions || ['N'];
+        const rarityCode = rarityVersions[0];
         const idx = index + 1;
 
         // 主显示名：优先中文名，其次日文名，最后英文名
@@ -822,7 +820,6 @@ function buildOCGCardsFromLocalData(packConfig) {
             race: race,
             attribute: attribute,
             rarity: rarityNames[rarityCode] || 'Common',
-            rarityCode: rarityCode,
             rarityVersions: rarityVersions,
             cardSetCode: typeof setNumber === 'string' ? setNumber : (packCode + '-JP' + String(idx).padStart(3, '0')),
             setNumber: idx,
@@ -861,8 +858,8 @@ function buildSupplementCardsFromLocalData(packConfig) {
 
         const d = cardDef.cardData || {};
         // 辅助包卡片默认稀有度取 rarityVersions 的第一个
-        const rarityCode = cardDef.rarityVersions ? cardDef.rarityVersions[0] : 'UR';
-        const rarityVersions = cardDef.rarityVersions || [rarityCode];
+        const rarityVersions = cardDef.rarityVersions || ['UR'];
+        const rarityCode = rarityVersions[0];
 
         // 主显示名：优先中文名，其次日文名
         const cnName = d.cn_name || '';
@@ -884,7 +881,6 @@ function buildSupplementCardsFromLocalData(packConfig) {
             def: d.def,
             level: d.level,
             rarity: rarityNames[rarityCode] || 'Ultra Rare',
-            rarityCode: rarityCode,
             rarityVersions: rarityVersions,
             cardSetCode: setNumber,
             setNumber: setNumber,
@@ -926,7 +922,7 @@ async function getOCGCardSetDataViaAPI(packConfig, onProgress) {
     const rarityMap = {};
     const versionsMap = {};
     cardIds.forEach(function (cardDef) {
-        rarityMap[cardDef.id] = cardDef.rarityCode;
+        rarityMap[cardDef.id] = cardDef.rarityVersions ? cardDef.rarityVersions[0] : 'N';
         if (cardDef.rarityVersions) {
             versionsMap[cardDef.id] = cardDef.rarityVersions;
         }

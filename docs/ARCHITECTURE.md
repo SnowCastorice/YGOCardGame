@@ -13,7 +13,7 @@
 | **卡牌详情** | `cardData` 节点（本地） | 由 `build_pack_data.py` 从 `cards.json` 提取注入 |
 | **中文名** | `cardData.cn_name`（本地） | 不再调用 YGOCDB API |
 | **卡图** | YGOCDB CDN (`cdn.233.momobako.com`) | 日文版卡图（仅卡图从 CDN 加载） |
-| **稀有度** | `cardIds[].rarityCode` + `rarityVersions` | 手动配置在卡包文件中 |
+| **稀有度** | `cardIds[].rarityVersions` | 手动配置在卡包文件中，定义参见 `data/common/rarities.json` |
 | **API 回退** | YGOProDeck + YGOCDB | 仅当卡包未构建本地数据时才调用 |
 
 **工作流程**：
@@ -85,7 +85,8 @@ buildOCGCardsFromLocalData()（纯本地转换）
 | `data/tcg/yugiohmeta_map.json` | TCG 卡图映射表 |
 | `data/changelog.json` | 更新日志（网页内展示） |
 | `data/fallback_cards.js` | 离线兜底卡牌数据 |
-| `data/common/cards.json` | YGOCDB 全量数据库（12MB，13900+ 张卡） |
+| `data/common/cards.json` | YGOCDB 全量数据库（12MB，13900+ 张卡），通过 `update_cards_db.py` 自动更新 |
+| `data/common/rarities.json` | 全局稀有度定义文件，管理所有稀有度元数据（名称/描述/颜色/分类等） |
 
 ### OCG 卡包数据目录结构
 

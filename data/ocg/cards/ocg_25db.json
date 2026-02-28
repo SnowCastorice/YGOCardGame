@@ -7,7 +7,6 @@
   "cardIds": [
     {
       "id": 3739500,
-      "rarityCode": "N",
       "name_hint": "破灭与终焉之支配者",
       "cardData": {
         "cn_name": "破灭与终焉之支配者",
@@ -25,11 +24,13 @@
         "type": 161,
         "ot": 9,
         "cid": 22211
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 30138615,
-      "rarityCode": "N",
       "name_hint": "幻惑眼纳祭神",
       "cardData": {
         "cn_name": "幻惑眼纳祭神",
@@ -47,11 +48,13 @@
         "type": 97,
         "ot": 9,
         "cid": 22212
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 66122213,
-      "rarityCode": "N",
       "name_hint": "地狱俯冲轰炸机",
       "cardData": {
         "cn_name": "地狱俯冲轰炸机",
@@ -69,11 +72,13 @@
         "type": 8225,
         "ot": 9,
         "cid": 22213
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 92517928,
-      "rarityCode": "N",
       "name_hint": "银河眼反物质龙",
       "cardData": {
         "cn_name": "银河眼反物质龙",
@@ -91,11 +96,13 @@
         "type": 8388641,
         "ot": 9,
         "cid": 22214
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 39016067,
-      "rarityCode": "N",
       "name_hint": "龙剑士 风麒麟·平行",
       "cardData": {
         "cn_name": "龙剑士 风麒麟·平行",
@@ -113,11 +120,13 @@
         "type": 16777249,
         "ot": 9,
         "cid": 22215
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 65400671,
-      "rarityCode": "SR",
       "name_hint": "水晶机巧-继承玻纤·棱镜",
       "cardData": {
         "cn_name": "水晶机巧-继承玻纤·棱镜",
@@ -135,11 +144,13 @@
         "type": 67108897,
         "ot": 9,
         "cid": 22216
-      }
+      },
+      "rarityVersions": [
+        "SR"
+      ]
     },
     {
       "id": 5560911,
-      "rarityCode": "N",
       "name_hint": "亡龙之战栗-死欲龙",
       "cardData": {
         "cn_name": "亡龙之战栗-死欲龙",
@@ -157,11 +168,13 @@
         "type": 4129,
         "ot": 11,
         "cid": 13254
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 31178212,
-      "rarityCode": "N",
       "name_hint": "威风妖怪·麒麟",
       "cardData": {
         "cn_name": "威风妖怪·麒麟",
@@ -179,11 +192,13 @@
         "type": 16777249,
         "ot": 11,
         "cid": 11973
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 80701178,
-      "rarityCode": "R",
       "name_hint": "魔神仪-曼德拉护符草",
       "cardData": {
         "cn_name": "魔神仪-曼德拉护符草",
@@ -201,11 +216,13 @@
         "type": 33,
         "ot": 11,
         "cid": 13733
-      }
+      },
+      "rarityVersions": [
+        "R"
+      ]
     },
     {
       "id": 92746535,
-      "rarityCode": "R",
       "name_hint": "龙剑士 光辉星·灵摆",
       "cardData": {
         "cn_name": "龙剑士 光辉星·灵摆",
@@ -223,11 +240,13 @@
         "type": 16781345,
         "ot": 11,
         "cid": 11809
-      }
+      },
+      "rarityVersions": [
+        "R"
+      ]
     },
     {
       "id": 56347375,
-      "rarityCode": "N",
       "name_hint": "龙剑士 点火烈·凤凰",
       "cardData": {
         "cn_name": "龙剑士 点火烈·凤凰",
@@ -245,11 +264,13 @@
         "type": 16777249,
         "ot": 11,
         "cid": 17778
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 28720123,
-      "rarityCode": "N",
       "name_hint": "龙剑士 雾动轰·输力",
       "cardData": {
         "cn_name": "龙剑士 雾动轰·输力",
@@ -267,11 +288,13 @@
         "type": 16777249,
         "ot": 11,
         "cid": 17780
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 92332424,
-      "rarityCode": "R",
       "name_hint": "龙剑士 威风凛·飞马",
       "cardData": {
         "cn_name": "龙剑士 威风凛·飞马",
@@ -289,11 +312,13 @@
         "type": 16777249,
         "ot": 11,
         "cid": 17779
-      }
+      },
+      "rarityVersions": [
+        "R"
+      ]
     },
     {
       "id": 58092907,
-      "rarityCode": "R",
       "name_hint": "娱乐伙伴 天空之魔术师",
       "cardData": {
         "cn_name": "娱乐伙伴 天空之魔术师",
@@ -311,11 +336,13 @@
         "type": 16777249,
         "ot": 11,
         "cid": 14925
-      }
+      },
+      "rarityVersions": [
+        "R"
+      ]
     },
     {
       "id": 95492061,
-      "rarityCode": "N",
       "name_hint": "万手神",
       "cardData": {
         "cn_name": "万手神",
@@ -333,11 +360,13 @@
         "type": 33,
         "ot": 11,
         "cid": 5900
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 53303460,
-      "rarityCode": "R",
       "name_hint": "魔神仪-蜡烛人偶",
       "cardData": {
         "cn_name": "魔神仪-蜡烛人偶",
@@ -355,11 +384,13 @@
         "type": 33,
         "ot": 11,
         "cid": 13732
-      }
+      },
+      "rarityVersions": [
+        "R"
+      ]
     },
     {
       "id": 31991800,
-      "rarityCode": "N",
       "name_hint": "威风妖怪·狸",
       "cardData": {
         "cn_name": "威风妖怪·狸",
@@ -377,11 +408,13 @@
         "type": 16777249,
         "ot": 11,
         "cid": 11970
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 79109599,
-      "rarityCode": "R",
       "name_hint": "沼地的魔神王",
       "cardData": {
         "cn_name": "沼地的魔神王",
@@ -399,11 +432,13 @@
         "type": 33,
         "ot": 11,
         "cid": 6044
-      }
+      },
+      "rarityVersions": [
+        "R"
+      ]
     },
     {
       "id": 1980574,
-      "rarityCode": "N",
       "name_hint": "跃空垂耳兔飞行队",
       "cardData": {
         "cn_name": "跃空垂耳兔飞行队",
@@ -421,11 +456,13 @@
         "type": 4129,
         "ot": 11,
         "cid": 14656
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 30765615,
-      "rarityCode": "N",
       "name_hint": "百檎龙-苹果鳞虫",
       "cardData": {
         "cn_name": "百檎龙-苹果鳞虫",
@@ -443,11 +480,13 @@
         "type": 4129,
         "ot": 11,
         "cid": 18492
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 76722334,
-      "rarityCode": "N",
       "name_hint": "扭蛋魔壳",
       "cardData": {
         "cn_name": "扭蛋魔壳",
@@ -465,11 +504,13 @@
         "type": 33,
         "ot": 11,
         "cid": 14709
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 21142671,
-      "rarityCode": "N",
       "name_hint": "红莲新星",
       "cardData": {
         "cn_name": "红莲新星",
@@ -487,11 +528,13 @@
         "type": 4129,
         "ot": 11,
         "cid": 12540
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 50366775,
-      "rarityCode": "N",
       "name_hint": "格式弹涂鱼",
       "cardData": {
         "cn_name": "格式弹涂鱼",
@@ -509,11 +552,13 @@
         "type": 33,
         "ot": 11,
         "cid": 13511
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 28427869,
-      "rarityCode": "R",
       "name_hint": "卷烟蚊",
       "cardData": {
         "cn_name": "卷烟蚊",
@@ -531,11 +576,13 @@
         "type": 33,
         "ot": 11,
         "cid": 14738
-      }
+      },
+      "rarityVersions": [
+        "R"
+      ]
     },
     {
       "id": 59913418,
-      "rarityCode": "N",
       "name_hint": "终焉之霸王 迪米斯",
       "cardData": {
         "cn_name": "终焉之霸王 迪米斯",
@@ -553,11 +600,13 @@
         "type": 161,
         "ot": 11,
         "cid": 13746
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 13518809,
-      "rarityCode": "N",
       "name_hint": "破灭之美神 露茵",
       "cardData": {
         "cn_name": "破灭之美神 露茵",
@@ -575,11 +624,13 @@
         "type": 161,
         "ot": 11,
         "cid": 13745
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 11321089,
-      "rarityCode": "N",
       "name_hint": "守护者·奇美拉",
       "cardData": {
         "cn_name": "守护者·奇美拉",
@@ -597,11 +648,13 @@
         "type": 97,
         "ot": 11,
         "cid": 16845
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 53539634,
-      "rarityCode": "SR",
       "name_hint": "三眼小巫师",
       "cardData": {
         "cn_name": "三眼小巫师",
@@ -619,11 +672,13 @@
         "type": 65,
         "ot": 11,
         "cid": 6128
-      }
+      },
+      "rarityVersions": [
+        "SR"
+      ]
     },
     {
       "id": 11765832,
-      "rarityCode": "SR",
       "name_hint": "共命之翼 迦楼罗",
       "cardData": {
         "cn_name": "共命之翼 迦楼罗",
@@ -641,11 +696,13 @@
         "type": 97,
         "ot": 11,
         "cid": 17746
-      }
+      },
+      "rarityVersions": [
+        "SR"
+      ]
     },
     {
       "id": 26435595,
-      "rarityCode": "R",
       "name_hint": "圣菓使 考维曲天使",
       "cardData": {
         "cn_name": "圣菓使 考维曲天使",
@@ -663,11 +720,13 @@
         "type": 16777313,
         "ot": 11,
         "cid": 17391
-      }
+      },
+      "rarityVersions": [
+        "R"
+      ]
     },
     {
       "id": 93125329,
-      "rarityCode": "N",
       "name_hint": "金云兽-马龙",
       "cardData": {
         "cn_name": "金云兽-马龙",
@@ -685,11 +744,13 @@
         "type": 12321,
         "ot": 11,
         "cid": 18666
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 52445243,
-      "rarityCode": "R",
       "name_hint": "三刃大师",
       "cardData": {
         "cn_name": "三刃大师",
@@ -707,11 +768,13 @@
         "type": 8225,
         "ot": 11,
         "cid": 15466
-      }
+      },
+      "rarityVersions": [
+        "R"
+      ]
     },
     {
       "id": 84040113,
-      "rarityCode": "N",
       "name_hint": "泥糊泥龙王",
       "cardData": {
         "cn_name": "泥糊泥龙王",
@@ -729,11 +792,13 @@
         "type": 8225,
         "ot": 11,
         "cid": 14531
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 21915012,
-      "rarityCode": "N",
       "name_hint": "垒球小爱神",
       "cardData": {
         "cn_name": "垒球小爱神",
@@ -751,11 +816,13 @@
         "type": 12321,
         "ot": 11,
         "cid": 16532
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 55863245,
-      "rarityCode": "N",
       "name_hint": "龙子",
       "cardData": {
         "cn_name": "龙子",
@@ -773,11 +840,13 @@
         "type": 12321,
         "ot": 11,
         "cid": 11660
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 46057733,
-      "rarityCode": "UR",
       "name_hint": "磷回之三弦猫",
       "cardData": {
         "cn_name": "磷回之三弦猫",
@@ -795,11 +864,13 @@
         "type": 12321,
         "ot": 11,
         "cid": 17799
-      }
+      },
+      "rarityVersions": [
+        "UR"
+      ]
     },
     {
       "id": 67630394,
-      "rarityCode": "N",
       "name_hint": "重铠装-暗黑骑士枪兵",
       "cardData": {
         "cn_name": "重铠装-暗黑骑士枪兵",
@@ -817,11 +888,13 @@
         "type": 8388641,
         "ot": 11,
         "cid": 19183
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 24701066,
-      "rarityCode": "N",
       "name_hint": "无限起动 大河式风击龙",
       "cardData": {
         "cn_name": "无限起动 大河式风击龙",
@@ -839,11 +912,13 @@
         "type": 8388641,
         "ot": 11,
         "cid": 14397
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 20145685,
-      "rarityCode": "SR",
       "name_hint": "超量铠甲·要塞式",
       "cardData": {
         "cn_name": "超量铠甲·要塞式",
@@ -861,11 +936,13 @@
         "type": 8388641,
         "ot": 11,
         "cid": 19182
-      }
+      },
+      "rarityVersions": [
+        "SR"
+      ]
     },
     {
       "id": 94151981,
-      "rarityCode": "UR",
       "name_hint": "超量铠甲·鱼雷式",
       "cardData": {
         "cn_name": "超量铠甲·鱼雷式",
@@ -883,11 +960,13 @@
         "type": 8388641,
         "ot": 11,
         "cid": 19181
-      }
+      },
+      "rarityVersions": [
+        "UR"
+      ]
     },
     {
       "id": 4997565,
-      "rarityCode": "N",
       "name_hint": "No.3 地狱蝉王",
       "cardData": {
         "cn_name": "No.3 地狱蝉王",
@@ -905,11 +984,13 @@
         "type": 8388641,
         "ot": 11,
         "cid": 15386
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 71166481,
-      "rarityCode": "UR",
       "name_hint": "No.75 惑乱之风言暗影",
       "cardData": {
         "cn_name": "No.75 惑乱之风言暗影",
@@ -927,11 +1008,13 @@
         "type": 8388641,
         "ot": 11,
         "cid": 13825
-      }
+      },
+      "rarityVersions": [
+        "UR"
+      ]
     },
     {
       "id": 49105782,
-      "rarityCode": "N",
       "name_hint": "死翼之虎钳巨鹰",
       "cardData": {
         "cn_name": "死翼之虎钳巨鹰",
@@ -949,11 +1032,13 @@
         "type": 67108897,
         "ot": 11,
         "cid": 14711
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 92812851,
-      "rarityCode": "N",
       "name_hint": "奇迹之魔导剑士",
       "cardData": {
         "cn_name": "奇迹之魔导剑士",
@@ -971,11 +1056,13 @@
         "type": 67108897,
         "ot": 11,
         "cid": 19187
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 73898890,
-      "rarityCode": "N",
       "name_hint": "大傩主水",
       "cardData": {
         "cn_name": "大傩主水",
@@ -993,11 +1080,13 @@
         "type": 67108897,
         "ot": 11,
         "cid": 18195
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 74937659,
-      "rarityCode": "SR",
       "name_hint": "地中族邪界妖魔",
       "cardData": {
         "cn_name": "地中族邪界妖魔",
@@ -1015,11 +1104,13 @@
         "type": 67108897,
         "ot": 11,
         "cid": 13370
-      }
+      },
+      "rarityVersions": [
+        "SR"
+      ]
     },
     {
       "id": 8728498,
-      "rarityCode": "R",
       "name_hint": "空牙团的怀剑 唐娜",
       "cardData": {
         "cn_name": "空牙团的怀剑 唐娜",
@@ -1037,11 +1128,13 @@
         "type": 67108897,
         "ot": 11,
         "cid": 17804
-      }
+      },
+      "rarityVersions": [
+        "R"
+      ]
     },
     {
       "id": 36768783,
-      "rarityCode": "UR",
       "name_hint": "星导龙 阿米莱尔",
       "cardData": {
         "cn_name": "星导龙 阿米莱尔",
@@ -1059,11 +1152,13 @@
         "type": 67108897,
         "ot": 11,
         "cid": 14388
-      }
+      },
+      "rarityVersions": [
+        "UR"
+      ]
     },
     {
       "id": 12450071,
-      "rarityCode": "R",
       "name_hint": "代理F魔术师",
       "cardData": {
         "cn_name": "代理F魔术师",
@@ -1081,11 +1176,13 @@
         "type": 67108897,
         "ot": 11,
         "cid": 15033
-      }
+      },
+      "rarityVersions": [
+        "R"
+      ]
     },
     {
       "id": 98642179,
-      "rarityCode": "R",
       "name_hint": "刚炎之剑士",
       "cardData": {
         "cn_name": "刚炎之剑士",
@@ -1103,11 +1200,13 @@
         "type": 67108897,
         "ot": 11,
         "cid": 14333
-      }
+      },
+      "rarityVersions": [
+        "R"
+      ]
     },
     {
       "id": 9763474,
-      "rarityCode": "N",
       "name_hint": "盛悴之致命毒蜥",
       "cardData": {
         "cn_name": "盛悴之致命毒蜥",
@@ -1125,11 +1224,13 @@
         "type": 67108897,
         "ot": 11,
         "cid": 20065
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 1482001,
-      "rarityCode": "N",
       "name_hint": "副语术士克拉拉与洛希卡",
       "cardData": {
         "cn_name": "副语术士克拉拉与洛希卡",
@@ -1147,11 +1248,13 @@
         "type": 67108897,
         "ot": 11,
         "cid": 13420
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 1845204,
-      "rarityCode": "N",
       "name_hint": "简易融合",
       "cardData": {
         "cn_name": "简易融合",
@@ -1169,11 +1272,13 @@
         "type": 2,
         "ot": 11,
         "cid": 6901
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 63854005,
-      "rarityCode": "R",
       "name_hint": "简素融合",
       "cardData": {
         "cn_name": "简素融合",
@@ -1191,11 +1296,13 @@
         "type": 2,
         "ot": 11,
         "cid": 16255
-      }
+      },
+      "rarityVersions": [
+        "R"
+      ]
     },
     {
       "id": 73046708,
-      "rarityCode": "N",
       "name_hint": "铠装超量",
       "cardData": {
         "cn_name": "铠装超量",
@@ -1213,11 +1320,13 @@
         "type": 2,
         "ot": 11,
         "cid": 19036
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 46052429,
-      "rarityCode": "N",
       "name_hint": "高等仪式术",
       "cardData": {
         "cn_name": "高等仪式术",
@@ -1235,11 +1344,13 @@
         "type": 130,
         "ot": 11,
         "cid": 6996
-      }
+      },
+      "rarityVersions": [
+        "N"
+      ]
     },
     {
       "id": 8198712,
-      "rarityCode": "SR",
       "name_hint": "世界末日",
       "cardData": {
         "cn_name": "世界末日",
@@ -1257,11 +1368,13 @@
         "type": 130,
         "ot": 11,
         "cid": 6617
-      }
+      },
+      "rarityVersions": [
+        "SR"
+      ]
     },
     {
       "id": 32828635,
-      "rarityCode": "SR",
       "name_hint": "世界不灭",
       "cardData": {
         "cn_name": "世界不灭",
@@ -1279,11 +1392,13 @@
         "type": 130,
         "ot": 11,
         "cid": 13773
-      }
+      },
+      "rarityVersions": [
+        "SR"
+      ]
     },
     {
       "id": 78063197,
-      "rarityCode": "SR",
       "name_hint": "纳祭融合",
       "cardData": {
         "cn_name": "纳祭融合",
@@ -1301,11 +1416,13 @@
         "type": 65538,
         "ot": 11,
         "cid": 13467
-      }
+      },
+      "rarityVersions": [
+        "SR"
+      ]
     },
     {
       "id": 39733924,
-      "rarityCode": "R",
       "name_hint": "重铠装超量",
       "cardData": {
         "cn_name": "重铠装超量",
@@ -1323,7 +1440,10 @@
         "type": 4,
         "ot": 11,
         "cid": 19213
-      }
+      },
+      "rarityVersions": [
+        "R"
+      ]
     }
   ]
 }

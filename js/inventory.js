@@ -31,7 +31,7 @@ const InventorySystem = (function () {
     const STORAGE_KEY = 'ygo_inventory_data';
 
     // ====== 内部状态 ======
-    // 背包数据结构：{ "卡片密码": { id, name, nameCN, nameOriginal, rarityCode, imageUrl, imageLargeUrl, count, rarityVersionsOwned: { "SR": 2, "SER": 1 }, firstObtained } }
+    // 背包数据结构：{ "卡片密码": { id, name, nameCN, nameOriginal, rarityVersions, imageUrl, imageLargeUrl, count, rarityVersionsOwned: { "SR": 2, "SER": 1 }, firstObtained } }
     let inventory = {};
     let initialized = false;
 
@@ -52,7 +52,7 @@ const InventorySystem = (function () {
             Object.keys(inventory).forEach(function (cardId) {
                 const card = inventory[cardId];
                 if (!card.rarityVersionsOwned) {
-                    const rarity = card.rarityCode || 'N';
+                    const rarity = (card.rarityVersions || ['N'])[0];
                     const versionsOwned = {};
                     versionsOwned[rarity] = card.count || 1;
                     card.rarityVersionsOwned = versionsOwned;
@@ -99,8 +99,8 @@ const InventorySystem = (function () {
 
     /**
      * 将一组卡片添加到背包（通常是开包结果）
-     * @param {Array} cards - 卡片数组，每个元素包含 { id, name, nameCN, nameOriginal, rarityCode, imageUrl, imageLargeUrl }
-     * 注意：rarityCode 是开包时实际获得的稀有度版本
+     * @param {Array} cards - 卡片数组，每个元素包含 { id, name, nameCN, nameOriginal, rarityVersions, imageUrl, imageLargeUrl }
+     * 注意：rarityVersions[0] 是开包时实际获得的稀有度版本
      */
     function addCards(cards) {
         if (!initialized) init();
@@ -108,7 +108,7 @@ const InventorySystem = (function () {
 
         cards.forEach(function (card) {
             const cardId = String(card.id);
-            const rarity = card.rarityCode || 'N';
+            const rarity = (card.rarityVersions || ['N'])[0];
 
             if (inventory[cardId]) {
                 // 已有该卡：总数量+1，并记录对应稀有度版本+1
@@ -126,7 +126,7 @@ const InventorySystem = (function () {
                     name: card.name || '',
                     nameCN: card.nameCN || '',
                     nameOriginal: card.nameOriginal || '',
-                    rarityCode: card.rarityCode || 'N',
+                    rarityVersions: card.rarityVersions || ['N'],
                     imageUrl: card.imageUrl || '',
                     imageLargeUrl: card.imageLargeUrl || '',
                     count: 1,
@@ -198,11 +198,11 @@ const InventorySystem = (function () {
 
     /**
      * 获取卡片价格（根据稀有度）
-     * @param {string} rarityCode - 稀有度代码
+     * @param {string} rarity - 稀有度代码
      * @returns {number} 价格（金币）
      */
-    function getCardPrice(rarityCode) {
-        return RARITY_PRICES[rarityCode] || RARITY_PRICES['N'];
+    function getCardPrice(rarity) {
+        return RARITY_PRICES[rarity] || RARITY_PRICES['N'];
     }
 
     /**
@@ -212,7 +212,7 @@ const InventorySystem = (function () {
     function getTotalValue() {
         if (!initialized) init();
         return Object.values(inventory).reduce(function (sum, card) {
-            return sum + getCardPrice(card.rarityCode) * card.count;
+            return sum + getCardPrice((card.rarityVersions || ['N'])[0]) * card.count;
         }, 0);
     }
 
@@ -323,8 +323,8 @@ const InventorySystem = (function () {
         // 卡片网格列表
         html += '<div class="inventory-grid">';
         sortedCards.forEach(function (card) {
-            const price = getCardPrice(card.rarityCode);
-            const rarityCode = card.rarityCode || 'N';
+            const price = getCardPrice((card.rarityVersions || ['N'])[0]);
+            const rarityCode = (card.rarityVersions || ['N'])[0];
             const displayName = card.nameCN || card.name || card.nameOriginal || '未知卡片';
 
             // 卡图 HTML
@@ -406,14 +406,15 @@ const InventorySystem = (function () {
      * @returns {Array} 排序后的数组
      */
     function sortCards(cards, sortBy) {
-        const rarityOrder = { 'PSER': 8, 'SER': 7, 'UTR': 6, 'UR': 5, 'SR': 4, 'R': 3, 'NR': 2, 'N': 1 };
+        // 使用全局 RARITY_ORDER_ASC（由 rarities.json 动态生成）
+        const rarityOrder = (typeof RARITY_ORDER_ASC !== 'undefined') ? RARITY_ORDER_ASC : {};
         const sorted = cards.slice(); // 复制一份
 
         switch (sortBy) {
             case 'rarity':
                 // 稀有度高→低，同稀有度按数量降序
                 sorted.sort(function (a, b) {
-                    const rDiff = (rarityOrder[b.rarityCode] || 0) - (rarityOrder[a.rarityCode] || 0);
+                    const rDiff = (rarityOrder[(b.rarityVersions || ['N'])[0]] || 0) - (rarityOrder[(a.rarityVersions || ['N'])[0]] || 0);
                     if (rDiff !== 0) return rDiff;
                     return b.count - a.count;
                 });
@@ -427,7 +428,7 @@ const InventorySystem = (function () {
             case 'price':
                 // 价格高→低
                 sorted.sort(function (a, b) {
-                    const pDiff = getCardPrice(b.rarityCode) - getCardPrice(a.rarityCode);
+                    const pDiff = getCardPrice((b.rarityVersions || ['N'])[0]) - getCardPrice((a.rarityVersions || ['N'])[0]);
                     if (pDiff !== 0) return pDiff;
                     return b.count - a.count;
                 });

@@ -2,6 +2,21 @@
 
 > 从 DEVELOPMENT.md 拆分，记录各版本的变更和待处理事项。
 
+## v1.5.20（2026-02-28）— 移除冗余 rarityCode 字段，统一使用 rarityVersions
+- **数据结构简化**：卡牌对象不再包含 `rarityCode` 字段，统一使用 `rarityVersions` 数组
+- 需要"基础稀有度"时，直接取 `rarityVersions[0]`
+- 开包 roll 到具体稀有度版本后，将 `rarityVersions` 设为 `[目标稀有度]`
+- **涉及修改文件**：`api.js`、`game.js`、`inventory.js`、5个 JSON 卡牌数据文件、`fallback_cards.js`、`rarities.json`、`changelog.json`
+- 为 `ocg_25db.json`、`ocg_ch02.json`、`ocg_26pp.json` 补充了缺失的 `rarityVersions` 字段
+
+## v1.5.19（2026-02-28）— 新建稀有度管理文件 + LOCH 稀有度修正
+- **新建 `data/common/rarities.json`**：全局稀有度定义文件，统一管理所有稀有度的元数据（中英日名称、简称、描述、排序权重、CSS颜色、分类、破框/限量标记）
+- 定义了12种稀有度：N / NR / R / SR / UR / UTR / CR / SER / PSER / UR-OF / PSER-OF / GMR-OF
+- **修正 LOCH 卡包稀有度**：正确区分 `UR-OF`（浮雕破框）、`PSER-OF`（棱镜秘钻破框）、`GMR-OF`（特级大师破框）为独立稀有度，不再合并到 UR/PSER 中
+- LOCH 卡包稀有度组合修正为4种：18张(UR/UR-OF/SER/PSER-OF/GMR-OF) + 20张(UR/SER/PSER) + 21张(SR/CR/SER/PSER) + 21张(SR/UTR/SER/PSER)
+- `packs.json` 中 LOCH 的 `versionOdds` 新增 UR-OF(2) / PSER-OF(1) / GMR-OF(0.5) 权重
+- `docs/ARCHITECTURE.md` 更新稀有度来源说明和关键数据文件列表
+
 ## v1.5.18（2026-02-28）— 图鉴新增 +1 辅助包收集进度
 - **辅助包集成到图鉴**：收集一览弹窗中，主卡池卡片下方新增「📦 +1 辅助包」区域
 - 辅助包区域包含独立的收集进度条（可展开查看各稀有度详情）、稀有度分布标签、卡片网格
@@ -40,7 +55,7 @@
 - **稀有度配色方案**：采用渐进式过渡配色，减少视觉割裂感
 
 ## v1.5.5（2026-02-28）— NR 卡归池修正：NR 属于 N 卡卡池
-- **NR 卡归属修正**：NR 卡（JP028/JP070/JP080）的 `rarityCode` 改为 `"N"`，回到 N 卡卡池
+- **NR 卡归属修正**：NR 卡（JP028/JP070/JP080）的基础稀有度改为 `"N"`，回到 N 卡卡池
 - NR 卡的选中概率为普通 N 卡的 20%（通过加权随机实现，由 `nrWeightRatio` 配置控制）
 - `rarityVersions` 保留 NR 标记（如 `["N", "NR", "PSER"]`），用于展示和背包系统识别
 - **非 N 位不再产出 NR**：移除了旧的 "R 位 10% 变 NR" 逻辑（`boxNRChance` 已废弃）
@@ -95,8 +110,9 @@
 - 缓存同步：`api.js` 的 `getOCGCardSetData` 中已增加稀有度同步逻辑
 
 ## 🟢 多版本稀有度系统（已基本完成）
-- 数据结构：`rarityVersions` 数组 + `rarityCode` 基础稀有度
-- 8种稀有度 UI 完整支持
+- 数据结构：统一使用 `rarityVersions` 数组（已移除冗余的 `rarityCode` 字段）
+- **全局稀有度定义**：`data/common/rarities.json`，12种稀有度完整定义
+- 12种稀有度 UI 支持（含破框版本 UR-OF / PSER-OF / GMR-OF）
 - **待用户确认**：`versionOdds` 各稀有度的实际概率权重
 
 ## 🔴 KONAMI 卡图代理无法获取真实卡图（挂起）

@@ -26,11 +26,13 @@ let currentGameMode = 'ocg';  // 当前游戏模式：'ocg' 或 'tcg'，默认 O
 let tcgModeEnabled = false;    // TCG 测试模式是否已开启（通过开发者工具开启）
 let currentPackCategory = 'recent';  // 当前选中的卡包分类（recent/booster/structure/concept/special）
 
-// ====== 稀有度排序常量 ======
-// 升序排序（N在前，PSER在后）—— 用于开包结果展示，营造惊喜感
-const RARITY_ORDER_ASC = { 'N': 0, 'NR': 1, 'R': 2, 'SR': 3, 'UR': 4, 'UTR': 5, 'SER': 6, 'PSER': 7 };
-// 降序排序（PSER在前，N在后）—— 用于预览/背包等列表，稀有卡优先展示
-const RARITY_ORDER_DESC = { 'PSER': 8, 'SER': 7, 'UTR': 6, 'UR': 5, 'SR': 4, 'R': 3, 'NR': 2, 'N': 1 };
+// ====== 稀有度排序（由 rarities.json 动态生成，以下为兜底默认值） ======
+// 升序映射：{ code: weight }，weight 越大越稀有 —— 用于开包结果排序（N→最稀有）
+let RARITY_ORDER_ASC = { 'N': 10, 'NR': 20, 'R': 30, 'SR': 40, 'UR': 50, 'UR-OF': 55, 'UTR': 60, 'CR': 65, 'SER': 70, 'PSER': 80, 'PSER-OF': 90, 'GMR-OF': 100 };
+// 降序映射：同 ASC（值相同），排序时取反即可 —— 用于预览/背包列表
+let RARITY_ORDER_DESC = Object.assign({}, RARITY_ORDER_ASC);
+// 降序稀有度代码数组：['GMR-OF', 'PSER-OF', 'PSER', ...] —— 用于遍历展示
+let RARITY_CODES_DESC = Object.keys(RARITY_ORDER_ASC).sort(function (a, b) { return RARITY_ORDER_ASC[b] - RARITY_ORDER_ASC[a]; });
 
 // ====== 页面加载完成后初始化 ======
 document.addEventListener('DOMContentLoaded', async function () {
@@ -62,13 +64,14 @@ document.addEventListener('DOMContentLoaded', async function () {
         showLoadingState('正在加载游戏配置...');
         console.log('📡 开始 fetch 配置文件...');
 
-        // 加载 OCG 配置和更新日志（TCG 配置延迟加载，仅在开启 TCG 测试模式时才加载）
-        const [ocgResponse, changelogResponse] = await Promise.all([
+        // 加载 OCG 配置、更新日志和稀有度定义（TCG 配置延迟加载，仅在开启 TCG 测试模式时才加载）
+        const [ocgResponse, changelogResponse, raritiesResponse] = await Promise.all([
             fetch('data/ocg/packs.json'),
-            fetch('data/changelog.json')
+            fetch('data/changelog.json'),
+            fetch('data/common/rarities.json')
         ]);
 
-        console.log('📡 fetch 完成，ocg/packs.json status:', ocgResponse.status, ', changelog.json status:', changelogResponse.status);
+        console.log('📡 fetch 完成，ocg/packs.json status:', ocgResponse.status, ', changelog.json status:', changelogResponse.status, ', rarities.json status:', raritiesResponse.status);
 
         // 检查 HTTP 响应状态
         if (!ocgResponse.ok) {
@@ -77,10 +80,17 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (!changelogResponse.ok) {
             throw new Error(`加载 changelog.json 失败: HTTP ${changelogResponse.status} ${changelogResponse.statusText}`);
         }
+        if (!raritiesResponse.ok) {
+            throw new Error(`加载 rarities.json 失败: HTTP ${raritiesResponse.status} ${raritiesResponse.statusText}`);
+        }
 
         ocgPackConfig = await ocgResponse.json();
         changelogData = await changelogResponse.json();
+        const raritiesData = await raritiesResponse.json();
         console.log('✅ JSON 解析成功');
+
+        // 从 rarities.json 动态注入稀有度 CSS 变量和颜色类
+        applyRarityColors(raritiesData);
         console.log(`📦 OCG 卡包数量: ${ocgPackConfig.packs.length}`);
 
         // 如果 TCG 测试模式已开启，加载 TCG 配置
@@ -144,6 +154,51 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 });
+
+// ====== 稀有度颜色动态注入 ======
+
+/**
+ * 从 rarities.json 数据中读取颜色，动态生成 CSS 变量和稀有度颜色类。
+ * 这样新增/修改稀有度颜色只需编辑 rarities.json，无需改动 CSS。
+ * @param {Object} raritiesData - rarities.json 解析后的对象
+ */
+function applyRarityColors(raritiesData) {
+    if (!raritiesData || !raritiesData.rarities) {
+        console.warn('⚠️ rarities.json 数据格式不正确，跳过颜色注入');
+        return;
+    }
+
+    // ---- 从 rarities.json 动态构建全局稀有度排序映射 ----
+    const ascMap = {};
+    raritiesData.rarities.forEach(function (r) {
+        ascMap[r.code] = r.sortWeight;
+    });
+    RARITY_ORDER_ASC = ascMap;
+    RARITY_ORDER_DESC = Object.assign({}, ascMap);
+    // 按 sortWeight 从大到小排列的稀有度代码列表
+    RARITY_CODES_DESC = Object.keys(ascMap).sort(function (a, b) { return ascMap[b] - ascMap[a]; });
+    console.log('📊 已从 rarities.json 构建稀有度排序映射，共 ' + RARITY_CODES_DESC.length + ' 种：' + RARITY_CODES_DESC.join(', '));
+
+    // ---- 动态注入 CSS 颜色 ----
+    const root = document.documentElement;
+    let dynamicCSS = '';
+
+    raritiesData.rarities.forEach(function (r) {
+        // 注入 CSS 变量到 :root（如 --rarity-UR: #f5c842）
+        root.style.setProperty('--rarity-' + r.code, r.cssColor);
+
+        // 生成 .rarity-color-{code} 颜色类（用于 JS 动态渲染文本颜色）
+        dynamicCSS += '.rarity-color-' + r.code + ' { color: var(--rarity-' + r.code + '); }\n';
+    });
+
+    // 将动态生成的颜色类注入到页面中
+    const styleEl = document.createElement('style');
+    styleEl.id = 'rarity-dynamic-colors';
+    styleEl.textContent = dynamicCSS;
+    document.head.appendChild(styleEl);
+
+    console.log('🎨 已从 rarities.json 动态注入 ' + raritiesData.rarities.length + ' 种稀有度颜色');
+}
 
 // ====== 加载状态管理 ======
 
@@ -1102,13 +1157,13 @@ async function openMultiPacks(count) {
             const bonusPSERChance = currentPack.bonusPSERChance || (4 / 24); // 约16.7%
             if (boxHasPSER) {
                 // 原盒已出PSER → 辅助包强制不出PSER，用第一个版本（基础稀有度）
-                bonusCard.rarityCode = versions[0];
+                bonusCard.rarityVersions = [versions[0]];
             } else if (Math.random() < bonusPSERChance && versions.indexOf('PSER') >= 0) {
                 // 原盒没出PSER + 中了辅助包PSER概率 + 这张卡有PSER版本
-                bonusCard.rarityCode = 'PSER';
+                bonusCard.rarityVersions = ['PSER'];
             } else {
                 // 正常情况：用基础稀有度
-                bonusCard.rarityCode = versions[0];
+                bonusCard.rarityVersions = [versions[0]];
             }
         }
         
@@ -1157,7 +1212,7 @@ function drawCards(pack, cards) {
  * OCG 默认抽卡方案
  * 
  * 【流程】
- * 1. 把卡池分为 N卡池 和 非N卡池（按 rarityCode 判断）
+ * 1. 把卡池分为 N卡池 和 非N卡池（按 rarityVersions[0] 判断）
  * 2. 从 N卡池 随机抽 4 张（编号不重复）
  * 3. 从 非N卡池 随机抽 1 张（编号不与已抽的重复）
  * 4. 对非N卡检查 rarityVersions：
@@ -1177,13 +1232,13 @@ function drawCards_OCG(pack, cards) {
     const nrWeightRatio = pack.nrWeightRatio || 0.2;
 
     // --- 分池逻辑 ---
-    // N池：rarityCode === 'N' 的卡（NR 卡也属于 N 卡卡池，但选中概率更低）
+    // N池：rarityVersions[0] === 'N' 的卡（NR 卡也属于 N 卡卡池，但选中概率更低）
     // 非N池按稀有度分类：{ 'R': [...], 'SR': [...], 'UR': [...] }
     const nPool = [];       // N卡池（含 NR 卡，NR 卡会被标记）
     const poolByRarity = {};  // { 'R': [...], 'SR': [...], 'UR': [...] }
 
     cards.forEach(function (card) {
-        const code = card.rarityCode || 'N';
+        const code = (card.rarityVersions || ['N'])[0];
         if (code === 'N') {
             // 判断是否为 NR 卡：rarityVersions 中包含 'NR' 的 N 卡
             const versions = card.rarityVersions || ['N'];
@@ -1231,10 +1286,10 @@ function drawCards_OCG(pack, cards) {
         if (picked) {
             const setNum = picked.card.setNumber || picked.card.id;
             usedSetNumbers.add(setNum);
-            // 如果抽到了 NR 卡，将 rarityCode 设为 'NR'（而不是 'N'）
+        // 如果抽到了 NR 卡，将 rarityVersions 设为 ['NR']（而不是 ['N']）
             const finalCard = { ...picked.card };
             if (picked.isNR) {
-                finalCard.rarityCode = 'NR';
+            finalCard.rarityVersions = ['NR'];
             }
             results.push(finalCard);
         }
@@ -1294,7 +1349,7 @@ function drawCards_OCG(pack, cards) {
     function findCardsForTargetRarity(target) {
         const result = [];
         cards.forEach(function (card) {
-            const versions = card.rarityVersions || [card.rarityCode || 'N'];
+        const versions = card.rarityVersions || ['N'];
             if (versions.indexOf(target) >= 0) {
                 result.push(card);
             }
@@ -1310,11 +1365,11 @@ function drawCards_OCG(pack, cards) {
 
     if (available.length > 0) {
         const picked = available[Math.floor(Math.random() * available.length)];
-        rareCard = { ...picked, rarityCode: targetRarity };
+        rareCard = { ...picked, rarityVersions: [targetRarity] };
     } else if (candidates.length > 0) {
         // 所有候选卡都与N位重复了，允许重复（极低概率）
         const picked = candidates[Math.floor(Math.random() * candidates.length)];
-        rareCard = { ...picked, rarityCode: targetRarity };
+        rareCard = { ...picked, rarityVersions: [targetRarity] };
     } else {
         // 找不到目标稀有度的卡（数据问题兜底），从所有非N池中随机选
         const allNonN = Object.values(poolByRarity).reduce(function(acc, arr) { return acc.concat(arr); }, []);
@@ -1333,7 +1388,7 @@ function drawCards_OCG(pack, cards) {
 
     // --- 步骤3：按稀有度排序（N在前，最稀有的在后面，营造惊喜感）---
     results.sort(function (a, b) {
-        return (RARITY_ORDER_ASC[a.rarityCode] || 0) - (RARITY_ORDER_ASC[b.rarityCode] || 0);
+    return (RARITY_ORDER_ASC[(a.rarityVersions || ['N'])[0]] || 0) - (RARITY_ORDER_ASC[(b.rarityVersions || ['N'])[0]] || 0);
     });
 
     return results;
@@ -1404,13 +1459,13 @@ function drawCardsBox_OCG(pack, cards) {
     const shuffledSlots = shuffleArray([...rareSlots]);
     
     // --- 步骤2：按分池分类卡池 ---
-    // N池：rarityCode === 'N' 的卡（NR 卡也属于 N 卡卡池，但选中概率更低）
+    // N池：rarityVersions[0] === 'N' 的卡（NR 卡也属于 N 卡卡池，但选中概率更低）
     // 非N池按稀有度分类：{ 'R': [...], 'SR': [...], 'UR': [...] }
     const nPool = [];       // N卡池（含 NR 卡，NR 卡会被标记）
     const poolByRarity = {}; // { 'SR': [...], 'UR': [...], ... }
     
     cards.forEach(function (card) {
-        const baseCode = card.rarityCode || 'N';
+        const baseCode = (card.rarityVersions || ['N'])[0];
         if (baseCode === 'N') {
             // 判断是否为 NR 卡：rarityVersions 中包含 'NR' 的 N 卡
             const versions = card.rarityVersions || ['N'];
@@ -1431,7 +1486,7 @@ function drawCardsBox_OCG(pack, cards) {
     function findCardsForTargetRarity(targetRarity) {
         const result = [];
         cards.forEach(function (card) {
-            const versions = card.rarityVersions || [card.rarityCode || 'N'];
+            const versions = card.rarityVersions || ['N'];
             if (versions.indexOf(targetRarity) >= 0) {
                 result.push(card);
             }
@@ -1455,7 +1510,7 @@ function drawCardsBox_OCG(pack, cards) {
             const candidates = findCardsForTargetRarity(targetRarity);
             if (candidates.length > 0) {
                 const picked = candidates[Math.floor(Math.random() * candidates.length)];
-                rareCard = { ...picked, rarityCode: targetRarity };
+                rareCard = { ...picked, rarityVersions: [targetRarity] };
             }
         }
         
@@ -1465,7 +1520,7 @@ function drawCardsBox_OCG(pack, cards) {
             const candidates = findCardsForTargetRarity(targetRarity);
             if (candidates.length > 0) {
                 const picked = candidates[Math.floor(Math.random() * candidates.length)];
-                rareCard = { ...picked, rarityCode: targetRarity };
+                rareCard = { ...picked, rarityVersions: [targetRarity] };
             } else {
                 // 兜底：从对应基础稀有度池中选，走 versionOdds 随机
                 const basePool = poolByRarity[targetRarity] || [];
@@ -1511,7 +1566,7 @@ function drawCardsBox_OCG(pack, cards) {
                 usedSetNumbers.add(setNum);
                 const finalCard = { ...picked.card };
                 if (picked.isNR) {
-                    finalCard.rarityCode = 'NR';
+            finalCard.rarityVersions = ['NR'];
                 }
                 packCards.push(finalCard);
                 nDrawn++;
@@ -1520,7 +1575,7 @@ function drawCardsBox_OCG(pack, cards) {
         
         // --- 步骤3c：按稀有度排序（N在前，稀有在后，营造惊喜感）---
         packCards.sort(function (a, b) {
-            return (RARITY_ORDER_ASC[a.rarityCode] || 0) - (RARITY_ORDER_ASC[b.rarityCode] || 0);
+    return (RARITY_ORDER_ASC[(a.rarityVersions || ['N'])[0]] || 0) - (RARITY_ORDER_ASC[(b.rarityVersions || ['N'])[0]] || 0);
         });
         
         allCards.push(...packCards);
@@ -1565,13 +1620,13 @@ function resolveCardVersion(card, versionOdds) {
     for (let i = 0; i < versions.length; i++) {
         random -= weights[i];
         if (random <= 0) {
-            result.rarityCode = versions[i];
+        result.rarityVersions = [versions[i]];
             return result;
         }
     }
 
     // 兜底：返回最后一个版本
-    result.rarityCode = versions[versions.length - 1];
+    result.rarityVersions = [versions[versions.length - 1]];
     return result;
 }
 
@@ -1613,7 +1668,7 @@ function drawCards_Legacy(pack, cards) {
     // 按稀有度把卡牌分组
     const cardsByRarity = {};
     cards.forEach(function (card) {
-        const code = card.rarityCode || 'N';
+        const code = (card.rarityVersions || ['N'])[0];
         if (!cardsByRarity[code]) {
             cardsByRarity[code] = [];
         }
@@ -1652,7 +1707,7 @@ function drawCards_Legacy(pack, cards) {
 
     // 按稀有度排序：N → NR → R → SR → UR → UTR → SER → PSER
     results.sort(function (a, b) {
-        return (RARITY_ORDER_ASC[a.rarityCode] || 0) - (RARITY_ORDER_ASC[b.rarityCode] || 0);
+    return (RARITY_ORDER_ASC[(a.rarityVersions || ['N'])[0]] || 0) - (RARITY_ORDER_ASC[(b.rarityVersions || ['N'])[0]] || 0);
     });
 
     return results;
@@ -1730,17 +1785,8 @@ async function showResults(cards, bonusCards) {
     const display = document.getElementById('cards-display');
     display.innerHTML = '';
 
-    // 稀有度排序优先级（数字越大越稀有，排在越前面）
-    const RARITY_RANK = {
-        'N': 0,
-        'NR': 1,
-        'R': 2,
-        'SR': 3,
-        'UR': 4,
-        'UTR': 5,
-        'SER': 6,
-        'PSER': 7
-    };
+    // 稀有度排序优先级（直接复用全局 RARITY_ORDER_ASC，由 rarities.json 动态生成）
+    const RARITY_RANK = RARITY_ORDER_ASC;
 
     // 多包模式下：合并相同卡片 + 按稀有度排序
     let displayCards = cards;
@@ -1750,7 +1796,7 @@ async function showResults(cards, bonusCards) {
         const mergeMap = new Map();
         for (const card of cards) {
             const cardKey = card.cardSetCode || card.id || card.name;
-            const key = `${cardKey}_${card.rarityCode || 'N'}`;
+        const key = `${cardKey}_${(card.rarityVersions || ['N'])[0]}`;
             if (mergeMap.has(key)) {
                 mergeMap.get(key).count++;
             } else {
@@ -1762,8 +1808,8 @@ async function showResults(cards, bonusCards) {
 
         // 按稀有度从高到低排序
         displayCards.sort((a, b) => {
-            const rankA = RARITY_RANK[a.rarityCode] ?? 0;
-            const rankB = RARITY_RANK[b.rarityCode] ?? 0;
+            const rankA = RARITY_RANK[(a.rarityVersions || ['N'])[0]] ?? 0;
+            const rankB = RARITY_RANK[(b.rarityVersions || ['N'])[0]] ?? 0;
             return rankB - rankA;
         });
     }
@@ -1775,7 +1821,7 @@ async function showResults(cards, bonusCards) {
     for (let i = 0; i < displayCards.length; i++) {
         const card = displayCards[i];
         const cardEl = document.createElement('div');
-        const rarityCode = card.rarityCode || 'N';
+        const rarityCode = (card.rarityVersions || ['N'])[0];
         cardEl.className = `card-item rarity-${rarityCode}`;
         // 动态设置动画延迟（覆盖 CSS nth-child 规则）
         cardEl.style.animationDelay = (i * perCardDelay).toFixed(2) + 's';
@@ -1836,8 +1882,8 @@ async function showResults(cards, bonusCards) {
             bonusCardsEl.innerHTML = '';
             for (const card of bonusCards) {
                 const cardEl = document.createElement('div');
-                const rarityCode = card.rarityCode || 'N';
-                cardEl.className = `card-item rarity-${rarityCode}`;
+        const rarityCode = (card.rarityVersions || ['N'])[0];
+        cardEl.className = `card-item rarity-${rarityCode}`;
 
                 let imageHtml;
                 if (card.imageUrl) {
@@ -1888,11 +1934,11 @@ async function showResults(cards, bonusCards) {
     const allStatsCards = cards.concat(bonusCards);
     const rarityStats = {};
     for (const card of allStatsCards) {
-        const r = card.rarityCode || 'N';
+        const r = (card.rarityVersions || ['N'])[0];
         rarityStats[r] = (rarityStats[r] || 0) + 1;
     }
-    // 按稀有度从高到低排序后渲染统计行
-const rarityOrder = ['PSER', 'SER', 'UTR', 'UR', 'SR', 'R', 'NR', 'N'];
+    // 按稀有度从高到低排序后渲染统计行（使用 rarities.json 动态生成的排序）
+const rarityOrder = RARITY_CODES_DESC;
     const statsEl = document.getElementById('rarity-stats');
     if (statsEl) {
         const items = rarityOrder
@@ -2929,12 +2975,13 @@ function renderCardPreview(sortBy, cards, pack, supplementCards) {
     const ownedVersionsMap = {}; // { cardId: { "SR": 2, "SER": 1 } }
     let totalVersions = 0;   // 所有稀有度版本总数
     let ownedVersionCount = 0; // 已收集的稀有度版本数
-    // 每个稀有度的已收集数（用于详情面板）
-    const rarityOwnedCounts = { 'PSER': 0, 'SER': 0, 'UTR': 0, 'UR': 0, 'SR': 0, 'R': 0, 'NR': 0, 'N': 0 };
+    // 每个稀有度的已收集数（用于详情面板，动态初始化）
+    const rarityOwnedCounts = {};
+    RARITY_CODES_DESC.forEach(function (code) { rarityOwnedCounts[code] = 0; });
     allCards.forEach(function (card) {
         const invCard = InventorySystem.getCard(card.id);
         // 计算该卡的所有稀有度版本数（同时有N和NR时只算NR）
-        let versions = card.rarityVersions || [card.rarityCode || 'N'];
+        let versions = card.rarityVersions || ['N'];
         if (versions.includes('N') && versions.includes('NR')) {
             versions = versions.filter(function (v) { return v !== 'N'; });
         }
@@ -2965,7 +3012,7 @@ function renderCardPreview(sortBy, cards, pack, supplementCards) {
             break;
         case 'rarity':
             sortedCards.sort(function (a, b) {
-                const rDiff = (RARITY_ORDER_DESC[b.rarityCode] || 0) - (RARITY_ORDER_DESC[a.rarityCode] || 0);
+        const rDiff = (RARITY_ORDER_DESC[(b.rarityVersions || ['N'])[0]] || 0) - (RARITY_ORDER_DESC[(a.rarityVersions || ['N'])[0]] || 0);
                 if (rDiff !== 0) return rDiff;
                 // 同稀有度，已拥有的排前面
                 const aOwned = ownedMap[a.id] ? 1 : 0;
@@ -2979,7 +3026,7 @@ function renderCardPreview(sortBy, cards, pack, supplementCards) {
                 const aOwned = ownedMap[a.id] ? 1 : 0;
                 const bOwned = ownedMap[b.id] ? 1 : 0;
                 if (aOwned !== bOwned) return bOwned - aOwned;
-                return (RARITY_ORDER_DESC[b.rarityCode] || 0) - (RARITY_ORDER_DESC[a.rarityCode] || 0);
+        return (RARITY_ORDER_DESC[(b.rarityVersions || ['N'])[0]] || 0) - (RARITY_ORDER_DESC[(a.rarityVersions || ['N'])[0]] || 0);
             });
             break;
         case 'name':
@@ -2993,9 +3040,11 @@ function renderCardPreview(sortBy, cards, pack, supplementCards) {
 
     // 稀有度分布统计（统计所有版本，一张卡有多个版本则每个版本各计一次）
     // 同时有N和NR时只保留NR，与卡片渲染逻辑一致
-const rarityCounts = { 'PSER': 0, 'SER': 0, 'UTR': 0, 'UR': 0, 'SR': 0, 'R': 0, 'NR': 0, 'N': 0 };
+// 稀有度计数器（从 rarities.json 动态生成 key）
+const rarityCounts = {};
+RARITY_CODES_DESC.forEach(function (code) { rarityCounts[code] = 0; });
     allCards.forEach(function (card) {
-        let versions = card.rarityVersions || [card.rarityCode || 'N'];
+        let versions = card.rarityVersions || ['N'];
         // 同时有N和NR时，过滤掉N只保留NR
         if (versions.includes('N') && versions.includes('NR')) {
             versions = versions.filter(function (v) { return v !== 'N'; });
@@ -3019,7 +3068,7 @@ const rarityCounts = { 'PSER': 0, 'SER': 0, 'UTR': 0, 'UR': 0, 'SR': 0, 'R': 0, 
     // 收集进度条（按稀有度版本统计）
     const collectionPercent = totalVersions > 0 ? Math.round(ownedVersionCount / totalVersions * 100) : 0;
     // 构建每个稀有度的收集详情行
-    const detailOrder = ['PSER', 'SER', 'UTR', 'UR', 'SR', 'R', 'NR', 'N'];
+    const detailOrder = RARITY_CODES_DESC;
     let rarityDetailHtml = '';
     detailOrder.forEach(function (code) {
         if (rarityCounts[code] > 0) {
@@ -3053,7 +3102,7 @@ const rarityCounts = { 'PSER': 0, 'SER': 0, 'UTR': 0, 'UR': 0, 'SR': 0, 'R': 0, 
     `;
 
     // 稀有度分布（只展示数量>0的稀有度）
-const rarityDisplayOrder = ['PSER', 'SER', 'UTR', 'UR', 'SR', 'R', 'NR', 'N'];
+const rarityDisplayOrder = RARITY_CODES_DESC;
     let rarityTagsHtml = '';
     rarityDisplayOrder.forEach(function (code) {
         if (rarityCounts[code] > 0) {
@@ -3079,12 +3128,13 @@ const rarityDisplayOrder = ['PSER', 'SER', 'UTR', 'UR', 'SR', 'R', 'NR', 'N'];
 
     // 卡片网格
     // 稀有度权重（用于确定边框颜色 —— 取最高稀有度版本）
-const rarityWeight = { 'PSER': 8, 'SER': 7, 'UTR': 6, 'UR': 5, 'SR': 4, 'R': 3, 'NR': 2, 'N': 1 };
+// 稀有度权重（用于确定边框颜色 —— 取最高稀有度版本），直接复用全局排序映射
+const rarityWeight = RARITY_ORDER_ASC;
     html += '<div class="preview-card-grid">';
     sortedCards.forEach(function (card) {
         const isOwned = !!ownedMap[card.id];
         const ownedQty = ownedMap[card.id] || 0;
-        const rarityCode = card.rarityCode || 'N';
+        const rarityCode = (card.rarityVersions || ['N'])[0];
         // 如果同时存在 N 和 NR，只保留 NR（NR 是 N 的上位，无需并列展示）
         let versions = card.rarityVersions || [rarityCode];
         if (versions.indexOf('N') !== -1 && versions.indexOf('NR') !== -1) {
@@ -3116,7 +3166,7 @@ const rarityWeight = { 'PSER': 8, 'SER': 7, 'UTR': 6, 'UR': 5, 'SR': 4, 'R': 3, 
             }).join('<span class="rarity-sep">|</span>');
             rarityBadgeHtml += '</span>';
         } else {
-            // 单版本：根据收集状态决定颜色（使用过滤后的版本，而非原始 rarityCode）
+            // 单版本：根据收集状态决定颜色
             const singleRarity = sortedVersions[0] || rarityCode;
             const singleCollected = versionsOwned[singleRarity] && versionsOwned[singleRarity] > 0;
             const singleClass = singleCollected ? 'rarity-' + singleRarity : 'rarity-uncollected';
@@ -3180,7 +3230,7 @@ const rarityWeight = { 'PSER': 8, 'SER': 7, 'UTR': 6, 'UR': 5, 'SR': 4, 'R': 3, 
         const suppRarityOwnedCounts = {};
         const suppRarityCounts = {};
         previewSupp.forEach(function (card) {
-            let versions = card.rarityVersions || [card.rarityCode || 'UR'];
+            let versions = card.rarityVersions || ['UR'];
             if (versions.includes('N') && versions.includes('NR')) {
                 versions = versions.filter(function (v) { return v !== 'N'; });
             }
@@ -3232,7 +3282,7 @@ const rarityWeight = { 'PSER': 8, 'SER': 7, 'UTR': 6, 'UR': 5, 'SR': 4, 'R': 3, 
         html += '</div>';
 
         // 辅助包稀有度分布标签
-        const suppRarityDisplayOrder = ['PSER', 'SER', 'UTR', 'UR', 'SR', 'R', 'NR', 'N'];
+        const suppRarityDisplayOrder = RARITY_CODES_DESC;
         let suppRarityTagsHtml = '';
         suppRarityDisplayOrder.forEach(function (code) {
             if (suppRarityCounts[code] > 0) {
@@ -3249,7 +3299,7 @@ const rarityWeight = { 'PSER': 8, 'SER': 7, 'UTR': 6, 'UR': 5, 'SR': 4, 'R': 3, 
             const invCard = InventorySystem.getCard(card.id);
             const isOwned = !!invCard;
             const ownedQty = invCard ? invCard.count : 0;
-            const rc = card.rarityCode || 'UR';
+            const rc = (card.rarityVersions || ['UR'])[0];
             let versions = card.rarityVersions || [rc];
             if (versions.indexOf('N') !== -1 && versions.indexOf('NR') !== -1) {
                 versions = versions.filter(function (v) { return v !== 'N'; });
