@@ -2791,30 +2791,34 @@ body {
   opacity: .6;
 }
 
-/* --- 已拥有数量角标 --- */
+/* --- 已拥有数量角标（实心色块风格） --- */
 .preview-owned-badge {
   position: absolute;
   bottom: 4px;
   right: 4px;
-  background: rgba(0, 0, 0, .8);
-  font-size: .7rem;
+  font-size: .65rem;
   font-weight: bold;
   padding: 2px 6px;
-  border-radius: 8px;
-  backdrop-filter: blur(4px);
+  border-radius: 4px;
+  color: #000;
 }
 
-/* 多版本数量角标：横向排列各版本数量 */
+/* 多版本数量角标：多个实心色块并列 */
 .preview-owned-badge.preview-owned-multi {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 2px 5px;
+  gap: 2px;
+  padding: 0;
+  background: transparent;
 }
 
 .owned-version-count {
-  font-size: .6rem;
+  display: inline-block;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: .55rem;
   font-weight: bold;
+  color: #000;
 }
 
 /* --- 未拥有锁定图标 --- */

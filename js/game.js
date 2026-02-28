@@ -191,7 +191,7 @@ function applyRarityColors(raritiesData) {
         dynamicCSS += '.rarity-color-' + r.code + ' { color: var(--rarity-' + r.code + '); }\n';
 
         // 生成角标实心背景色样式（覆盖所有稀有度，包括动态新增的）
-        var badgeSelectors = ['.card-rarity-badge', '.inventory-rarity-badge', '.preview-rarity-badge', '.rarity-version-item'];
+        var badgeSelectors = ['.card-rarity-badge', '.inventory-rarity-badge', '.preview-rarity-badge', '.rarity-version-item', '.preview-owned-badge', '.owned-version-count'];
         badgeSelectors.forEach(function (sel) {
             dynamicCSS += sel + '.rarity-' + r.code + ' { background-color: var(--rarity-' + r.code + '); }\n';
         });
@@ -3179,25 +3179,25 @@ const rarityWeight = RARITY_ORDER_ASC;
             rarityBadgeHtml = `<span class="preview-rarity-badge ${singleClass}">${singleRarity}</span>`;
         }
 
-        // 构建右下角数量角标（按稀有度分别显示，颜色对应稀有度）
+        // 构建右下角数量角标（按稀有度分别显示，每个版本独立色块）
         let ownedBadgeHtml = '';
         if (isOwned) {
             if (sortedVersions.length > 1) {
-                // 多版本：每个版本单独显示数量（按稀有度从高到低）
+                // 多版本：每个版本各自一个实心色块并列
                 let parts = [];
                 sortedVersions.forEach(function (v) {
                     const vCount = versionsOwned[v] || 0;
                     if (vCount > 0) {
-                        parts.push('<span class="owned-version-count rarity-color-' + v + '">×' + vCount + '</span>');
+                        parts.push('<span class="owned-version-count rarity-' + v + '">×' + vCount + '</span>');
                     }
                 });
                 if (parts.length > 0) {
                     ownedBadgeHtml = '<span class="preview-owned-badge preview-owned-multi">' + parts.join('') + '</span>';
                 }
             } else {
-                // 单版本：显示总数，颜色对应稀有度（使用过滤后的版本）
+                // 单版本：实心色块显示总数
                 const singleRarityForBadge = sortedVersions[0] || rarityCode;
-                ownedBadgeHtml = `<span class="preview-owned-badge rarity-color-${singleRarityForBadge}">×${ownedQty}</span>`;
+                ownedBadgeHtml = `<span class="preview-owned-badge rarity-${singleRarityForBadge}">×${ownedQty}</span>`;
             }
         }
 
@@ -3337,7 +3337,7 @@ const rarityWeight = RARITY_ORDER_ASC;
                 rarityBadgeHtml = '<span class="preview-rarity-badge ' + singleClass + '">' + singleRarity + '</span>';
             }
 
-            // 数量角标
+            // 数量角标（每个版本独立色块）
             let ownedBadgeHtml = '';
             if (isOwned) {
                 if (sortedVersions.length > 1) {
@@ -3345,7 +3345,7 @@ const rarityWeight = RARITY_ORDER_ASC;
                     sortedVersions.forEach(function (v) {
                         const vCount = versionsOwned[v] || 0;
                         if (vCount > 0) {
-                            parts.push('<span class="owned-version-count rarity-color-' + v + '">×' + vCount + '</span>');
+                            parts.push('<span class="owned-version-count rarity-' + v + '">×' + vCount + '</span>');
                         }
                     });
                     if (parts.length > 0) {
@@ -3353,7 +3353,7 @@ const rarityWeight = RARITY_ORDER_ASC;
                     }
                 } else {
                     const singleR = sortedVersions[0] || rc;
-                    ownedBadgeHtml = '<span class="preview-owned-badge rarity-color-' + singleR + '">×' + ownedQty + '</span>';
+                    ownedBadgeHtml = '<span class="preview-owned-badge rarity-' + singleR + '">×' + ownedQty + '</span>';
                 }
             }
 
