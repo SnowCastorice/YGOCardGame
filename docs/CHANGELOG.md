@@ -2,6 +2,12 @@
 
 > 从 DEVELOPMENT.md 拆分，记录各版本的变更和待处理事项。
 
+## v1.5.25（2026-02-28）— 统一角标高度 + 添加描边
+- 统一单版本和多版本角标的 `padding`/`font-size`/`border-radius`，解决高度不一致问题
+- 所有实心色块添加 `box-shadow: 0 0 0 1px rgba(0, 0, 0, .5)` 暗色描边，防止浅色角标和卡图背景混在一起
+- 多版本容器（`.preview-rarity-multi`、`.preview-owned-multi`）设置 `box-shadow: none`，避免容器重复描边
+- 覆盖范围：抽卡结果（`.card-rarity-badge`）、图鉴（`.preview-rarity-badge`）、背包（`.inventory-rarity-badge`）、右下角数量（`.preview-owned-badge`）
+
 ## v1.5.24（2026-02-28）— 多版本数量角标改为独立实心色块并列
 - **右下角数量角标**：多版本卡片的数量角标从暗色背景+彩色文字改为**独立实心色块并列**
 - 单版本数量角标也改为实心色块风格（背景色 = 稀有度颜色 + 黑色文字）

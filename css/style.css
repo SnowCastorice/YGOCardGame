@@ -1100,6 +1100,7 @@ body {
     font-size: .65rem;
     font-weight: bold;
     color: #000;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, .5);
     z-index: 2;
 }
 
@@ -2287,6 +2288,7 @@ body {
     font-size: .65rem;
     font-weight: bold;
     color: #000;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, .5);
 }
 
 .inventory-rarity-badge.rarity-PSER {
@@ -2723,6 +2725,7 @@ body {
     font-size: .65rem;
     font-weight: bold;
     color: #000;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, .5);
 }
 
 .preview-rarity-badge.rarity-PSER {
@@ -2764,15 +2767,17 @@ body {
   gap: 2px;
   padding: 0;
   background: transparent;
+  box-shadow: none;
 }
 
 .rarity-version-item {
   display: inline-block;
-  padding: 1px 4px;
-  border-radius: 3px;
-  font-size: .55rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: .65rem;
   font-weight: bold;
   color: #000;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .5);
 }
 
 /* 未收集的版本色块：灰色实心背景 */
@@ -2801,6 +2806,7 @@ body {
   padding: 2px 6px;
   border-radius: 4px;
   color: #000;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .5);
 }
 
 /* 多版本数量角标：多个实心色块并列 */
@@ -2810,15 +2816,17 @@ body {
   gap: 2px;
   padding: 0;
   background: transparent;
+  box-shadow: none;
 }
 
 .owned-version-count {
   display: inline-block;
-  padding: 1px 4px;
-  border-radius: 3px;
-  font-size: .55rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: .65rem;
   font-weight: bold;
   color: #000;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .5);
 }
 
 /* --- 未拥有锁定图标 --- */
