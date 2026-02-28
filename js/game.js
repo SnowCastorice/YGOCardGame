@@ -130,9 +130,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         hideLoadingState();
 
-        const latestVer = changelogData && changelogData.versions && changelogData.versions[0] ? changelogData.versions[0].version : '?';
-        console.log(`🎴 YGO Pack Opener v${latestVer} 初始化完成！当前模式: ${currentGameMode.toUpperCase()}`);
-
+        const latestVer = window.APP_VERSION || '?';
+        console.log(`🂴 YGO Pack Opener v${latestVer} 初始化完成！当前模式: ${currentGameMode.toUpperCase()}`);
     } catch (error) {
         console.error('❌ 加载配置文件失败:', error);
         hideLoadingState();
@@ -2004,14 +2003,12 @@ function getCardIcon(rarity) {
 // 更新日志
 // ============================================
 
-/** 从 changelog 数据动态同步页脚版本号，保持底部显示和日志一致 */
+/** 从 APP_VERSION 全局变量同步页脚版本号 */
 function syncFooterVersion() {
     const footerEl = document.getElementById('footer-version');
     if (!footerEl) return;
-    if (changelogData && changelogData.versions && changelogData.versions.length > 0) {
-        const latestVersion = changelogData.versions[0].version;
-        footerEl.textContent = `YGO Pack Opener v${latestVersion}`;
-    }
+    const ver = window.APP_VERSION || '?';
+    footerEl.textContent = `YGO Pack Opener v${ver}`;
 }
 
 /** 显示更新日志弹窗 */

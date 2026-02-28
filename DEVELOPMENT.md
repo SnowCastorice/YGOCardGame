@@ -43,12 +43,15 @@
 4. **Git 提交**：提交信息使用中文
 
 ### 资源版本号（缓存破坏）
-> ⚠️ 每次更新 JS/CSS 后，**必须同步更新** `index.html` 中所有 `?v=` 版本号，否则浏览器缓存旧文件。
+> 所有资源版本号由 `index.html` 中的 `window.APP_VERSION` 统一控制。
+> 更新时**只需修改这一处**，CSS/JS 的 `?v=` 参数和页脚版本号会自动同步。
 
-需更新位置：
-- `<link>` 标签的 CSS 引用
-- `<script>` 标签的 JS 引用
-- 页脚版本号文字
+修改位置（唯一）：
+```html
+<script>window.APP_VERSION = 'x.x.x';</script>
+```
+
+同时记得在 `data/changelog.json` 中添加对应版本的更新日志。
 
 ### 设计原则
 - **移动端专属**：桌面端与移动端完全一致（居中 `max-width: 500px`）

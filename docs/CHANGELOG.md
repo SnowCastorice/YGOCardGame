@@ -2,6 +2,13 @@
 
 > 从 DEVELOPMENT.md 拆分，记录各版本的变更和待处理事项。
 
+## v1.5.27（2026-02-28）— 版本号统一管理 + 更新日志补全
+- 新增全局版本号变量 `APP_VERSION`，所有资源缓存参数、页脚版本号、console 输出统一从此变量读取
+- 更新版本时只需修改 `index.html` 中 `window.APP_VERSION = 'x.x.x'` 这一行
+- CSS/JS 资源的 `?v=` 参数通过 `document.write` 动态注入，自动跟随 `APP_VERSION`
+- 补全 `changelog.json` 中 v1.5.6 ~ v1.5.26 缺失的更新日志记录
+- **涉及修改文件**：`index.html`、`game.js`、`changelog.json`
+
 ## v1.5.26（2026-02-28）— 角标立体质感升级
 - 所有稀有度角标从纯实心色块升级为立体质感风格
 - 添加顶部渐变高光（`linear-gradient` 白色透明叠加），模拟光泽感
