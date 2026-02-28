@@ -2,6 +2,24 @@
 
 > 从 DEVELOPMENT.md 拆分，记录各版本的变更和待处理事项。
 
+## v1.5.24（2026-02-28）— 多版本数量角标改为独立实心色块并列
+- **右下角数量角标**：多版本卡片的数量角标从暗色背景+彩色文字改为**独立实心色块并列**
+- 单版本数量角标也改为实心色块风格（背景色 = 稀有度颜色 + 黑色文字）
+- `applyRarityColors` 的 `badgeSelectors` 新增 `.preview-owned-badge` 和 `.owned-version-count`
+
+## v1.5.23（2026-02-28）— 多版本稀有度角标改为实心色块并列
+- 多版本左上角稀有度角标从暗色背景+竖线分隔+彩色文字改为**多个实心色块并列**
+- 去掉 `<span class="rarity-sep">|</span>` 分隔符
+- `.rarity-version-item` 子项各自有独立实心背景色 + 黑色文字 + 圆角
+
+## v1.5.22（2026-02-28）— 统一稀有度角标为实心色块风格
+- 抽卡结果（`.card-rarity-badge`）、图鉴（`.preview-rarity-badge`）、背包（`.inventory-rarity-badge`）三处统一为**实心色块**风格
+- 位置统一固定在左上角，去掉暗色背景/毛玻璃/描边效果
+- `applyRarityColors` 新增动态生成角标 `background-color` 样式，覆盖所有稀有度
+
+## v1.5.21（2026-02-28）— 抽卡结果页稀有度角标移至左上角
+- 抽卡结果页的稀有度角标从右上角移至左上角，与图鉴保持一致
+
 ## v1.5.20（2026-02-28）— 移除冗余 rarityCode 字段，统一使用 rarityVersions
 - **数据结构简化**：卡牌对象不再包含 `rarityCode` 字段，统一使用 `rarityVersions` 数组
 - 需要"基础稀有度"时，直接取 `rarityVersions[0]`
