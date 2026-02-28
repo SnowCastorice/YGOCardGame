@@ -2438,6 +2438,104 @@ body {
     min-width: 0;
 }
 
+/* 进度条点击展开交互 */
+.preview-collection-toggle {
+    cursor: pointer;
+    user-select: none;
+}
+
+.toggle-arrow {
+    display: inline-block;
+    font-size: .6rem;
+    transition: transform .25s ease;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+.preview-collection-bar.expanded .toggle-arrow {
+    transform: rotate(90deg);
+}
+
+/* 稀有度收集详情面板（默认收起） */
+.preview-collection-detail {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .35s ease, margin-top .35s ease;
+    margin-top: 0;
+}
+
+.preview-collection-bar.expanded .preview-collection-detail {
+    max-height: 400px;
+    margin-top: 10px;
+}
+
+/* 每行稀有度详情 */
+.rarity-detail-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.rarity-detail-row:last-child {
+    margin-bottom: 0;
+}
+
+.rarity-detail-label {
+    width: 40px;
+    font-size: .7rem;
+    font-weight: bold;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+/* 复用稀有度分布标签的颜色 */
+.rarity-detail-label.rarity-tag-PSER { color: var(--rarity-PSER); }
+.rarity-detail-label.rarity-tag-SER { color: var(--rarity-SER); }
+.rarity-detail-label.rarity-tag-UTR { color: var(--rarity-UTR); }
+.rarity-detail-label.rarity-tag-UR { color: var(--rarity-UR); }
+.rarity-detail-label.rarity-tag-SR { color: var(--rarity-SR); }
+.rarity-detail-label.rarity-tag-R { color: var(--rarity-R); }
+.rarity-detail-label.rarity-tag-NR { color: var(--rarity-NR); }
+.rarity-detail-label.rarity-tag-N { color: var(--rarity-N); }
+
+.rarity-detail-track {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-secondary);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.rarity-detail-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width .5s ease;
+}
+
+/* 每个稀有度进度条使用对应颜色 */
+.rarity-fill-PSER { background: var(--rarity-PSER); }
+.rarity-fill-SER { background: var(--rarity-SER); }
+.rarity-fill-UTR { background: var(--rarity-UTR); }
+.rarity-fill-UR { background: var(--rarity-UR); }
+.rarity-fill-SR { background: var(--rarity-SR); }
+.rarity-fill-R { background: var(--rarity-R); }
+.rarity-fill-NR { background: var(--rarity-NR); }
+.rarity-fill-N { background: var(--rarity-N); }
+
+.rarity-detail-num {
+    width: 40px;
+    font-size: .7rem;
+    text-align: right;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+/* 全部收集完成的稀有度行 */
+.rarity-detail-complete .rarity-detail-num {
+    color: var(--accent-gold);
+}
+
 /* --- 稀有度分布标签 --- */
 .preview-rarity-dist {
     display: flex;
@@ -2802,6 +2900,22 @@ body {
 
 .not-owned-card .preview-card-name {
     color: var(--text-secondary);
+}
+
+/* ========== +1辅助包区域 ========== */
+.supplement-section {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(255, 255, 255, .15);
+}
+
+.supplement-section-header {
+  font-size: .9rem;
+  font-weight: 700;
+  color: #e8a030;
+  margin-bottom: 10px;
+  text-align: center;
+  letter-spacing: 1px;
 }
 
 

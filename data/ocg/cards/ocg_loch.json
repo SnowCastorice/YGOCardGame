@@ -1,0 +1,10 @@
+{
+  "_说明": "LIMIT OVER COLLECTION - THE HEROES - (LOCH) 卡牌收录数据（占位文件，待补充）",
+  "_中文名": "界限超越典藏包 －主角篇－",
+  "_数据源": "待从 YGOCDB 或手动录入",
+  "_创建日期": "2026-02-28",
+  "packId": "ocg_loch",
+  "packCode": "LOCH",
+  "cardIds": [],
+  "cardData": {}
+}
