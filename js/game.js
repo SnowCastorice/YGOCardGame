@@ -2015,10 +2015,10 @@ async function handleClearCache() {
  */
 function devAddGold() {
     try {
-        CurrencySystem.addBalance('gold', 10000);
+        CurrencySystem.addBalance('gold', 1000000);
         CurrencySystem.updateUI();
-        alert('✅ 已添加 10000 🪙 金币！');
-        console.log('🛠️ [开发者工具] 添加 10000 金币');
+        alert('✅ 已添加 1000000 🪙 金币！');
+        console.log('🛠️ [开发者工具] 添加 1000000 金币');
     } catch (error) {
         console.error('❌ 添加金币失败:', error);
         alert('❌ 添加金币失败：' + error.message);

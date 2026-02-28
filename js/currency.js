@@ -24,7 +24,7 @@ const CurrencySystem = (function () {
             icon: '🪙',
             color: '#ffd700',
             // 初始赠送数量（新用户首次进入时赠送）
-            initialAmount: 10000
+            initialAmount: 100000
         },
         diamond: {
             id: 'diamond',
