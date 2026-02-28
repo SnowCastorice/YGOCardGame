@@ -2757,36 +2757,32 @@ body {
     background-color: var(--rarity-N);
 }
 
-/* --- 多版本稀有度角标（多个稀有度用分隔符显示，保留暗色背景+彩色文字） --- */
+/* --- 多版本稀有度角标（多个实心色块并列） --- */
 .preview-rarity-badge.preview-rarity-multi {
-    display: inline-flex;
-    align-items: center;
-    gap: 1px;
-    padding: 1px 4px;
-    color: inherit;
-    background: rgba(0, 0, 0, .7);
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(255, 255, 255, .25);
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0;
+  background: transparent;
 }
 
 .rarity-version-item {
-    font-size: .55rem;
-    font-weight: bold;
+  display: inline-block;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: .55rem;
+  font-weight: bold;
+  color: #000;
 }
 
-.rarity-sep {
-    font-size: .45rem;
-    color: rgba(255, 255, 255, .35);
-    margin: 0 1px;
+/* 未收集的版本色块：灰色实心背景 */
+.rarity-version-item.rarity-uncollected {
+  background-color: #555;
+  color: #999;
+  opacity: .6;
 }
 
 /* 稀有度颜色类 .rarity-color-{code} 现在由 JS 从 rarities.json 动态注入，无需在此硬编码 */
-
-/* --- 未收集的稀有度版本（灰色） --- */
-.rarity-color-uncollected {
-  color: #666;
-  opacity: .5;
-}
 
 /* 单版本未收集角标 */
 .preview-rarity-badge.rarity-uncollected {

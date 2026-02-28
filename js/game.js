@@ -191,7 +191,7 @@ function applyRarityColors(raritiesData) {
         dynamicCSS += '.rarity-color-' + r.code + ' { color: var(--rarity-' + r.code + '); }\n';
 
         // 生成角标实心背景色样式（覆盖所有稀有度，包括动态新增的）
-        var badgeSelectors = ['.card-rarity-badge', '.inventory-rarity-badge', '.preview-rarity-badge'];
+        var badgeSelectors = ['.card-rarity-badge', '.inventory-rarity-badge', '.preview-rarity-badge', '.rarity-version-item'];
         badgeSelectors.forEach(function (sel) {
             dynamicCSS += sel + '.rarity-' + r.code + ' { background-color: var(--rarity-' + r.code + '); }\n';
         });
@@ -3163,13 +3163,13 @@ const rarityWeight = RARITY_ORDER_ASC;
         });
         let rarityBadgeHtml;
         if (sortedVersions.length > 1) {
-            // 多版本：展示所有版本，用竖线分隔
+            // 多版本：每个版本各自一个实心色块并列
             rarityBadgeHtml = '<span class="preview-rarity-badge preview-rarity-multi">';
             rarityBadgeHtml += sortedVersions.map(function (v) {
                 const collected = versionsOwned[v] && versionsOwned[v] > 0;
-                const colorClass = collected ? 'rarity-color-' + v : 'rarity-color-uncollected';
-                return '<span class="rarity-version-item ' + colorClass + '">' + v + '</span>';
-            }).join('<span class="rarity-sep">|</span>');
+                const bgClass = collected ? 'rarity-' + v : 'rarity-uncollected';
+                return '<span class="rarity-version-item ' + bgClass + '">' + v + '</span>';
+            }).join('');
             rarityBadgeHtml += '</span>';
         } else {
             // 单版本：根据收集状态决定颜色
@@ -3322,12 +3322,13 @@ const rarityWeight = RARITY_ORDER_ASC;
             // 稀有度角标
             let rarityBadgeHtml;
             if (sortedVersions.length > 1) {
+                // 多版本：每个版本各自一个实心色块并列
                 rarityBadgeHtml = '<span class="preview-rarity-badge preview-rarity-multi">';
                 rarityBadgeHtml += sortedVersions.map(function (v) {
                     const collected = versionsOwned[v] && versionsOwned[v] > 0;
-                    const colorClass = collected ? 'rarity-color-' + v : 'rarity-color-uncollected';
-                    return '<span class="rarity-version-item ' + colorClass + '">' + v + '</span>';
-                }).join('<span class="rarity-sep">|</span>');
+                    const bgClass = collected ? 'rarity-' + v : 'rarity-uncollected';
+                    return '<span class="rarity-version-item ' + bgClass + '">' + v + '</span>';
+                }).join('');
                 rarityBadgeHtml += '</span>';
             } else {
                 const singleRarity = sortedVersions[0] || rc;
