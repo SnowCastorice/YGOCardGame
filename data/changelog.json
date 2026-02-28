@@ -2,6 +2,18 @@
   "_说明": "版本更新日志。每次更新都会在这里记录，网页上也会显示这些信息。格式：版本号、日期、更新内容列表。",
   "versions": [
     {
+      "version": "1.5.3",
+      "date": "2026-02-28",
+      "title": "开盒封入规则算法重构",
+      "changes": [
+        "📦 开盒（30包）改为按真实封入规则抽卡：1SER + 1UTR + 3UR + 6SR + 19R",
+        "✨ SER卡位有25%概率变为PSER（一箱24盒配6个原盒PSER）",
+        "🎲 R卡位有10%概率变为NR",
+        "🎁 +1辅助包新增PSER概率（约16.7%），与原盒PSER互斥（同盒只出一张PSER）",
+        "⚙️ packs.json新增整盒配置字段：boxRarityDistribution / boxPSERChance / boxNRChance / bonusPSERChance"
+      ]
+    },
+    {
       "version": "1.5.1",
       "date": "2026-02-27",
       "title": "新增「开整盒」（30包）选项",

@@ -1031,14 +1031,26 @@ async function openMultiPacks(count) {
     // 3. 播放开包动画
     await playOpeningAnimation();
 
-    // 4. 批量抽卡，汇总所有结果
-    const allCards = [];
-    for (let i = 0; i < count; i++) {
-        const drawnCards = drawCards(currentPack, currentPackCards);
-        allCards.push(...drawnCards);
+    // 4. 整盒抽卡：使用盒封入规则分配稀有度（OCG方案时）
+    let allCards = [];
+    let boxHasPSER = false;
+    const scheme = currentPack.packScheme || 'legacy';
+    
+    if (scheme === 'ocg_default' && count === 30) {
+        // OCG整盒方案：按盒封入规则分配 1SER+1UTR+3UR+6SR+19R
+        const boxResult = drawCardsBox_OCG(currentPack, currentPackCards);
+        allCards = boxResult.allCards;
+        boxHasPSER = boxResult.boxHasPSER;
+        console.log(`📦 整盒抽卡完成：${allCards.length}张卡，PSER=${boxHasPSER ? '是' : '否'}`);
+    } else {
+        // 非OCG方案或非整盒：沿用逐包抽卡
+        for (let i = 0; i < count; i++) {
+            const drawnCards = drawCards(currentPack, currentPackCards);
+            allCards.push(...drawnCards);
+        }
     }
 
-    // 5. +1辅助包：从辅助包专属卡池中平均随机抽1张卡
+    // 5. +1辅助包：从辅助包专属卡池中抽1张卡（含PSER互斥规则）
     const bonusCards = [];
     const suppPool = currentSupplementCards || [];
     if (suppPool.length > 0) {
@@ -1046,6 +1058,25 @@ async function openMultiPacks(count) {
         const bonusCard = { ...suppPool[randomIndex] };
         // 标记为辅助包卡片，方便后续识别
         bonusCard._isBonus = true;
+        
+        // 辅助包的PSER处理：
+        // - 同一盒中，原盒包和+1包合计只会出现一张PSER
+        // - 一箱24盒配4个辅助包PSER（概率约16.7%）
+        const versions = bonusCard.rarityVersions || [];
+        if (versions.length > 1) {
+            const bonusPSERChance = currentPack.bonusPSERChance || (4 / 24); // 约16.7%
+            if (boxHasPSER) {
+                // 原盒已出PSER → 辅助包强制不出PSER，用第一个版本（基础稀有度）
+                bonusCard.rarityCode = versions[0];
+            } else if (Math.random() < bonusPSERChance && versions.indexOf('PSER') >= 0) {
+                // 原盒没出PSER + 中了辅助包PSER概率 + 这张卡有PSER版本
+                bonusCard.rarityCode = 'PSER';
+            } else {
+                // 正常情况：用基础稀有度
+                bonusCard.rarityCode = versions[0];
+            }
+        }
+        
         bonusCards.push(bonusCard);
     } else {
         console.warn('⚠️ 当前卡包没有辅助包卡池数据，跳过+1辅助包');
@@ -1179,6 +1210,174 @@ function drawCards_OCG(pack, cards) {
     });
 
     return results;
+}
+
+/**
+ * ====================================
+ * OCG 整盒抽卡方案 —— 按盒封入规则分配30包的稀有度
+ * ====================================
+ * 
+ * 【1304封入规则】
+ * 1盒30包，每包5张（4N + 1非N位）
+ * 1盒内的非N位出率为：1SER + 1UTR + 3UR + 6SR + 19R
+ * - SER卡位有概率变为PSER（原盒概率约25%，即一箱24盒中6盒）
+ * - R卡位有10%概率变为NR
+ * 
+ * @param {Object} pack - 卡包配置（含 boxRarityDistribution 等）
+ * @param {Array} cards - 卡池（currentPackCards）
+ * @returns {{ allCards: Array, boxHasPSER: boolean }} 150张卡 + 是否出了PSER
+ */
+function drawCardsBox_OCG(pack, cards) {
+    const allCards = [];
+    
+    // 获取整盒封入配置（从卡包配置中读取，兜底用默认值）
+    const boxDist = pack.boxRarityDistribution || {
+        SER: 1, UTR: 1, UR: 3, SR: 6, R: 19
+    };
+    const pserChance = pack.boxPSERChance || 0.25;  // 原盒PSER概率（默认25%）
+    const nrChance = pack.boxNRChance || 0.10;      // R变NR的概率（默认10%）
+    
+    // 获取多版本稀有度概率配置
+    const modeConfig = getCurrentModeConfig();
+    const versionOdds = pack.versionOdds || modeConfig.defaultVersionOdds || {};
+    
+    // --- 步骤1：生成30个非N位的稀有度分配列表 ---
+    const rareSlots = [];
+    let boxHasPSER = false;
+    
+    // SER卡位（有概率变PSER）
+    for (let i = 0; i < (boxDist.SER || 0); i++) {
+        if (!boxHasPSER && Math.random() < pserChance) {
+            rareSlots.push('PSER');
+            boxHasPSER = true;
+        } else {
+            rareSlots.push('SER');
+        }
+    }
+    // UTR卡位
+    for (let i = 0; i < (boxDist.UTR || 0); i++) {
+        rareSlots.push('UTR');
+    }
+    // UR卡位
+    for (let i = 0; i < (boxDist.UR || 0); i++) {
+        rareSlots.push('UR');
+    }
+    // SR卡位
+    for (let i = 0; i < (boxDist.SR || 0); i++) {
+        rareSlots.push('SR');
+    }
+    // R卡位（有概率变NR）
+    for (let i = 0; i < (boxDist.R || 0); i++) {
+        if (Math.random() < nrChance) {
+            rareSlots.push('NR');
+        } else {
+            rareSlots.push('R');
+        }
+    }
+    
+    // 打乱分配顺序（哪一包出什么稀有度是随机的）
+    const shuffledSlots = shuffleArray([...rareSlots]);
+    
+    // --- 步骤2：按分池分类卡池 ---
+    // 按基础稀有度把卡分到对应的池子
+    const nPool = [];
+    const poolByRarity = {}; // { 'SR': [...], 'UR': [...], ... }
+    
+    cards.forEach(function (card) {
+        const baseCode = card.rarityCode || 'N';
+        if (baseCode === 'N') {
+            nPool.push(card);
+        } else {
+            if (!poolByRarity[baseCode]) {
+                poolByRarity[baseCode] = [];
+            }
+            poolByRarity[baseCode].push(card);
+        }
+    });
+    
+    // 构建 "可以出某种目标稀有度的卡" 的查找函数
+    // 例如目标是SER → 找所有 rarityVersions 包含 SER 的卡
+    // 例如目标是PSER → 找所有 rarityVersions 包含 PSER 的卡
+    // 例如目标是NR → 找所有 rarityVersions 包含 NR 的卡（通常是N卡的NR版本）
+    function findCardsForTargetRarity(targetRarity) {
+        const result = [];
+        cards.forEach(function (card) {
+            const versions = card.rarityVersions || [card.rarityCode || 'N'];
+            if (versions.indexOf(targetRarity) >= 0) {
+                result.push(card);
+            }
+        });
+        return result;
+    }
+    
+    // --- 步骤3：为每个非N位分配具体的卡 ---
+    const nCount = (pack.cardsPerPack || 5) - 1; // 每包N卡数量
+    
+    for (let packIdx = 0; packIdx < shuffledSlots.length; packIdx++) {
+        const targetRarity = shuffledSlots[packIdx];
+        const usedSetNumbers = new Set(); // 同包内编号不重复
+        const packCards = [];
+        
+        // --- 步骤3a：先抽非N位的1张卡 ---
+        let rareCard = null;
+        
+        if (targetRarity === 'PSER' || targetRarity === 'NR') {
+            // 特殊稀有度：需要找 rarityVersions 包含目标稀有度的卡
+            const candidates = findCardsForTargetRarity(targetRarity);
+            if (candidates.length > 0) {
+                const picked = candidates[Math.floor(Math.random() * candidates.length)];
+                rareCard = { ...picked, rarityCode: targetRarity };
+            }
+        }
+        
+        if (!rareCard) {
+            // 普通稀有度（SER/UTR/UR/SR/R）：
+            // 优先从 rarityVersions 包含该稀有度的卡中选
+            const candidates = findCardsForTargetRarity(targetRarity);
+            if (candidates.length > 0) {
+                const picked = candidates[Math.floor(Math.random() * candidates.length)];
+                rareCard = { ...picked, rarityCode: targetRarity };
+            } else {
+                // 兜底：从对应基础稀有度池中选，走 versionOdds 随机
+                const basePool = poolByRarity[targetRarity] || [];
+                // 如果基础池也没有，从全部非N池中随机选
+                const fallbackPool = basePool.length > 0 ? basePool : 
+                    Object.values(poolByRarity).reduce(function(acc, arr) { return acc.concat(arr); }, []);
+                if (fallbackPool.length > 0) {
+                    const picked = fallbackPool[Math.floor(Math.random() * fallbackPool.length)];
+                    rareCard = resolveCardVersion(picked, versionOdds);
+                }
+            }
+        }
+        
+        if (rareCard) {
+            usedSetNumbers.add(rareCard.setNumber || rareCard.id);
+            packCards.push(rareCard);
+        }
+        
+        // --- 步骤3b：抽 nCount 张N卡（编号不与非N位重复）---
+        const shuffledN = shuffleArray([...nPool]);
+        let nDrawn = 0;
+        for (let i = 0; i < shuffledN.length && nDrawn < nCount; i++) {
+            const card = shuffledN[i];
+            const setNum = card.setNumber || card.id;
+            if (!usedSetNumbers.has(setNum)) {
+                usedSetNumbers.add(setNum);
+                // N卡也可能有NR版本，但整盒分配中NR已在非N位处理，这里直接用原版
+                packCards.push({ ...card });
+                nDrawn++;
+            }
+        }
+        
+        // --- 步骤3c：按稀有度排序（N在前，稀有在后，营造惊喜感）---
+        packCards.sort(function (a, b) {
+            return (RARITY_ORDER_ASC[a.rarityCode] || 0) - (RARITY_ORDER_ASC[b.rarityCode] || 0);
+        });
+        
+        allCards.push(...packCards);
+    }
+    
+    return { allCards: allCards, boxHasPSER: boxHasPSER };
 }
 
 /**

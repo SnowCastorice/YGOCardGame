@@ -11,6 +11,10 @@
     "rarityRates": "（旧版方案用）各稀有度的抽取权重（数字越大越容易抽到）",
     "versionOdds": "（OCG方案用）多版本稀有度概率：每种稀有度被选中的相对权重",
     "guaranteedRareSlot": "（旧版方案用）是否保底最后一张至少为 R 及以上",
+    "boxRarityDistribution": "（整盒方案用）1盒内非N位的稀有度分配，如 {SER:1, UTR:1, UR:3, SR:6, R:19} = 30包",
+    "boxPSERChance": "（整盒方案用）原盒SER卡位变PSER的概率，默认0.25（一箱24盒配6个原盒PSER）",
+    "boxNRChance": "（整盒方案用）R卡位变NR的概率，默认0.10",
+    "bonusPSERChance": "（整盒方案用）辅助包出PSER的概率，默认4/24≈0.167（一箱24盒配4个辅助包PSER）",
     "gameMode": "游戏模式：ocg = 亚洲版, tcg = 欧美版",
     "totalCards": "卡包收录卡牌总数（仅供显示，实际数量以 cardFile 中为准）",
     "price": "开包所需货币数量",
@@ -61,7 +65,7 @@
       "cardFile": "ocg_blzd.json",
       "packScheme": "ocg_default",
       "versionOdds": {
-        "_说明": "多版本稀有度概率权重（数值越大越容易被选中），用于同一张卡有多个稀有度版本时的随机。概率待用户确认后调整。",
+        "_说明": "多版本稀有度概率权重（用于单包抽卡时，同一张卡有多个稀有度版本的随机选择）",
         "N": 100,
         "NR": 95,
         "R": 90,
@@ -71,10 +75,21 @@
         "UTR": 8,
         "PSER": 3
       },
+      "boxRarityDistribution": {
+        "_说明": "1盒30包非N位的稀有度分配（1SER+1UTR+3UR+6SR+19R=30包）",
+        "SER": 1,
+        "UTR": 1,
+        "UR": 3,
+        "SR": 6,
+        "R": 19
+      },
+      "boxPSERChance": 0.25,
+      "boxNRChance": 0.10,
+      "bonusPSERChance": 0.167,
       "category": "booster",
       "price": 176,
       "currency": "gold",
-      "_说明": "2026年1月最新OCG补充包（ブレイジング・ドミニオン），共80张卡，多版本稀有度已配置",
+      "_说明": "2026年1月最新OCG补充包，1盒30包+1辅助包。封入规则：1SER+1UTR+3UR+6SR+19R，SER位25%变PSER，R位10%变NR",
       "_价格来源": "KONAMI官网含税价格: 1包 176日元"
     },
     {

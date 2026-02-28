@@ -405,6 +405,15 @@ pack_references/konami_official_products/
 
 ## 📝 近期变更记录
 
+### v1.5.3（2026-02-28）— 开盒封入规则算法重构
+- **整盒抽卡**：新增 `drawCardsBox_OCG` 函数，按真实封入规则分配30包的非N位稀有度（1SER+1UTR+3UR+6SR+19R）
+- SER卡位有25%概率变为PSER（一箱24盒配6个原盒PSER）
+- R卡位有10%概率变为NR
+- **辅助包PSER互斥**：同一盒中原盒包和+1辅助包合计只出现一张PSER。辅助包PSER概率约16.7%（一箱24盒配4个辅助包PSER）
+- **配置驱动**：packs.json 新增 `boxRarityDistribution`（整盒稀有度分配）、`boxPSERChance`（原盒PSER概率）、`boxNRChance`（R变NR概率）、`bonusPSERChance`（辅助包PSER概率）字段
+- **开一包不变**：单包仍走 `drawCards_OCG`（4N+1非N+versionOdds权重随机），不受盒规则影响
+- **兼容性**：非OCG方案或非30包的整盒操作，自动降级为逐包抽卡
+
 ### v1.5.2（2026-02-27）— +1辅助包专属卡池 + 卡图放大修复
 - 辅助包使用专属卡池（`supplementPack` 节点，BLZD-JPS01~JPS20 共 20 张卡），不再从主卡池抽取
 - 补全辅助包 20 张卡的 ID 和 `cardData`，通过 `build_pack_data.py` 注入完整卡牌信息
