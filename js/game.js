@@ -410,11 +410,17 @@ function bindGameEvents() {
     // 再开一包
     bindEvent('btn-open-again', 'click', openPack);
 
-    // 开整盒（30包）
-    bindEvent('btn-open-box', 'click', function () { openMultiPacks(30); });
+    // 开整盒（从卡包配置读取包数，默认30包）
+    bindEvent('btn-open-box', 'click', function () {
+        const boxCount = (currentPack && currentPack.packsPerBox) || 30;
+        openMultiPacks(boxCount);
+    });
 
-    // 再开整盒（30包）
-    bindEvent('btn-open-again-box', 'click', function () { openMultiPacks(30); });
+    // 再开整盒
+    bindEvent('btn-open-again-box', 'click', function () {
+        const boxCount = (currentPack && currentPack.packsPerBox) || 30;
+        openMultiPacks(boxCount);
+    });
 
     // 返回选择卡包（两个返回按钮）
     bindEvent('btn-back-to-packs', 'click', showPackSelect);
@@ -1151,7 +1157,7 @@ async function openMultiPacks(count) {
     let boxHasPSER = false;
     const scheme = currentPack.packScheme || 'legacy';
     
-    if (scheme === 'ocg_default' && count === 30) {
+    if (scheme === 'ocg_default' && count === ((currentPack && currentPack.packsPerBox) || 30)) {
         // OCG整盒方案：按盒封入规则分配 1SER+1UTR+3UR+6SR+19R
         const boxResult = drawCardsBox_OCG(currentPack, currentPackCards);
         allCards = boxResult.allCards;
@@ -2344,8 +2350,8 @@ function updateOpenPackPriceInfo() {
         }
     }
 
-    // 更新「开整盒」（30包）按钮的可用状态
-    const boxCount = 30;
+    // 更新「开整盒」按钮的可用状态（包数从卡包配置读取）
+    const boxCount = (currentPack && currentPack.packsPerBox) || 30;
     const totalPriceBox = price * boxCount;
     const canAffordBox = totalPriceBox <= 0 || CurrencySystem.canAfford(currency, totalPriceBox);
 
@@ -2358,7 +2364,7 @@ function updateOpenPackPriceInfo() {
             openBoxBtn.innerHTML = `余额不足 (需要 ${totalPriceBox} ${currDef.icon})`;
         } else {
             openBoxBtn.classList.remove('insufficient');
-            openBoxBtn.innerHTML = price > 0 ? `开1盒 (30包 ${currDef.icon} ${totalPriceBox})<span class="btn-box-sub">赠送 +1 辅助包</span>` : '开1盒<span class="btn-box-sub">赠送 +1 辅助包</span>';
+            openBoxBtn.innerHTML = price > 0 ? `开1盒 (${boxCount}包 ${currDef.icon} ${totalPriceBox})<span class="btn-box-sub">赠送 +1 辅助包</span>` : `开1盒 (${boxCount}包)<span class="btn-box-sub">赠送 +1 辅助包</span>`;
         }
     }
 
@@ -2368,7 +2374,7 @@ function updateOpenPackPriceInfo() {
             openAgainBoxBtn.innerHTML = `余额不足 (需要 ${totalPriceBox} ${currDef.icon})`;
         } else {
             openAgainBoxBtn.classList.remove('insufficient');
-            openAgainBoxBtn.innerHTML = price > 0 ? `再开1盒 (30包 ${currDef.icon} ${totalPriceBox})<span class="btn-box-sub">赠送 +1 辅助包</span>` : '再开1盒<span class="btn-box-sub">赠送 +1 辅助包</span>';
+            openAgainBoxBtn.innerHTML = price > 0 ? `再开1盒 (${boxCount}包 ${currDef.icon} ${totalPriceBox})<span class="btn-box-sub">赠送 +1 辅助包</span>` : `再开1盒 (${boxCount}包)<span class="btn-box-sub">赠送 +1 辅助包</span>`;
         }
     }
 }

@@ -19,7 +19,8 @@
     "totalCards": "卡包收录卡牌总数（仅供显示，实际数量以 cardFile 中为准）",
     "price": "开包所需货币数量",
     "currency": "开包使用的货币类型（gold=金币, diamond=钻石）",
-    "category": "卡包分类：booster=补充包, structure=主题卡组, concept=系列补充包, special=特殊包"
+    "category": "卡包分类：booster=补充包, structure=主题卡组, concept=系列补充包, special=特殊包",
+    "packsPerBox": "一盒包数（默认30包，特殊卡包如 LOCH 为15包）"
   },
   "_packScheme说明": {
     "ocg_default": "OCG默认方案：4张N卡 + 1张非N稀有卡，同一包编号不重复。非N卡若有多个稀有度版本，按versionOdds概率随机。",
@@ -59,6 +60,7 @@
       "guaranteedRareSlot": false,
       "price": 385,
       "currency": "gold",
+      "packsPerBox": 15,
       "_说明": "2026年2月OCG特殊包（主角篇），1包4张/1盒15包。全80种（38UR+42SR），无N/R。稀有度组合：18种UR有5版本(UR/UR-OF/SER/PSER-OF/GMR-OF)、20种UR有3版本(UR/SER/PSER)、21种SR有CR版(SR/CR/SER/PSER)、21种SR有UTR版(SR/UTR/SER/PSER)。GMR-OF为限量100张附序列号",
       "_价格来源": "KONAMI官网含税价格: 1包 385日元"
     },
