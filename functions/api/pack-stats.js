@@ -56,6 +56,11 @@ export async function onRequest(context) {
     return handleQuery(context);
   }
 
+  // DELETE: 临时接口 - 清零所有统计数据（用完即删）
+  if (request.method === 'DELETE') {
+    return handleReset(context);
+  }
+
   return new Response('Method Not Allowed', { status: 405 });
 }
 
@@ -194,6 +199,49 @@ async function handleQuery(context) {
 
   } catch (error) {
     return jsonResponse({ error: '查询失败', message: error.message }, 500, origin);
+  }
+}
+
+// ============================================
+// 临时接口：清零统计数据（用完即删）
+// ============================================
+
+/**
+ * 清零所有 KV 统计数据
+ * DELETE /api/pack-stats
+ */
+async function handleReset(context) {
+  const request = context.request;
+  const origin = request.headers.get('Origin') || '';
+  const KV = context.env.PACK_STATS;
+
+  if (!KV) {
+    return jsonResponse({ error: 'KV 未绑定' }, 500, origin);
+  }
+
+  try {
+    // 获取卡包索引
+    const packIndex = await getPackIndex(KV);
+
+    // 逐个删除每个卡包的统计数据
+    for (const code of packIndex) {
+      await KV.delete(`stats:${code}`);
+    }
+
+    // 删除全局统计
+    await KV.delete('stats:_all');
+
+    // 删除卡包索引
+    await KV.delete('index:packs');
+
+    return jsonResponse({
+      success: true,
+      message: `已清零所有统计数据，共清除 ${packIndex.length} 个卡包的数据`,
+      clearedPacks: packIndex
+    }, 200, origin);
+
+  } catch (error) {
+    return jsonResponse({ error: '清零失败', message: error.message }, 500, origin);
   }
 }
 
