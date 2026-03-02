@@ -824,6 +824,57 @@ body {
     margin-top: 8px;
 }
 
+/* ====== 开包统计展示 ====== */
+.pack-stats {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+    margin-top: 12px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, .04);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, .08);
+}
+
+.pack-stats__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    flex: 1;
+}
+
+.pack-stats__icon {
+    font-size: 1.1rem;
+}
+
+.pack-stats__label {
+    font-size: .72rem;
+    color: var(--text-secondary);
+    letter-spacing: .5px;
+}
+
+.pack-stats__value {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--accent-gold);
+    font-variant-numeric: tabular-nums;
+}
+
+.pack-stats__divider {
+    width: 1px;
+    height: 36px;
+    background: rgba(255, 255, 255, .12);
+    margin: 0 12px;
+}
+
+.pack-stats__loading {
+    font-size: .85rem;
+    color: var(--text-secondary);
+    font-weight: normal;
+}
+
 .open-btn-container {
     text-align: center;
     display: flex;

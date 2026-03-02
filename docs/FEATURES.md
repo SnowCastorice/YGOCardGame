@@ -124,3 +124,44 @@
 
 ### 旧版方案（`packScheme: "legacy"`）
 - TCG 和未配置方案的卡包使用
+
+---
+
+## 📊 开包统计系统（v1.6.0+）
+
+- 独立模块 `js/pack-stats.js`，全局对象 `PackStats`
+- 本地数据存储：`localStorage`（key: `ygo_pack_stats`）
+- 全球数据存储：Cloudflare KV（命名空间 `PACK_STATS`）
+
+### 功能概览
+
+| 功能 | 说明 |
+|------|------|
+| 个人开包统计 | 使用 localStorage 记录每个卡包的开包/开盒次数 |
+| 全球开包统计 | 通过 `/api/pack-stats` 上报和查询，数据存储在 Cloudflare KV |
+| 前端展示 | 开包界面卡包描述下方显示 👤 我的开包 / 🌍 全球开包 |
+| 管理后台 | `admin/stats.html` 页面，通过密钥查看全局数据 |
+
+### 公开 API
+
+| 方法 | 说明 |
+|------|------|
+| `recordOpen(packCode, type, count)` | 记录一次开包（本地 + 远程上报） |
+| `updateStatsDisplay(packCode)` | 更新开包统计 UI 展示 |
+| `getLocalPackStats(packCode)` | 获取指定卡包的本地统计 |
+| `fetchGlobalStats(packCode)` | 从服务端查询全球统计 |
+| `getLocalData()` | 获取本地全部统计数据 |
+
+### 服务端 API
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/pack-stats` | 上报开包数据，Body: `{ packCode, type, count }` |
+| GET | `/api/pack-stats?packCode=LOCH` | 查询指定卡包的全球统计 |
+| GET | `/api/pack-stats?admin=1&key=xxx` | 管理后台：查询所有卡包的统计 |
+
+### 部署前提
+
+在 Cloudflare 控制台完成以下配置：
+1. 创建 KV 命名空间：名称 `PACK_STATS`
+2. 在 Pages 项目设置中绑定 KV：变量名 `PACK_STATS` → 对应创建的 KV 命名空间

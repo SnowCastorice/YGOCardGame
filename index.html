@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>YGO Pack Opener - 游戏王卡包开封模拟器</title>
     <!-- 全局版本号：所有资源的缓存破坏参数、页脚版本号等都从这里读取，更新时只改这一处 -->
-<script>window.APP_VERSION = '1.5.33';</script>
+<script>window.APP_VERSION = '1.6.0';</script>
     <!-- CSS 版本号自动跟随 APP_VERSION -->
     <script>document.write('<link rel="stylesheet" href="css/style.css?v=' + window.APP_VERSION + '">');</script>
 </head>
@@ -73,6 +73,8 @@
                          referrerpolicy="no-referrer" />
                 </div>
                 <p id="current-pack-desc" class="pack-desc"></p>
+                <!-- 开包统计展示 -->
+                <div id="pack-stats-display"></div>
             </div>
             <div class="open-btn-container">
                 <button id="btn-open-pack" class="btn-open-pack">开1包</button>
@@ -278,6 +280,7 @@
         'data/fallback_cards.js',
         'js/currency.js',
         'js/inventory.js',
+        'js/pack-stats.js',
         'js/api.js',
         'js/game.js'
     ];

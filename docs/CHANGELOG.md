@@ -2,6 +2,17 @@
 
 > 从 DEVELOPMENT.md 拆分，记录各版本的变更和待处理事项。
 
+## v1.6.0（2026-03-02）— 开包统计系统
+- **新增开包统计功能**：玩家可在开包界面看到当前卡包的个人开包数和全球开包数
+- **个人统计**：使用 localStorage 记录每个卡包的开包/开盒次数，无网络依赖，即时生效
+- **全球统计**：通过 Cloudflare Workers + KV 存储记录全球玩家的开包数据，每次开包静默上报
+- **管理后台**：新增 `admin/stats.html` 页面，可通过密钥查看全局开包统计数据
+- **新增模块**：`js/pack-stats.js`（前端统计模块）、`functions/api/pack-stats.js`（服务端 API）
+- **UI 展示**：开包界面卡包描述下方显示 👤 我的开包 / 🌍 全球开包 两项数据
+- **⚠️ 部署前提**：需要在 Cloudflare 控制台创建 KV 命名空间 `PACK_STATS` 并绑定到 Pages 项目
+- **涉及修改文件**：`game.js`、`index.html`、`css/style.css`、`CHANGELOG.md`、`ARCHITECTURE.md`、`FEATURES.md`
+- **新增文件**：`js/pack-stats.js`、`functions/api/pack-stats.js`、`admin/stats.html`
+
 ## v1.5.33（2026-03-01）— LOCH 卡图本地化
 - **LOCH 卡图本地化**：所有 98 个唯一 metaId（80 张普通版 + 18 张 OF 超框版）的小图（_w200）和大图（_w420）共 196 个文件已下载到 `data/ocg/images/loch/`
 - 总大小约 7.3MB，部署到 Cloudflare Pages 后从国内访问速度大幅提升

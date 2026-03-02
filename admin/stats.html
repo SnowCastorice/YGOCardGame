@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YGO Pack Stats - 开包统计后台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            color: #f5c842;
+        }
+
+        .auth-form {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .auth-form input {
+            padding: 10px 16px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            font-size: 1rem;
+            width: 200px;
+        }
+
+        .auth-form button {
+            padding: 10px 20px;
+            border: 0;
+            border-radius: 8px;
+            background: #f5c842;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+
+        .auth-form button:hover {
+            background: #ffd700;
+        }
+
+        .stats-card {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255, 255, 255, .08);
+        }
+
+        .stats-card h2 {
+            font-size: 1.1rem;
+            color: #f5c842;
+            margin-bottom: 12px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, .04);
+            border-radius: 8px;
+        }
+
+        .stat-item .label {
+            font-size: .8rem;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .stat-item .value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #f5c842;
+        }
+
+        .pack-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .pack-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, .04);
+            border-radius: 8px;
+        }
+
+        .pack-row .pack-name {
+            font-weight: bold;
+            color: #4a9eff;
+        }
+
+        .pack-row .pack-data {
+            display: flex;
+            gap: 16px;
+            font-size: .9rem;
+        }
+
+        .pack-row .pack-data span {
+            color: #ccc;
+        }
+
+        .pack-row .pack-data strong {
+            color: #f5c842;
+        }
+
+        .status-msg {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error-msg {
+            color: #ff6b6b;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .refresh-btn {
+            display: block;
+            margin: 16px auto;
+            padding: 8px 20px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: transparent;
+            color: #e0e0e0;
+            cursor: pointer;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(255, 255, 255, .05);
+        }
+
+        .last-updated {
+            text-align: center;
+            font-size: .8rem;
+            color: #666;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 YGO 开包统计后台</h1>
+
+        <div class="auth-form" id="auth-form">
+            <input type="password" id="admin-key" placeholder="输入管理员密钥" />
+            <button onclick="loadStats()">查询</button>
+        </div>
+
+        <div id="stats-area">
+            <div class="status-msg">请输入管理员密钥后点击查询</div>
+        </div>
+    </div>
+
+    <script>
+        // 管理员密钥（本地临时存储，方便刷新）
+        let adminKey = sessionStorage.getItem('ygo_admin_key') || '';
+        if (adminKey) {
+            document.getElementById('admin-key').value = adminKey;
+        }
+
+        async function loadStats() {
+            const keyInput = document.getElementById('admin-key');
+            adminKey = keyInput.value.trim();
+            if (!adminKey) {
+                alert('请输入管理员密钥');
+                return;
+            }
+
+            // 缓存密钥
+            sessionStorage.setItem('ygo_admin_key', adminKey);
+
+            const area = document.getElementById('stats-area');
+            area.innerHTML = '<div class="status-msg">⏳ 加载中...</div>';
+
+            try {
+                const resp = await fetch('/api/pack-stats?admin=1&key=' + encodeURIComponent(adminKey));
+                const data = await resp.json();
+
+                if (!resp.ok) {
+                    area.innerHTML = '<div class="error-msg">❌ ' + (data.error || '查询失败') + '</div>';
+                    return;
+                }
+
+                renderStats(data);
+            } catch (e) {
+                area.innerHTML = '<div class="error-msg">❌ 请求失败: ' + e.message + '</div>';
+            }
+        }
+
+        function renderStats(data) {
+            const area = document.getElementById('stats-area');
+            const g = data.globalStats || { totalPacks: 0, totalBoxes: 0 };
+            const packs = data.packStats || {};
+            const packList = data.packList || [];
+
+            let html = '';
+
+            // 全局汇总
+            html += '<div class="stats-card">';
+            html += '<h2>🌍 全球汇总</h2>';
+            html += '<div class="stats-grid">';
+            html += '<div class="stat-item"><div class="label">总开包次数</div><div class="value">' + formatNum(g.totalPacks) + '</div></div>';
+            html += '<div class="stat-item"><div class="label">总开盒次数</div><div class="value">' + formatNum(g.totalBoxes) + '</div></div>';
+            html += '</div>';
+            if (g.lastUpdated) {
+                html += '<div class="last-updated">最后更新: ' + new Date(g.lastUpdated).toLocaleString('zh-CN') + '</div>';
+            }
+            html += '</div>';
+
+            // 各卡包明细
+            if (packList.length > 0) {
+                html += '<div class="stats-card">';
+                html += '<h2>📦 各卡包明细</h2>';
+                html += '<div class="pack-list">';
+                for (const code of packList) {
+                    const ps = packs[code] || { totalPacks: 0, totalBoxes: 0 };
+                    html += '<div class="pack-row">';
+                    html += '<span class="pack-name">' + code + '</span>';
+                    html += '<div class="pack-data">';
+                    html += '<span>开包: <strong>' + formatNum(ps.totalPacks) + '</strong></span>';
+                    html += '<span>开盒: <strong>' + formatNum(ps.totalBoxes) + '</strong></span>';
+                    html += '</div>';
+                    html += '</div>';
+                }
+                html += '</div>';
+                html += '</div>';
+            }
+
+            html += '<button class="refresh-btn" onclick="loadStats()">🔄 刷新数据</button>';
+            html += '<div class="last-updated">查询时间: ' + new Date(data.queriedAt).toLocaleString('zh-CN') + '</div>';
+
+            area.innerHTML = html;
+        }
+
+        function formatNum(n) {
+            if (n >= 10000) return (n / 10000).toFixed(1) + '万';
+            return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
+        // 如果已有缓存密钥，自动加载
+        if (adminKey) {
+            loadStats();
+        }
+    </script>
+</body>
+</html>

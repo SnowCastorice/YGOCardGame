@@ -1015,6 +1015,12 @@ async function selectPack(pack) {
         hideLoadingState();
         switchSection('open-pack-section');
 
+        // 更新开包统计展示（进入开包界面时）
+        if (typeof PackStats !== 'undefined') {
+            const statsCode = pack.packCode || pack.setCode || pack.packId;
+            PackStats.updateStatsDisplay(statsCode);
+        }
+
         // 后台预加载卡图（不阻塞主流程，离线模式下跳过）
         if (!setData.isOfflineData) {
             TCG_API.preloadCardImages(currentPackCards, function (loaded, total) {
@@ -1114,6 +1120,12 @@ async function openPack() {
     // 5. 根据稀有度更新卡图URL后存入背包
     updateCardsImageUrl(drawnCards);
     InventorySystem.addCards(drawnCards);
+
+    // 5.5 记录开包统计（本地 + 全球上报）
+    if (typeof PackStats !== 'undefined') {
+        const statsCode = currentPack.packCode || currentPack.setCode || currentPack.packId;
+        PackStats.recordOpen(statsCode, 'pack', 1);
+    }
 
     // 6. 展示结果
     await showResults(drawnCards);
@@ -1225,6 +1237,12 @@ async function openMultiPacks(count) {
     if (bonusCards.length > 0) {
         updateCardsImageUrl(bonusCards);
         InventorySystem.addCards(bonusCards);
+    }
+
+    // 6.5 记录开盒统计（本地 + 全球上报）
+    if (typeof PackStats !== 'undefined') {
+        const statsCode = currentPack.packCode || currentPack.setCode || currentPack.packId;
+        PackStats.recordOpen(statsCode, 'box', 1);
     }
 
     // 7. 展示汇总结果（传入辅助包卡片）

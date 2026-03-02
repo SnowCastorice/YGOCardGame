@@ -61,8 +61,9 @@ buildOCGCardsFromLocalData()（纯本地转换）
 | 接口 | 路径 | 说明 |
 |------|------|------|
 | KONAMI 卡图代理 | `/api/card-image?cid=<CID>` | 代理 KONAMI 官网卡图（当前因 WAF 限制无法获取真实卡图） |
+| 开包统计 API | `/api/pack-stats` | POST 上报开包数据 / GET 查询统计（需 KV 绑定 `PACK_STATS`） |
 
-文件位置：`functions/api/card-image.js`
+文件位置：`functions/api/card-image.js`、`functions/api/pack-stats.js`
 
 ## 卡包封面图来源（多级 fallback）
 
@@ -81,6 +82,7 @@ buildOCGCardsFromLocalData()（纯本地转换）
 |------|------|
 | `js/currency.js` | 货币系统核心模块 |
 | `js/inventory.js` | 背包系统核心模块 |
+| `js/pack-stats.js` | 开包统计模块（本地 + 全球） |
 | `data/ocg/packs.json` | OCG 卡包元信息 |
 | `data/ocg/cards/*.json` | OCG 各卡包独立卡牌列表 |
 | `data/tcg/packs.json` | TCG 卡包配置表 |
