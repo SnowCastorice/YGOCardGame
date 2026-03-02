@@ -1453,6 +1453,37 @@ body {
     font-weight: 500;
 }
 
+/* 管理后台隐藏入口 */
+.devtools-admin-hidden {
+    display: none;
+}
+
+.devtools-admin-visible {
+    display: block;
+    animation: devtools-admin-fadein .4s ease;
+}
+
+@keyframes devtools-admin-fadein {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 统计后台按钮样式 */
+.btn-dev-stats {
+    background: linear-gradient(135deg, #9c27b0, #7b1fa2);
+}
+
+.btn-dev-stats:hover,
+.btn-dev-stats:active {
+    background: linear-gradient(135deg, #ab47bc, #9c27b0);
+}
+
 /* TCG 测试模式按钮 */
 .btn-dev-tcg {
     background: linear-gradient(135deg, #2196f3, #1976d2);

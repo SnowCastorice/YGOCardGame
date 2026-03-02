@@ -2956,6 +2956,11 @@ const SAMPLE_CARD_IDS = [
 ];
 
 /** 打开开发者工具弹窗 */
+// ====== 开发者工具：管理后台隐藏入口（点击标题5次解锁） ======
+let devToolsTitleClickCount = 0;
+let devToolsTitleClickTimer = null;
+const DEV_TOOLS_UNLOCK_CLICKS = 5;
+
 function showDevTools() {
     const modal = document.getElementById('devtools-modal');
     modal.classList.add('active');
@@ -2971,6 +2976,47 @@ function showDevTools() {
     const resetGameBtn = document.getElementById('btn-dev-reset-game');
     if (addGoldBtn) addGoldBtn.onclick = devAddGold;
     if (resetGameBtn) resetGameBtn.onclick = devResetGame;
+
+    // 绑定标题点击事件（5次连击解锁管理后台入口）
+    const devtoolsHeader = modal.querySelector('.modal-header h2');
+    if (devtoolsHeader && !devtoolsHeader._adminUnlockBound) {
+        devtoolsHeader._adminUnlockBound = true;
+        devtoolsHeader.style.cursor = 'pointer';
+        devtoolsHeader.addEventListener('click', function () {
+            devToolsTitleClickCount++;
+            // 清除之前的计时器，3秒内连续点击才有效
+            clearTimeout(devToolsTitleClickTimer);
+            devToolsTitleClickTimer = setTimeout(() => {
+                devToolsTitleClickCount = 0;
+            }, 3000);
+
+            const remaining = DEV_TOOLS_UNLOCK_CLICKS - devToolsTitleClickCount;
+            if (remaining > 0 && remaining <= 3) {
+                // 快到解锁次数时给予提示
+                console.log(`🔧 再点击 ${remaining} 次解锁管理后台`);
+            }
+
+            if (devToolsTitleClickCount >= DEV_TOOLS_UNLOCK_CLICKS) {
+                devToolsTitleClickCount = 0;
+                clearTimeout(devToolsTitleClickTimer);
+                const adminSection = document.getElementById('devtools-admin-section');
+                if (adminSection) {
+                    if (adminSection.style.display === 'none') {
+                        adminSection.style.display = '';
+                        adminSection.classList.remove('devtools-admin-hidden');
+                        adminSection.classList.add('devtools-admin-visible');
+                        console.log('🔓 管理后台入口已解锁');
+                    } else {
+                        // 再次触发则隐藏
+                        adminSection.style.display = 'none';
+                        adminSection.classList.remove('devtools-admin-visible');
+                        adminSection.classList.add('devtools-admin-hidden');
+                        console.log('🔒 管理后台入口已隐藏');
+                    }
+                }
+            }
+        });
+    }
 
     // 绑定 TCG 测试模式开关按钮
     const tcgToggleBtn = document.getElementById('btn-dev-toggle-tcg');

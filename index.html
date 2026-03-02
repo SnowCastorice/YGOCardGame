@@ -192,6 +192,15 @@
                         <p class="devtools-placeholder">输入卡片 ID 后点击「加载对比」，或使用「🎲 随机卡片」来测试</p>
                     </div>
                 </div>
+
+                <!-- ▸ 隐藏板块：管理后台入口（需点击开发者工具标题5次解锁） -->
+                <div id="devtools-admin-section" class="devtools-section-card devtools-admin-hidden" style="display:none;">
+                    <h3 class="devtools-section-title">📊 数据统计后台</h3>
+                    <div class="devtools-actions-btns">
+                        <button id="btn-dev-open-stats" class="btn-devtools-action btn-dev-stats" onclick="window.open('/admin/stats.html', '_blank')">📊 打开统计后台</button>
+                    </div>
+                    <p class="devtools-note">💡 查看全球玩家开包统计数据，需要管理员密钥。</p>
+                </div>
             </div>
         </div>
     </div>

@@ -33,7 +33,7 @@ const ALLOWED_ORIGINS = [
 ];
 
 /** 管理员密钥（用于后台查询全局数据，简单鉴权） */
-const ADMIN_KEY = 'ygo-pack-stats-2026';
+const ADMIN_KEY = 'Snow961003@YGO';
 
 // ============================================
 // Pages Function 入口
