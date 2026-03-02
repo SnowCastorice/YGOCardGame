@@ -31,35 +31,7 @@
             color: #f5c842;
         }
 
-        .auth-form {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .auth-form input {
-            padding: 10px 16px;
-            border: 1px solid #333;
-            border-radius: 8px;
-            background: #1a1a2e;
-            color: #e0e0e0;
-            font-size: 1rem;
-            width: 200px;
-        }
-
-        .auth-form button {
-            padding: 10px 20px;
-            border: 0;
-            border-radius: 8px;
-            background: #f5c842;
-            color: #000;
-            font-weight: bold;
-            cursor: pointer;
-            margin-left: 8px;
-        }
-
-        .auth-form button:hover {
-            background: #ffd700;
-        }
+        
 
         .stats-card {
             background: #1a1a2e;
@@ -173,39 +145,18 @@
     <div class="container">
         <h1>📊 YGO 开包统计后台</h1>
 
-        <div class="auth-form" id="auth-form">
-            <input type="password" id="admin-key" placeholder="输入管理员密钥" />
-            <button onclick="loadStats()">查询</button>
-        </div>
-
         <div id="stats-area">
-            <div class="status-msg">请输入管理员密钥后点击查询</div>
+            <div class="status-msg">⏳ 加载中...</div>
         </div>
     </div>
 
     <script>
-        // 管理员密钥（本地临时存储，方便刷新）
-        let adminKey = sessionStorage.getItem('ygo_admin_key') || '';
-        if (adminKey) {
-            document.getElementById('admin-key').value = adminKey;
-        }
-
         async function loadStats() {
-            const keyInput = document.getElementById('admin-key');
-            adminKey = keyInput.value.trim();
-            if (!adminKey) {
-                alert('请输入管理员密钥');
-                return;
-            }
-
-            // 缓存密钥
-            sessionStorage.setItem('ygo_admin_key', adminKey);
-
             const area = document.getElementById('stats-area');
             area.innerHTML = '<div class="status-msg">⏳ 加载中...</div>';
 
             try {
-                const resp = await fetch('/api/pack-stats?admin=1&key=' + encodeURIComponent(adminKey));
+                const resp = await fetch('/api/pack-stats?admin=1');
                 const data = await resp.json();
 
                 if (!resp.ok) {
@@ -231,8 +182,7 @@
             html += '<div class="stats-card">';
             html += '<h2>🌍 全球汇总</h2>';
             html += '<div class="stats-grid">';
-            html += '<div class="stat-item"><div class="label">总开包次数</div><div class="value">' + formatNum(g.totalPacks) + '</div></div>';
-            html += '<div class="stat-item"><div class="label">总开盒次数</div><div class="value">' + formatNum(g.totalBoxes) + '</div></div>';
+            html += '<div class="stat-item"><div class="label">总开包数</div><div class="value">' + formatNum(g.totalPacks + g.totalBoxes) + '</div></div>';
             html += '</div>';
             if (g.lastUpdated) {
                 html += '<div class="last-updated">最后更新: ' + new Date(g.lastUpdated).toLocaleString('zh-CN') + '</div>';
@@ -249,8 +199,7 @@
                     html += '<div class="pack-row">';
                     html += '<span class="pack-name">' + code + '</span>';
                     html += '<div class="pack-data">';
-                    html += '<span>开包: <strong>' + formatNum(ps.totalPacks) + '</strong></span>';
-                    html += '<span>开盒: <strong>' + formatNum(ps.totalBoxes) + '</strong></span>';
+                    html += '<span>开包: <strong>' + formatNum(ps.totalPacks + ps.totalBoxes) + '</strong></span>';
                     html += '</div>';
                     html += '</div>';
                 }
@@ -269,10 +218,8 @@
             return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
         }
 
-        // 如果已有缓存密钥，自动加载
-        if (adminKey) {
-            loadStats();
-        }
+        // 页面加载后自动查询
+        loadStats();
     </script>
 </body>
 </html>

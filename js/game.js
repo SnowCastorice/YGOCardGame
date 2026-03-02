@@ -412,11 +412,11 @@ function bindGameEvents() {
         openMultiPacks(boxCount);
     });
 
-    // 返回选择卡包（两个返回按钮）
+    // 返回选择卡包（开包界面的返回按钮）
     bindEvent('btn-back-to-packs', 'click', showPackSelect);
-    bindEvent('btn-back-from-result', 'click', showPackSelect);
-    // 开包结果左上角返回按钮
-    bindEvent('btn-result-back', 'click', showPackSelect);
+    // 开包结果页返回按钮 → 返回开包界面（上一层）
+    bindEvent('btn-back-from-result', 'click', backToOpenPack);
+    bindEvent('btn-result-back', 'click', backToOpenPack);
 
     // 开包界面收藏预览按钮（和卡包列表的放大镜是同一个功能）
     bindEvent('btn-pack-preview', 'click', function () {
@@ -1025,6 +1025,13 @@ function showPackSelect() {
     currentPackCards = null;
     currentSupplementCards = null;
     switchSection('pack-select-section');
+}
+
+/**
+ * 从开包结果页返回到开包界面（上一层），不清除当前卡包数据
+ */
+function backToOpenPack() {
+    switchSection('open-pack-section');
 }
 
 /**

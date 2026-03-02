@@ -229,6 +229,9 @@ const PackStats = (function() {
     if (global && global.packStats) {
       const globalTotal = global.packStats.totalPacks + global.packStats.totalBoxes;
       renderStats(container, packCode, localTotal, globalTotal);
+    } else {
+      // API 不可用（本地调试环境），显示提示
+      renderStats(container, packCode, localTotal, -1);
     }
   }
 
@@ -240,9 +243,15 @@ const PackStats = (function() {
    * @param {number|null} globalTotal - 全球开包总数（null=加载中）
    */
   function renderStats(container, packCode, localTotal, globalTotal) {
-    const globalText = globalTotal !== null
-      ? formatNumber(globalTotal)
-      : '<span class="pack-stats__loading">加载中...</span>';
+    let globalText;
+    if (globalTotal === null) {
+      globalText = '<span class="pack-stats__loading">加载中...</span>';
+    } else if (globalTotal === -1) {
+      // 本地调试环境，API 不可用
+      globalText = '<span class="pack-stats__unavailable">本地调试不可用</span>';
+    } else {
+      globalText = formatNumber(globalTotal);
+    }
 
     container.innerHTML =
       '<div class="pack-stats">' +

@@ -8,7 +8,7 @@
  * API 接口：
  *   POST /api/pack-stats           - 上报开包数据
  *   GET  /api/pack-stats            - 查询指定卡包的全球开包统计
- *   GET  /api/pack-stats?admin=1    - 查询所有卡包的全局统计（管理后台用）
+ *   GET  /api/pack-stats?admin=1    - 查询所有卡包的全局统计（管理后台用，无需鉴权）
  * 
  * KV 绑定名称：PACK_STATS（需要在 Cloudflare 控制台创建并绑定）
  * 
@@ -32,8 +32,7 @@ const ALLOWED_ORIGINS = [
   'http://127.0.0.1',
 ];
 
-/** 管理员密钥（用于后台查询全局数据，简单鉴权） */
-const ADMIN_KEY = 'Snow961003@YGO';
+
 
 // ============================================
 // Pages Function 入口
@@ -136,7 +135,7 @@ async function handleReport(context) {
 /**
  * 处理统计查询请求
  * GET /api/pack-stats?packCode=LOCH        - 查询指定卡包统计
- * GET /api/pack-stats?admin=1&key=xxx      - 查询全局统计（管理后台）
+ * GET /api/pack-stats?admin=1               - 查询全局统计（管理后台）
  */
 async function handleQuery(context) {
   const request = context.request;
@@ -148,13 +147,9 @@ async function handleQuery(context) {
     return jsonResponse({ error: 'KV 未绑定' }, 500, origin);
   }
 
-  // 管理后台查询：返回所有卡包的统计
+  // 管理后台查询：返回所有卡包的统计（无需密码，开发者模式已有入口保护）
   const isAdmin = url.searchParams.get('admin') === '1';
   if (isAdmin) {
-    const key = url.searchParams.get('key');
-    if (key !== ADMIN_KEY) {
-      return jsonResponse({ error: '管理员密钥错误' }, 403, origin);
-    }
 
     try {
       // 获取所有卡包索引

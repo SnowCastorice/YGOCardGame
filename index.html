@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>YGO Pack Opener - 游戏王卡包开封模拟器</title>
     <!-- 全局版本号：所有资源的缓存破坏参数、页脚版本号等都从这里读取，更新时只改这一处 -->
-<script>window.APP_VERSION = '1.6.0';</script>
+<script>window.APP_VERSION = '1.6.5';</script>
     <!-- CSS 版本号自动跟随 APP_VERSION -->
     <script>document.write('<link rel="stylesheet" href="css/style.css?v=' + window.APP_VERSION + '">');</script>
 </head>
@@ -74,7 +74,7 @@
             <div class="open-btn-container">
                 <button id="btn-open-pack" class="btn-open-pack">开1包</button>
                 <button id="btn-open-box" class="btn-open-box">开1盒<span class="btn-box-sub">赠送 +1 辅助包</span></button>
-                <button id="btn-back-to-packs" class="btn-secondary">← 返回选择卡包</button>
+<button id="btn-back-to-packs" class="btn-secondary">← 返回上一层</button>
             </div>
         </section>
 
@@ -91,7 +91,7 @@
         <!-- 卡牌结果展示区域 -->
         <section id="result-section" class="section-panel" style="display:none;">
             <div class="result-header">
-                <button id="btn-result-back" class="result-header__back" title="返回选择卡包">←</button>
+<button id="btn-result-back" class="result-header__back" title="返回上一层">←</button>
                 <h2 class="section-title">开包结果</h2>
             </div>
             <!-- 稀有度统计 -->
@@ -107,7 +107,7 @@
             <div class="result-actions">
                 <button id="btn-open-again" class="btn-open-pack">再开1包</button>
                 <button id="btn-open-again-box" class="btn-open-box">再开1盒<span class="btn-box-sub">赠送 +1 辅助包</span></button>
-                <button id="btn-back-from-result" class="btn-secondary">← 返回选择卡包</button>
+<button id="btn-back-from-result" class="btn-secondary">← 返回上一层</button>
             </div>
         </section>
     </main>

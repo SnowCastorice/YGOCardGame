@@ -265,24 +265,23 @@ body {
   left: 0;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255, 255, 255, .08);
-  border: 1px solid rgba(255, 255, 255, .15);
-  color: var(--text-secondary);
-  font-size: 1.1rem;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all .2s ease;
+  width: 32px;
+  height: 32px;
+  background: 0;
+  border: 0;
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  padding: 0;
+  cursor: pointer;
+  transition: color .2s ease, transform .15s ease;
 }
 
 .result-header__back:active {
-  background: rgba(255, 255, 255, .18);
   color: var(--accent-gold);
-  border-color: var(--accent-gold);
+  transform: translateY(-50%) scale(.88);
 }
 
 .section-subtitle {
@@ -694,6 +693,13 @@ body {
     font-weight: normal;
 }
 
+.pack-stats__unavailable {
+    font-size: .75rem;
+    color: var(--text-secondary);
+    font-weight: normal;
+    opacity: .6;
+}
+
 .open-btn-container {
     text-align: center;
     display: flex;
@@ -704,8 +710,9 @@ body {
 
 /* 返回按钮在按钮组内的样式 */
 .open-btn-container .btn-secondary {
-    margin-top: 4px;
-    width: 75%;
+    margin-top: 6px;
+    width: 80%;
+    padding: 10px 0;
 }
 
 .btn-open-pack {
@@ -794,20 +801,23 @@ body {
 .btn-secondary {
     display: block;
     margin: 16px auto 0;
-    padding: 6px 16px;
-    background: transparent;
-    border: 1px solid var(--text-secondary);
+    padding: 10px 28px;
+    background: rgba(255, 255, 255, .04);
+    border: 1px solid rgba(255, 255, 255, .18);
     color: var(--text-secondary);
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
-    font-size: .75rem;
-    transition: all .3s ease;
+    font-size: .85rem;
+    letter-spacing: .5px;
+    transition: all .25s ease;
+    backdrop-filter: blur(4px);
 }
 
 .btn-secondary:hover,
 .btn-secondary:active {
-    border-color: var(--text-primary);
-    color: var(--text-primary);
+    background: rgba(255, 215, 0, .08);
+    border-color: rgba(255, 215, 0, .4);
+    color: var(--accent-gold);
 }
 
 .btn-danger {
