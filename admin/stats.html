@@ -182,7 +182,8 @@
             html += '<div class="stats-card">';
             html += '<h2>🌍 全球汇总</h2>';
             html += '<div class="stats-grid">';
-            html += '<div class="stat-item"><div class="label">总开包数</div><div class="value">' + formatNum(g.totalPacks + g.totalBoxes) + '</div></div>';
+            html += '<div class="stat-item"><div class="label">总开包数</div><div class="value">' + formatNum(g.totalPacks) + '</div></div>';
+            html += '<div class="stat-item"><div class="label">总开盒数</div><div class="value">' + formatNum(g.totalBoxes) + '</div></div>';
             html += '</div>';
             if (g.lastUpdated) {
                 html += '<div class="last-updated">最后更新: ' + new Date(g.lastUpdated).toLocaleString('zh-CN') + '</div>';
@@ -199,7 +200,8 @@
                     html += '<div class="pack-row">';
                     html += '<span class="pack-name">' + code + '</span>';
                     html += '<div class="pack-data">';
-                    html += '<span>开包: <strong>' + formatNum(ps.totalPacks + ps.totalBoxes) + '</strong></span>';
+                    html += '<span>开包: <strong>' + formatNum(ps.totalPacks) + '</strong></span>';
+                    html += '<span>开盒: <strong>' + formatNum(ps.totalBoxes) + '</strong></span>';
                     html += '</div>';
                     html += '</div>';
                 }
