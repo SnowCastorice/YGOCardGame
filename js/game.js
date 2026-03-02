@@ -1001,7 +1001,8 @@ async function selectPack(pack) {
         // 更新开包统计展示（进入开包界面时）
         if (typeof PackStats !== 'undefined') {
             const statsCode = pack.packCode || pack.setCode || pack.packId;
-            PackStats.updateStatsDisplay(statsCode);
+            const ppb = pack.packsPerBox || 30;
+            PackStats.updateStatsDisplay(statsCode, ppb);
         }
 
         // 后台预加载卡图（不阻塞主流程，离线模式下跳过）
@@ -1114,7 +1115,8 @@ async function openPack() {
     // 5.5 记录开包统计（本地 + 全球上报）
     if (typeof PackStats !== 'undefined') {
         const statsCode = currentPack.packCode || currentPack.setCode || currentPack.packId;
-        PackStats.recordOpen(statsCode, 'pack', 1);
+        const ppb = currentPack.packsPerBox || 30;
+        PackStats.recordOpen(statsCode, 'pack', 1, ppb);
     }
 
     // 6. 展示结果
@@ -1230,10 +1232,11 @@ async function openMultiPacks(count) {
     }
 
     // 6.5 记录开盒统计（本地 + 全球上报）
-    // 以包为单位记录，开一盒 = 开 count 包
+    // 开盒以 box 类型记录（1盒=1次），后台展示时根据 packsPerBox 折算实际包数
     if (typeof PackStats !== 'undefined') {
         const statsCode = currentPack.packCode || currentPack.setCode || currentPack.packId;
-        PackStats.recordOpen(statsCode, 'pack', count);
+        const ppb = currentPack.packsPerBox || 30;
+        PackStats.recordOpen(statsCode, 'box', 1, ppb);
     }
 
     // 7. 展示汇总结果（传入辅助包卡片）

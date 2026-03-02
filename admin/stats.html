@@ -151,11 +151,49 @@
     </div>
 
     <script>
+        // 每种卡包每盒的包数映射（从 packs.json 动态加载）
+        let packsPerBoxMap = {};
+
+        // 加载卡包配置，获取每盒包数
+        async function loadPackConfig() {
+            try {
+                const configs = [
+                    { url: '/data/ocg/packs.json', fallback: 30 },
+                    { url: '/data/tcg/packs.json', fallback: 30 }
+                ];
+                for (const cfg of configs) {
+                    try {
+                        const resp = await fetch(cfg.url);
+                        if (!resp.ok) continue;
+                        const data = await resp.json();
+                        const packs = data.packs || [];
+                        for (const p of packs) {
+                            const code = p.packCode || p.setCode || p.packId;
+                            if (code) {
+                                packsPerBoxMap[code] = p.packsPerBox || cfg.fallback;
+                            }
+                        }
+                    } catch (e) {
+                        // 忽略单个配置加载失败
+                    }
+                }
+            } catch (e) {
+                console.warn('加载卡包配置失败', e);
+            }
+        }
+
+        // 获取指定卡包每盒包数（默认30）
+        function getPacksPerBox(packCode) {
+            return packsPerBoxMap[packCode] || 30;
+        }
+
         async function loadStats() {
             const area = document.getElementById('stats-area');
             area.innerHTML = '<div class="status-msg">⏳ 加载中...</div>';
 
             try {
+                // 并行加载卡包配置和统计数据
+                await loadPackConfig();
                 const resp = await fetch('/api/pack-stats?admin=1');
                 const data = await resp.json();
 
@@ -178,11 +216,19 @@
 
             let html = '';
 
+            // 计算总开包数 = 纯开包 + 各卡包（开盒数 × 每盒包数）
+            let totalPacksFromBoxes = 0;
+            for (const code of packList) {
+                const ps = packs[code] || { totalPacks: 0, totalBoxes: 0 };
+                totalPacksFromBoxes += ps.totalBoxes * getPacksPerBox(code);
+            }
+            const realTotalPacks = g.totalPacks + totalPacksFromBoxes;
+
             // 全局汇总
             html += '<div class="stats-card">';
             html += '<h2>🌍 全球汇总</h2>';
             html += '<div class="stats-grid">';
-            html += '<div class="stat-item"><div class="label">总开包数</div><div class="value">' + formatNum(g.totalPacks) + '</div></div>';
+            html += '<div class="stat-item"><div class="label">总开包数</div><div class="value">' + formatNum(realTotalPacks) + '</div></div>';
             html += '<div class="stat-item"><div class="label">总开盒数</div><div class="value">' + formatNum(g.totalBoxes) + '</div></div>';
             html += '</div>';
             if (g.lastUpdated) {
@@ -199,8 +245,10 @@
                     const ps = packs[code] || { totalPacks: 0, totalBoxes: 0 };
                     html += '<div class="pack-row">';
                     html += '<span class="pack-name">' + code + '</span>';
+                    const ppb = getPacksPerBox(code);
+                    const realPacks = ps.totalPacks + ps.totalBoxes * ppb;
                     html += '<div class="pack-data">';
-                    html += '<span>开包: <strong>' + formatNum(ps.totalPacks) + '</strong></span>';
+                    html += '<span>开包: <strong>' + formatNum(realPacks) + '</strong></span>';
                     html += '<span>开盒: <strong>' + formatNum(ps.totalBoxes) + '</strong></span>';
                     html += '</div>';
                     html += '</div>';

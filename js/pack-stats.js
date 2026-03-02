@@ -189,8 +189,9 @@ const PackStats = (function() {
    * @param {string} packCode - 卡包代码（如 "LOCH"）
    * @param {'pack'|'box'} type - "pack" 开单包 / "box" 开整盒
    * @param {number} [count=1] - 数量（开单包时通常为1）
+   * @param {number} [packsPerBox=30] - 每盒包数（用于计算开包总数）
    */
-  function recordOpen(packCode, type, count) {
+  function recordOpen(packCode, type, count, packsPerBox) {
     count = count || 1;
     if (!packCode) return;
 
@@ -200,8 +201,8 @@ const PackStats = (function() {
     // 远程上报（异步，不阻塞）
     reportToServer(packCode, type, count);
 
-    // 更新 UI 展示
-    updateStatsDisplay(packCode);
+    // 更新 UI 展示（传入每盒包数以正确折算）
+    updateStatsDisplay(packCode, packsPerBox);
   }
 
   // ============================================
@@ -211,15 +212,20 @@ const PackStats = (function() {
   /**
    * 更新开包统计展示
    * 展示在开包界面的统计区域
+   * 开包数 = 纯开包次数 + 开盒次数 × 每盒包数
    * @param {string} packCode - 当前卡包代码
+   * @param {number} [packsPerBox=30] - 每盒包数（用于折算开盒为实际包数）
    */
-  async function updateStatsDisplay(packCode) {
+  async function updateStatsDisplay(packCode, packsPerBox) {
     const container = document.getElementById('pack-stats-display');
     if (!container) return;
 
+    const ppb = packsPerBox || 30;
+
     // 获取本地统计
     const local = getLocalPackStats(packCode);
-    const localTotal = local.totalPacks + local.totalBoxes;
+    // 开包数 = 纯开包 + 开盒 × 每盒包数
+    const localTotal = local.totalPacks + local.totalBoxes * ppb;
 
     // 先用本地数据显示
     renderStats(container, packCode, localTotal, null);
@@ -227,7 +233,7 @@ const PackStats = (function() {
     // 异步获取全球数据并更新
     const global = await fetchGlobalStats(packCode);
     if (global && global.packStats) {
-      const globalTotal = global.packStats.totalPacks + global.packStats.totalBoxes;
+      const globalTotal = global.packStats.totalPacks + global.packStats.totalBoxes * ppb;
       renderStats(container, packCode, localTotal, globalTotal);
     } else {
       // API 不可用（本地调试环境），显示提示
