@@ -1223,9 +1223,10 @@ async function openMultiPacks(count) {
     }
 
     // 6.5 记录开盒统计（本地 + 全球上报）
+    // 以包为单位记录，开一盒 = 开 count 包
     if (typeof PackStats !== 'undefined') {
         const statsCode = currentPack.packCode || currentPack.setCode || currentPack.packId;
-        PackStats.recordOpen(statsCode, 'box', 1);
+        PackStats.recordOpen(statsCode, 'pack', count);
     }
 
     // 7. 展示汇总结果（传入辅助包卡片）
