@@ -38,7 +38,6 @@
         </div>
         <nav class="top-nav">
             <button id="btn-inventory" class="nav-btn inventory-btn">🎒<span id="inventory-badge" class="inventory-badge" style="display:none;">0</span></button>
-            <button id="btn-cache-manage" class="nav-btn">💾</button>
             <button id="btn-dev-tools" class="nav-btn dev-btn">🔧</button>
         </nav>
     </header>
@@ -130,38 +129,33 @@
         </div>
     </div>
 
-    <!-- ====== 缓存管理弹窗 ====== -->
-    <div id="cache-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>💾 缓存管理</h2>
-                <button id="btn-close-cache" class="modal-close" onclick="document.getElementById('cache-modal').classList.remove('active')">&times;</button>
-            </div>
-            <div id="cache-content" class="modal-body">
-                <!-- 缓存信息由 JS 动态生成 -->
-            </div>
-            <div class="modal-footer">
-                <button id="btn-clear-cache" class="btn-danger">🗑️ 清除所有 API 缓存</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ====== 开发者工具：CDN 卡图对比面板 ====== -->
+    <!-- ====== 开发者工具面板 ====== -->
     <div id="devtools-modal" class="modal-overlay">
         <div class="modal-content devtools-modal-content">
             <div class="modal-header">
-                <h2>🔧 开发者工具</h2>
+                <h2>� 开发者工具</h2>
                 <button id="btn-close-devtools" class="modal-close">&times;</button>
             </div>
             <div class="modal-body devtools-body">
                 <!-- ▸ 板块一：快捷操作 -->
                 <div class="devtools-section-card">
-                    <h3 class="devtools-section-title">🛠️ 快捷操作</h3>
+                    <h3 class="devtools-section-title">�️ 快捷操作</h3>
                     <div class="devtools-actions-btns">
 <button id="btn-dev-add-gold" class="btn-devtools-action btn-dev-gold">🪙 添加 1000000 金币</button>
                         <button id="btn-dev-reset-game" class="btn-devtools-action btn-dev-reset">🔄 重置游戏</button>
                     </div>
-                    <p class="devtools-note">💡 重置游戏：仅重置货币余额，不清除缓存。若需清除缓存，请前往「💾 缓存管理」。</p>
+                    <p class="devtools-note">💡 重置游戏：仅重置货币余额，不清除缓存。</p>
+                </div>
+
+                <!-- ▸ 板块：缓存管理 -->
+                <div class="devtools-section-card">
+                    <h3 class="devtools-section-title">� 缓存管理</h3>
+                    <div id="devtools-cache-content" class="devtools-cache-content">
+                        <!-- 缓存信息由 JS 动态生成 -->
+                    </div>
+                    <div class="devtools-actions-btns" style="margin-top:10px;">
+                        <button id="btn-devtools-clear-cache" class="btn-devtools-action btn-dev-reset">�️ 清除所有 API 缓存</button>
+                    </div>
                 </div>
 
                 <!-- ▸ 板块：TCG 测试模式 -->

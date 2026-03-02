@@ -1591,17 +1591,33 @@ body {
 }
 
 /* ============================================
-   缓存管理样式
+   缓存管理样式（内嵌于开发者工具面板）
    ============================================ */
+.devtools-cache-content {
+    max-height: 320px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, .15) transparent;
+}
+
+.devtools-cache-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.devtools-cache-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, .15);
+    border-radius: 4px;
+}
+
 .cache-summary {
-    margin-bottom: 16px;
-    padding-bottom: 12px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
     border-bottom: 1px solid var(--border-color);
 }
 
 .cache-summary p {
     color: var(--text-secondary);
-    font-size: .9rem;
+    font-size: .82rem;
     line-height: 1.8;
 }
 
@@ -1611,20 +1627,20 @@ body {
 
 /* 缓存板块标题 */
 .cache-section {
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
 
 .cache-section-title {
     color: var(--text-primary);
-    font-size: .9rem;
-    margin-bottom: 10px;
+    font-size: .85rem;
+    margin-bottom: 8px;
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
 .cache-section-size {
-    font-size: .8rem;
+    font-size: .75rem;
     color: var(--accent-gold);
     font-weight: normal;
 }
@@ -1639,11 +1655,11 @@ body {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 4px;
-    padding: 10px 12px;
+    gap: 3px;
+    padding: 8px 10px;
     background: var(--bg-panel);
     border-radius: 8px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 /* 缓存项的行布局（名称 + 删除按钮） */
@@ -1656,13 +1672,13 @@ body {
 
 .cache-item-name {
     color: var(--text-primary);
-    font-size: .85rem;
+    font-size: .8rem;
     font-weight: bold;
 }
 
 .cache-item-info {
     color: var(--text-secondary);
-    font-size: .8rem;
+    font-size: .75rem;
 }
 
 /* 缓存项删除按钮 */

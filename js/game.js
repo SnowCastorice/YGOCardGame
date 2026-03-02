@@ -284,11 +284,6 @@ function bindNavEvents() {
     bindEvent('footer-version', 'click', showChangelog);
     bindEvent('btn-close-changelog', 'click', hideChangelog);
 
-    // 缓存管理
-    bindEvent('btn-cache-manage', 'click', showCacheManage);
-    bindEvent('btn-close-cache', 'click', hideCacheManage);
-    bindEvent('btn-clear-cache', 'click', handleClearCache);
-
     // OCG / TCG 模式切换按钮
     bindEvent('btn-mode-ocg', 'click', function () { switchGameMode('ocg'); });
     bindEvent('btn-mode-tcg', 'click', function () { switchGameMode('tcg'); });
@@ -310,9 +305,6 @@ function bindNavEvents() {
     // 点击弹窗外部关闭
     bindEvent('changelog-modal', 'click', function (e) {
         if (e.target === document.getElementById('changelog-modal')) hideChangelog();
-    });
-    bindEvent('cache-modal', 'click', function (e) {
-        if (e.target === document.getElementById('cache-modal')) hideCacheManage();
     });
     bindEvent('devtools-modal', 'click', function (e) {
         if (e.target === document.getElementById('devtools-modal')) hideDevTools();
@@ -2461,11 +2453,11 @@ function hideChangelog() {
 // ============================================
 
 /** 显示缓存管理弹窗 */
-async function showCacheManage() {
-    const container = document.getElementById('cache-content');
-    container.innerHTML = '<p style="color:var(--text-secondary);">正在获取缓存信息...</p>';
-
-    document.getElementById('cache-modal').classList.add('active');
+/** 加载缓存信息到开发者工具内嵌区域 */
+async function loadDevtoolsCacheInfo() {
+    const container = document.getElementById('devtools-cache-content');
+    if (!container) return;
+    container.innerHTML = '<p style="color:var(--text-secondary);font-size:.85rem;">正在获取缓存信息...</p>';
 
     try {
         const status = await TCG_API.getCacheStatus();
@@ -2488,7 +2480,6 @@ async function showCacheManage() {
             html += `<div class="cache-list">`;
             status.localStorage.items.forEach(function (item) {
                 const extra = item.cardCount !== null ? ` · ${item.cardCount} 种卡` : '';
-                // 背包和货币数据可以独立清除
                 const canDelete = item.key === 'ygo_inventory_data' || item.key === 'ygo_currency_data';
                 html += `<div class="cache-item">`;
                 html += `<div class="cache-item-row">`;
@@ -2538,17 +2529,15 @@ async function showCacheManage() {
         container.innerHTML = html;
 
         // ─── 绑定各条目的删除按钮事件 ───
-        bindCacheItemDeleteEvents(container);
+        bindDevtoolsCacheDeleteEvents(container);
 
     } catch (error) {
-        container.innerHTML = `<p style="color:#ff6b6b;">获取缓存信息失败: ${error.message}</p>`;
+        container.innerHTML = `<p style="color:#ff6b6b;font-size:.85rem;">获取缓存信息失败: ${error.message}</p>`;
     }
 }
 
-/**
- * 为缓存管理弹窗中的删除按钮绑定事件（事件委托）
- */
-function bindCacheItemDeleteEvents(container) {
+/** 绑定开发者工具内缓存条目的删除按钮事件 */
+function bindDevtoolsCacheDeleteEvents(container) {
     container.addEventListener('click', async function (e) {
         const btn = e.target.closest('.cache-item-delete');
         if (!btn) return;
@@ -2565,17 +2554,15 @@ function bindCacheItemDeleteEvents(container) {
 
             TCG_API.clearLocalStorageItem(lsKey);
 
-            // 如果清除了背包，重新初始化背包系统
             if (lsKey === 'ygo_inventory_data' && typeof InventorySystem !== 'undefined') {
                 InventorySystem.reload();
             }
-            // 如果清除了货币，重新初始化货币系统
             if (lsKey === 'ygo_currency_data' && typeof CurrencySystem !== 'undefined') {
                 CurrencySystem.reload();
                 CurrencySystem.updateUI();
             }
 
-            showCacheManage(); // 刷新界面
+            loadDevtoolsCacheInfo(); // 刷新界面
             return;
         }
 
@@ -2584,14 +2571,9 @@ function bindCacheItemDeleteEvents(container) {
         if (setCode) {
             if (!confirm(`确定要清除卡包「${setCode}」的缓存吗？`)) return;
             await TCG_API.refreshCardSetCache(setCode);
-            showCacheManage(); // 刷新界面
+            loadDevtoolsCacheInfo(); // 刷新界面
         }
     });
-}
-
-/** 关闭缓存管理弹窗 */
-function hideCacheManage() {
-    document.getElementById('cache-modal').classList.remove('active');
 }
 
 /** 清除所有缓存（IndexedDB + Cache API，不含 localStorage 用户数据） */
@@ -2603,7 +2585,7 @@ async function handleClearCache() {
     const success = await TCG_API.clearAllCache();
     if (success) {
         alert('✅ API 缓存已清除！');
-        showCacheManage(); // 刷新显示
+        loadDevtoolsCacheInfo(); // 刷新开发者工具内的缓存信息
     } else {
         alert('❌ 清除缓存失败，请重试。');
     }
@@ -2976,6 +2958,12 @@ function showDevTools() {
     const resetGameBtn = document.getElementById('btn-dev-reset-game');
     if (addGoldBtn) addGoldBtn.onclick = devAddGold;
     if (resetGameBtn) resetGameBtn.onclick = devResetGame;
+
+    // 加载缓存管理信息到开发者工具内嵌区域
+    loadDevtoolsCacheInfo();
+    // 绑定清除缓存按钮
+    const clearCacheBtn = document.getElementById('btn-devtools-clear-cache');
+    if (clearCacheBtn) clearCacheBtn.onclick = handleClearCache;
 
     // 绑定标题点击事件（5次连击解锁管理后台入口）
     const devtoolsHeader = modal.querySelector('.modal-header h2');
