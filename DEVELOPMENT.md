@@ -30,7 +30,8 @@
 
 - **GitHub**：https://github.com/SnowCastorice/YGOCardGame
 - **线上地址**：https://ygocardgame.pages.dev/
-- **部署**：Cloudflare Pages（纯静态部署）
+- **部署**：Cloudflare Pages（静态页面 + Functions API + KV 存储）
+- **管理后台**：`/admin/stats.html`（在开发者工具中连续点击标题5次解锁入口）
 
 ---
 
