@@ -288,12 +288,6 @@ function bindNavEvents() {
     bindEvent('btn-mode-ocg', 'click', function () { switchGameMode('ocg'); });
     bindEvent('btn-mode-tcg', 'click', function () { switchGameMode('tcg'); });
 
-    // 货币兑换
-    bindEvent('btn-close-exchange', 'click', hideExchange);
-    // 货币栏点击 → 打开兑换弹窗
-    bindEvent('currency-item-gold', 'click', showExchange);
-    bindEvent('currency-item-diamond', 'click', showExchange);
-
     // 背包
     bindEvent('btn-inventory', 'click', showInventory);
     bindEvent('btn-close-inventory', 'click', hideInventory);
@@ -308,9 +302,6 @@ function bindNavEvents() {
     });
     bindEvent('devtools-modal', 'click', function (e) {
         if (e.target === document.getElementById('devtools-modal')) hideDevTools();
-    });
-    bindEvent('exchange-modal', 'click', function (e) {
-        if (e.target === document.getElementById('exchange-modal')) hideExchange();
     });
     bindEvent('inventory-modal', 'click', function (e) {
         if (e.target === document.getElementById('inventory-modal')) hideInventory();
@@ -2466,38 +2457,12 @@ async function loadDevtoolsCacheInfo() {
         let html = '';
 
         // ─── 总览信息 ───
-        const totalSize = status.indexedDBSize + status.localStorage.totalSize;
         html += `<div class="cache-summary">`;
-        html += `<p>💾 总存储占用：<strong>${fmt(totalSize)}</strong></p>`;
+        html += `<p>💾 API 缓存占用：<strong>${fmt(status.indexedDBSize)}</strong></p>`;
         html += `<p>🎮 当前模式：<strong>${currentGameMode.toUpperCase()}</strong></p>`;
         html += `</div>`;
 
-        // ─── 板块1：本地存储数据（localStorage） ───
-        html += `<div class="cache-section">`;
-        html += `<h3 class="cache-section-title">📦 本地存储 <span class="cache-section-size">${fmt(status.localStorage.totalSize)}</span></h3>`;
-
-        if (status.localStorage.items.length > 0) {
-            html += `<div class="cache-list">`;
-            status.localStorage.items.forEach(function (item) {
-                const extra = item.cardCount !== null ? ` · ${item.cardCount} 种卡` : '';
-                const canDelete = item.key === 'ygo_inventory_data' || item.key === 'ygo_currency_data';
-                html += `<div class="cache-item">`;
-                html += `<div class="cache-item-row">`;
-                html += `<span class="cache-item-name">${item.label}</span>`;
-                if (canDelete) {
-                    html += `<button class="cache-item-delete" data-ls-key="${item.key}" title="清除此项">✕</button>`;
-                }
-                html += `</div>`;
-                html += `<span class="cache-item-info">${fmt(item.size)}${extra}</span>`;
-                html += `</div>`;
-            });
-            html += `</div>`;
-        } else {
-            html += `<p class="cache-empty">暂无本地存储数据。</p>`;
-        }
-        html += `</div>`;
-
-        // ─── 板块2：API 缓存（IndexedDB） ───
+        // ─── 板块1：API 缓存（IndexedDB） ───
         html += `<div class="cache-section">`;
         html += `<h3 class="cache-section-title">🌐 API 缓存 <span class="cache-section-size">${fmt(status.indexedDBSize)}</span></h3>`;
 
@@ -2541,30 +2506,6 @@ function bindDevtoolsCacheDeleteEvents(container) {
     container.addEventListener('click', async function (e) {
         const btn = e.target.closest('.cache-item-delete');
         if (!btn) return;
-
-        // localStorage 项删除
-        const lsKey = btn.getAttribute('data-ls-key');
-        if (lsKey) {
-            const labelMap = {
-                'ygo_inventory_data': '背包数据',
-                'ygo_currency_data': '货币数据'
-            };
-            const label = labelMap[lsKey] || lsKey;
-            if (!confirm(`确定要清除「${label}」吗？\n\n此操作不可恢复！`)) return;
-
-            TCG_API.clearLocalStorageItem(lsKey);
-
-            if (lsKey === 'ygo_inventory_data' && typeof InventorySystem !== 'undefined') {
-                InventorySystem.reload();
-            }
-            if (lsKey === 'ygo_currency_data' && typeof CurrencySystem !== 'undefined') {
-                CurrencySystem.reload();
-                CurrencySystem.updateUI();
-            }
-
-            loadDevtoolsCacheInfo(); // 刷新界面
-            return;
-        }
 
         // IndexedDB 卡包缓存删除
         const setCode = btn.getAttribute('data-idb-set');
@@ -2610,7 +2551,7 @@ function devAddGold() {
  * 开发者工具：重置游戏（重置货币余额至初始值，不清除缓存）
  */
 function devResetGame() {
-    if (!confirm('❗ 确定要重置游戏吗？\n\n这将重置以下数据：\n• 🪙 金币恢复为初始值\n• 💎 钻石恢复为初始值\n• 🎒 背包清空所有卡片\n\n⚠️ 不会清除缓存数据。若需清除缓存，请前往「💾 缓存管理」。')) {
+    if (!confirm('❗ 确定要重置游戏吗？\n\n这将重置以下数据：\n• 🪙 金币恢复为初始值\n• 🎒 背包清空所有卡片\n\n⚠️ 不会清除缓存数据。若需清除缓存，请前往「💾 缓存管理」。')) {
         return;
     }
 
@@ -2627,130 +2568,6 @@ function devResetGame() {
     }
 }
 // ============================================
-// 货币兑换弹窗
-// ============================================
-
-/** 显示货币兑换弹窗 */
-function showExchange() {
-    const container = document.getElementById('exchange-content');
-    const defs = CurrencySystem.getCurrencyDefs();
-    const rates = CurrencySystem.getAllExchangeRates();
-
-    let html = '';
-
-    // 当前余额展示
-    html += '<div class="exchange-balance-display">';
-    Object.keys(defs).forEach(function (id) {
-        const def = defs[id];
-        html += '<div class="exchange-balance-item">';
-        html += `<span class="exchange-balance-icon">${def.icon}</span>`;
-        html += `<span class="exchange-balance-value" id="exchange-display-${id}">${CurrencySystem.getBalance(id)}</span>`;
-        html += `<span class="exchange-balance-name">${def.name}</span>`;
-        html += '</div>';
-    });
-    html += '</div>';
-
-    // 兑换操作区（为每种兑换方向生成一个区域）
-    Object.keys(rates).forEach(function (rateKey) {
-        const rate = rates[rateKey];
-        const parts = rateKey.split('_');
-        const fromId = parts[0];
-        const toId = parts[1];
-        const fromDef = defs[fromId];
-        const toDef = defs[toId];
-
-        if (!fromDef || !toDef) return;
-
-        html += '<div class="exchange-section">';
-        html += `<div class="exchange-section-title">${fromDef.icon} ${fromDef.name} → ${toDef.icon} ${toDef.name}</div>`;
-        html += `<div class="exchange-rate-info">兑换比例: ${rate.from} ${fromDef.icon} = ${rate.to} ${toDef.icon}</div>`;
-        html += '<div class="exchange-controls">';
-        html += '<div class="exchange-input-group">';
-        html += `<label>兑换次数:</label>`;
-        html += `<input type="number" class="exchange-input" id="exchange-times-${rateKey}" value="1" min="1" max="9999" />`;
-        html += '</div>';
-        html += `<div class="exchange-preview" id="exchange-preview-${rateKey}">消耗 ${rate.from} ${fromDef.icon} → 获得 ${rate.to} ${toDef.icon}</div>`;
-        html += '</div>';
-        html += '<div class="exchange-btn-group">';
-        html += `<button class="btn-exchange" id="exchange-btn-${rateKey}" data-rate-key="${rateKey}">确认兑换</button>`;
-        html += `<button class="btn-exchange-max" id="exchange-max-${rateKey}" data-rate-key="${rateKey}">全部兑换</button>`;
-        html += '</div>';
-        html += `<div id="exchange-result-${rateKey}"></div>`;
-        html += '</div>';
-    });
-
-    container.innerHTML = html;
-
-    // 绑定兑换事件
-    Object.keys(rates).forEach(function (rateKey) {
-        const rate = rates[rateKey];
-        const parts = rateKey.split('_');
-        const fromId = parts[0];
-        const toId = parts[1];
-        const fromDef = defs[fromId];
-        const toDef = defs[toId];
-
-        const timesInput = document.getElementById(`exchange-times-${rateKey}`);
-        const previewEl = document.getElementById(`exchange-preview-${rateKey}`);
-        const exchangeBtn = document.getElementById(`exchange-btn-${rateKey}`);
-        const maxBtn = document.getElementById(`exchange-max-${rateKey}`);
-        const resultEl = document.getElementById(`exchange-result-${rateKey}`);
-
-        // 输入时实时预览
-        if (timesInput) {
-            timesInput.addEventListener('input', function () {
-                const times = parseInt(timesInput.value) || 0;
-                if (times > 0) {
-                    previewEl.textContent = `消耗 ${rate.from * times} ${fromDef.icon} → 获得 ${rate.to * times} ${toDef.icon}`;
-                } else {
-                    previewEl.textContent = '请输入兑换次数';
-                }
-            });
-        }
-
-        // 确认兑换按钮
-        if (exchangeBtn) {
-            exchangeBtn.addEventListener('click', function () {
-                const times = parseInt(timesInput.value) || 0;
-                if (times <= 0) {
-                    resultEl.innerHTML = '<div class="exchange-result error">请输入有效的兑换次数</div>';
-                    return;
-                }
-                const result = CurrencySystem.exchange(fromId, toId, times);
-                if (result.success) {
-                    resultEl.innerHTML = `<div class="exchange-result success">✅ ${result.message}</div>`;
-                    // 更新弹窗内的余额显示
-                    updateExchangeBalanceDisplay();
-                } else {
-                    resultEl.innerHTML = `<div class="exchange-result error">❌ ${result.message}</div>`;
-                }
-            });
-        }
-
-        // 全部兑换按钮
-        if (maxBtn) {
-            maxBtn.addEventListener('click', function () {
-                const maxTimes = CurrencySystem.getMaxExchangeTimes(fromId, toId);
-                if (maxTimes <= 0) {
-                    resultEl.innerHTML = `<div class="exchange-result error">❌ ${fromDef.name}不足，无法兑换</div>`;
-                    return;
-                }
-                timesInput.value = maxTimes;
-                // 触发预览更新
-                timesInput.dispatchEvent(new Event('input'));
-            });
-        }
-    });
-
-    document.getElementById('exchange-modal').classList.add('active');
-}
-
-/** 关闭货币兑换弹窗 */
-function hideExchange() {
-    document.getElementById('exchange-modal').classList.remove('active');
-}
-
-// ============================================
 // 背包弹窗
 // ============================================
 
@@ -2763,17 +2580,6 @@ function showInventory() {
 /** 关闭背包弹窗 */
 function hideInventory() {
     document.getElementById('inventory-modal').classList.remove('active');
-}
-
-/** 更新兑换弹窗内的余额显示 */
-function updateExchangeBalanceDisplay() {
-    const defs = CurrencySystem.getCurrencyDefs();
-    Object.keys(defs).forEach(function (id) {
-        const el = document.getElementById(`exchange-display-${id}`);
-        if (el) {
-            el.textContent = CurrencySystem.getBalance(id);
-        }
-    });
 }
 
 // ============================================
@@ -2938,7 +2744,32 @@ const SAMPLE_CARD_IDS = [
 ];
 
 /** 打开开发者工具弹窗 */
-// ====== 开发者工具：管理后台隐藏入口（点击标题5次解锁） ======
+// ====== 开发者工具：Toast 提示 ======
+function showDevtoolsToast(message) {
+    // 移除已有的 toast
+    var existing = document.querySelector('.devtools-toast');
+    if (existing) existing.remove();
+    // 创建 toast 元素
+    var toast = document.createElement('div');
+    toast.className = 'devtools-toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    // 触发重排后添加显示动画
+    requestAnimationFrame(function () {
+        toast.classList.add('devtools-toast--visible');
+    });
+    // 2秒后自动消失
+    setTimeout(function () {
+        toast.classList.remove('devtools-toast--visible');
+        toast.classList.add('devtools-toast--hide');
+        // 动画结束后移除 DOM
+        setTimeout(function () {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 400);
+    }, 2000);
+}
+
+// ====== 开发者工具：隐藏功能入口（点击标题5次解锁 TCG 测试模式、CDN 卡图对比、管理后台） ======
 let devToolsTitleClickCount = 0;
 let devToolsTitleClickTimer = null;
 const DEV_TOOLS_UNLOCK_CLICKS = 5;
@@ -2965,7 +2796,7 @@ function showDevTools() {
     const clearCacheBtn = document.getElementById('btn-devtools-clear-cache');
     if (clearCacheBtn) clearCacheBtn.onclick = handleClearCache;
 
-    // 绑定标题点击事件（5次连击解锁管理后台入口）
+    // 绑定标题点击事件（5次连击解锁隐藏功能：TCG 测试模式、CDN 卡图对比、管理后台）
     const devtoolsHeader = modal.querySelector('.modal-header h2');
     if (devtoolsHeader && !devtoolsHeader._adminUnlockBound) {
         devtoolsHeader._adminUnlockBound = true;
@@ -2981,26 +2812,37 @@ function showDevTools() {
             const remaining = DEV_TOOLS_UNLOCK_CLICKS - devToolsTitleClickCount;
             if (remaining > 0 && remaining <= 3) {
                 // 快到解锁次数时给予提示
-                console.log(`🔧 再点击 ${remaining} 次解锁管理后台`);
+                console.log(`🔧 再点击 ${remaining} 次解锁隐藏功能`);
             }
 
             if (devToolsTitleClickCount >= DEV_TOOLS_UNLOCK_CLICKS) {
                 devToolsTitleClickCount = 0;
                 clearTimeout(devToolsTitleClickTimer);
-                const adminSection = document.getElementById('devtools-admin-section');
-                if (adminSection) {
-                    if (adminSection.style.display === 'none') {
-                        adminSection.style.display = '';
-                        adminSection.classList.remove('devtools-admin-hidden');
-                        adminSection.classList.add('devtools-admin-visible');
-                        console.log('🔓 管理后台入口已解锁');
+                // 同时控制三个隐藏板块：TCG 测试模式、CDN 卡图对比、管理后台
+                const hiddenSections = [
+                    document.getElementById('devtools-tcg-section'),
+                    document.getElementById('devtools-cdn-section'),
+                    document.getElementById('devtools-admin-section')
+                ].filter(Boolean);
+                // 以第一个板块的显示状态为基准判断当前是否已解锁
+                const isCurrentlyHidden = hiddenSections.length > 0 && hiddenSections[0].style.display === 'none';
+                hiddenSections.forEach(function (section) {
+                    if (isCurrentlyHidden) {
+                        section.style.display = '';
+                        section.classList.remove('devtools-admin-hidden');
+                        section.classList.add('devtools-admin-visible');
                     } else {
-                        // 再次触发则隐藏
-                        adminSection.style.display = 'none';
-                        adminSection.classList.remove('devtools-admin-visible');
-                        adminSection.classList.add('devtools-admin-hidden');
-                        console.log('🔒 管理后台入口已隐藏');
+                        section.style.display = 'none';
+                        section.classList.remove('devtools-admin-visible');
+                        section.classList.add('devtools-admin-hidden');
                     }
+                });
+                if (isCurrentlyHidden) {
+                    console.log('🔓 隐藏功能已解锁（TCG 测试模式、CDN 卡图对比、管理后台）');
+                    showDevtoolsToast('🔓 隐藏功能已解锁');
+                } else {
+                    console.log('🔒 隐藏功能已关闭');
+                    showDevtoolsToast('🔒 隐藏功能已关闭');
                 }
             }
         });

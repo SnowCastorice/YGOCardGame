@@ -166,187 +166,6 @@ body {
     100% { color: var(--accent-gold); transform: scale(1); }
 }
 
-/* ============================================
-   货币兑换弹窗
-   ============================================ */
-.exchange-modal-content {
-    max-width: 480px !important;
-}
-
-.exchange-balance-display {
-    display: flex;
-    justify-content: center;
-    gap: 24px;
-    margin-bottom: 20px;
-    padding: 16px;
-    background: var(--bg-panel);
-    border-radius: 10px;
-}
-
-.exchange-balance-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-}
-
-.exchange-balance-icon {
-    font-size: 1.8rem;
-}
-
-.exchange-balance-value {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: var(--accent-gold);
-}
-
-.exchange-balance-name {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-}
-
-/* 兑换操作区 */
-.exchange-section {
-    padding: 16px;
-    background: var(--bg-panel);
-    border-radius: 10px;
-    margin-bottom: 12px;
-}
-
-.exchange-section-title {
-    font-size: 0.9rem;
-    color: var(--text-primary);
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.exchange-rate-info {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    margin-bottom: 12px;
-    text-align: center;
-    padding: 8px;
-    background: rgba(255, 215, 0, 0.05);
-    border-radius: 6px;
-}
-
-.exchange-controls {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.exchange-input-group {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.exchange-input-group label {
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-    white-space: nowrap;
-}
-
-.exchange-input {
-    width: 80px;
-    padding: 6px 10px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    color: var(--text-primary);
-    font-size: 0.9rem;
-    text-align: center;
-    outline: none;
-    transition: border-color 0.3s;
-}
-
-.exchange-input:focus {
-    border-color: var(--accent-blue);
-}
-
-.exchange-preview {
-    font-size: 0.85rem;
-    color: var(--accent-gold);
-    min-width: 100px;
-    text-align: center;
-}
-
-.exchange-btn-group {
-    display: flex;
-    gap: 8px;
-    margin-top: 12px;
-    justify-content: center;
-}
-
-.btn-exchange {
-    padding: 8px 20px;
-    background: linear-gradient(135deg, var(--accent-gold), #ffaa00);
-    border: none;
-    color: #000;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: bold;
-    transition: all 0.3s ease;
-}
-
-.btn-exchange:hover,
-.btn-exchange:active {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(255, 215, 0, .4);
-}
-
-.btn-exchange:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-.btn-exchange-max {
-    padding: 8px 14px;
-    background: transparent;
-    border: 1px solid var(--accent-blue);
-    color: var(--accent-blue);
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    transition: all 0.3s ease;
-}
-
-.btn-exchange-max:hover,
-.btn-exchange-max:active {
-    background: var(--accent-blue);
-    color: #fff;
-}
-
-/* 兑换结果提示 */
-.exchange-result {
-    text-align: center;
-    padding: 10px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    margin-top: 12px;
-    animation: fadeIn 0.3s ease;
-}
-
-.exchange-result.success {
-    background: rgba(76, 175, 80, 0.15);
-    color: #4caf50;
-    border: 1px solid rgba(76, 175, 80, 0.3);
-}
-
-.exchange-result.error {
-    background: rgba(255, 71, 87, 0.15);
-    color: var(--accent-red);
-    border: 1px solid rgba(255, 71, 87, 0.3);
-}
-
 /* 余额不足时的按钮样式 */
 .btn-open-pack.insufficient {
     background: linear-gradient(135deg, #666, #888);
@@ -1472,6 +1291,37 @@ body {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* 开发者工具 Toast 提示 */
+.devtools-toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(.85);
+    z-index: 99999;
+    padding: 12px 24px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, .78);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: .5px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .3s ease, transform .3s ease;
+}
+
+.devtools-toast--visible {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.devtools-toast--hide {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(.85);
+    transition: opacity .35s ease, transform .35s ease;
 }
 
 /* 统计后台按钮样式 */

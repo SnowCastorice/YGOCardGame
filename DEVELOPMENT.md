@@ -32,6 +32,7 @@
 - **线上地址**：https://ygocardgame.pages.dev/
 - **部署**：Cloudflare Pages（静态页面 + Functions API + KV 存储）
 - **管理后台**：`/admin/stats.html`（在开发者工具中连续点击标题5次解锁入口）
+- **开发者工具面板**：默认显示快捷操作、缓存管理两个板块；连点标题5次可解锁 TCG 测试模式、CDN 卡图对比、管理后台入口三个隐藏板块
 
 ---
 

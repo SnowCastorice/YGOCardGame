@@ -11,7 +11,7 @@
     "guaranteedRareSlot": "是否保底最后一张至少为 R 及以上",
     "gameMode": "游戏模式：ocg = 亚洲版, tcg = 欧美版",
     "price": "开包所需货币数量",
-    "currency": "开包使用的货币类型（gold=金币, diamond=钻石）"
+"currency": "开包使用的货币类型（gold=金币）"
   },
   "packs": [
     {

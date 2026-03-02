@@ -22,13 +22,9 @@
     <header class="top-bar">
         <!-- 货币显示栏 -->
         <div class="currency-bar">
-            <div class="currency-item" id="currency-item-gold" title="点击兑换">
+            <div class="currency-item" id="currency-item-gold">
                 <span class="currency-icon">🪙</span>
                 <span class="currency-value" id="currency-balance-gold">0</span>
-            </div>
-            <div class="currency-item" id="currency-item-diamond" title="点击兑换">
-                <span class="currency-icon">💎</span>
-                <span class="currency-value" id="currency-balance-diamond">0</span>
             </div>
         </div>
         <!-- OCG / TCG 模式切换开关（TCG 默认隐藏，可在开发者工具中开启） -->
@@ -133,33 +129,33 @@
     <div id="devtools-modal" class="modal-overlay">
         <div class="modal-content devtools-modal-content">
             <div class="modal-header">
-                <h2>� 开发者工具</h2>
+                <h2>🔧 开发者工具</h2>
                 <button id="btn-close-devtools" class="modal-close">&times;</button>
             </div>
             <div class="modal-body devtools-body">
                 <!-- ▸ 板块一：快捷操作 -->
                 <div class="devtools-section-card">
-                    <h3 class="devtools-section-title">�️ 快捷操作</h3>
+                    <h3 class="devtools-section-title">🛠️ 快捷操作</h3>
                     <div class="devtools-actions-btns">
 <button id="btn-dev-add-gold" class="btn-devtools-action btn-dev-gold">🪙 添加 1000000 金币</button>
                         <button id="btn-dev-reset-game" class="btn-devtools-action btn-dev-reset">🔄 重置游戏</button>
                     </div>
-                    <p class="devtools-note">💡 重置游戏：仅重置货币余额，不清除缓存。</p>
+<p class="devtools-note">💡 只重置游戏，不清除缓存。</p>
                 </div>
 
                 <!-- ▸ 板块：缓存管理 -->
                 <div class="devtools-section-card">
-                    <h3 class="devtools-section-title">� 缓存管理</h3>
+                    <h3 class="devtools-section-title">💾 缓存管理</h3>
                     <div id="devtools-cache-content" class="devtools-cache-content">
                         <!-- 缓存信息由 JS 动态生成 -->
                     </div>
                     <div class="devtools-actions-btns" style="margin-top:10px;">
-                        <button id="btn-devtools-clear-cache" class="btn-devtools-action btn-dev-reset">�️ 清除所有 API 缓存</button>
+                        <button id="btn-devtools-clear-cache" class="btn-devtools-action btn-dev-reset">🗑️ 清除所有 API 缓存</button>
                     </div>
                 </div>
 
-                <!-- ▸ 板块：TCG 测试模式 -->
-                <div class="devtools-section-card">
+                <!-- ▸ 隐藏板块：TCG 测试模式（需点击开发者工具标题5次解锁） -->
+                <div id="devtools-tcg-section" class="devtools-section-card devtools-admin-hidden" style="display:none;">
                     <h3 class="devtools-section-title">🌎 TCG 测试模式</h3>
                     <div class="devtools-actions-btns">
                         <button id="btn-dev-toggle-tcg" class="btn-devtools-action btn-dev-tcg">🔓 开启 TCG 模式</button>
@@ -167,8 +163,8 @@
                     <p class="devtools-note devtools-tcg-warning">⚠️ TCG 开发未完成，仅为测试版本。开启后可在顶部切换到 TCG 模式，数据和功能可能不完整。</p>
                 </div>
 
-                <!-- ▸ 板块二：CDN 卡图对比 -->
-                <div class="devtools-section-card">
+                <!-- ▸ 隐藏板块：CDN 卡图对比（需点击开发者工具标题5次解锁） -->
+                <div id="devtools-cdn-section" class="devtools-section-card devtools-admin-hidden" style="display:none;">
                     <h3 class="devtools-section-title">🖼️ CDN 卡图对比</h3>
                     <!-- 当前模式信息（优先展示，让用户知道当前上下文） -->
                     <div id="devtools-mode-info" class="devtools-mode-info"></div>
@@ -221,19 +217,6 @@
             </div>
             <div id="inventory-content" class="modal-body">
                 <!-- 背包内容由 JS 动态生成 -->
-            </div>
-        </div>
-    </div>
-
-    <!-- ====== 货币兑换弹窗 ====== -->
-    <div id="exchange-modal" class="modal-overlay">
-        <div class="modal-content exchange-modal-content">
-            <div class="modal-header">
-                <h2>💱 货币兑换</h2>
-                <button id="btn-close-exchange" class="modal-close">&times;</button>
-            </div>
-            <div id="exchange-content" class="modal-body">
-                <!-- 兑换内容由 JS 动态生成 -->
             </div>
         </div>
     </div>
