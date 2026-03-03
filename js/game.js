@@ -2768,7 +2768,8 @@ const CDN_SOURCES = [
         format: 'WebP',
         desc: '部署在 Cloudflare Pages 上的本地卡图（LOCH 卡包，需要映射表）',
         usedBy: null,
-        needsMetaMap: true  // 需要 loch_image_map 映射表获取 metaId
+        needsMetaMap: true,  // 需要 loch_image_map 映射表获取 metaId
+        supportsCors: true   // 同源请求，支持 fetch
     },
     {
         id: 'ygocdb_pics',
@@ -2776,7 +2777,8 @@ const CDN_SOURCES = [
         urlTemplate: 'https://cdn.233.momobako.com/ygopro/pics/{id}.jpg',
         format: 'JPEG',
         desc: '萌卡 YGOPro 卡图（当前 OCG 使用）',
-        usedBy: 'ocg'
+        usedBy: 'ocg',
+        supportsCors: false  // 不支持 CORS，使用 Image() 加载
     },
     {
         id: 'ygocdb_ygoimg_webp',
@@ -2784,7 +2786,8 @@ const CDN_SOURCES = [
         urlTemplate: 'https://cdn.233.momobako.com/ygoimg/ygopro/{id}.webp',
         format: 'WebP',
         desc: 'YGOCDB 高清卡图（WebP 格式）',
-        usedBy: null
+        usedBy: null,
+        supportsCors: false
     },
     {
         id: 'ygocdb_ygoimg_scaled',
@@ -2792,7 +2795,8 @@ const CDN_SOURCES = [
         urlTemplate: 'https://cdn.233.momobako.com/ygoimg/ygopro/{id}.webp!/fw/400/quality/85',
         format: 'WebP (压缩)',
         desc: 'YGOCDB CDN 处理：宽400 + 质量85',
-        usedBy: null
+        usedBy: null,
+        supportsCors: false
     },
     {
         id: 'ygoprodeck_small',
@@ -2800,7 +2804,8 @@ const CDN_SOURCES = [
         urlTemplate: 'https://images.ygoprodeck.com/images/cards_small/{id}.jpg',
         format: 'JPEG',
         desc: 'YGOProDeck 小图（TCG 备用图源）',
-        usedBy: null
+        usedBy: null,
+        supportsCors: false
     },
     {
         id: 'ygoprodeck_large',
@@ -2808,7 +2813,8 @@ const CDN_SOURCES = [
         urlTemplate: 'https://images.ygoprodeck.com/images/cards/{id}.jpg',
         format: 'JPEG',
         desc: 'YGOProDeck 大图',
-        usedBy: null
+        usedBy: null,
+        supportsCors: false
     },
     {
         id: 'yugiohmeta_s3',
@@ -2817,24 +2823,35 @@ const CDN_SOURCES = [
         format: 'WebP',
         desc: 'YugiohMeta 英文卡图（当前 TCG 使用，需要映射表）',
         usedBy: 'tcg',
-        needsMetaMap: true  // 标记此源需要 YugiohMeta 映射表
+        needsMetaMap: true,  // 标记此源需要 YugiohMeta 映射表
+        supportsCors: true   // S3 返回 CORS 头
     }
 ];
 
-// 一些常用卡片 ID，用于随机测试
-// 包含 LOCH 卡片（100256xxx 系列），以便测试 Cloudflare 本地卡图和 S3 CDN 映射
-const SAMPLE_CARD_IDS = [
+// 标准卡片 ID（用于 YGOCDB、YGOProDeck 等不需要映射表的源）
+const SAMPLE_CARD_IDS_STANDARD = [
     89631139,  // 青眼白龙
     46986414,  // 黑魔导
     70903634,  // 骷髅仆人
     44095762,  // 死者苏生
     36996508,  // 灰流丽
     14558127,  // 増殖するG
+    27204311,  // 沉默剑士 LV5
+    83764718,  // 巨大化
+];
+
+// LOCH 卡片 ID（用于需要映射表的源：Cloudflare 本地卡图、S3 CDN）
+const SAMPLE_CARD_IDS_META = [
     100256001, // LOCH: Dark Magician, the Pharaoh's Servant
     100256002, // LOCH: Multiplying Kuriboh!
-    100256040, // LOCH 卡片（用于 Cloudflare/S3 对比）
-    100256041, // LOCH 卡片（用于 Cloudflare/S3 对比）
+    100256040, // LOCH 卡片
+    100256041, // LOCH 卡片
+    100256003, // LOCH 卡片
+    100256010, // LOCH 卡片
 ];
+
+// 兼容旧引用：合并所有卡片 ID（用于随机单卡测试等）
+const SAMPLE_CARD_IDS = SAMPLE_CARD_IDS_STANDARD.concat(SAMPLE_CARD_IDS_META);
 
 /** 打开开发者工具弹窗 */
 // ====== 开发者工具：Toast 提示 ======
@@ -3116,9 +3133,21 @@ function loadSingleCDN(source, cardId, metaMapData, noCache) {
     const startTime = performance.now();
     const TIMEOUT_MS = 10000; // 10秒超时
 
-    // 使用 fetch + blob 方式加载图片
-    // 相比 new Image() 方式，fetch 不受 Referer 防盗链限制
-    // 相对路径（如 Cloudflare 本地卡图）使用 same-origin，跨域 CDN 使用 cors
+    // 根据 supportsCors 标记选择加载方式：
+    // - supportsCors=true  → 使用 fetch + blob（可获取精确文件大小）
+    // - supportsCors=false → 使用 new Image()（兼容不返回 CORS 头的 CDN）
+    if (source.supportsCors) {
+        return _loadCDNViaFetch(source, url, startTime, TIMEOUT_MS, noCache);
+    } else {
+        return _loadCDNViaImage(source, url, startTime, TIMEOUT_MS);
+    }
+}
+
+/**
+ * 使用 fetch + blob 方式加载图片（适用于支持 CORS 的源）
+ * 优点：可获取精确文件大小、不受 Referer 防盗链限制
+ */
+function _loadCDNViaFetch(source, url, startTime, timeoutMs, noCache) {
     const isRelativeUrl = !url.startsWith('http');
     return new Promise(function (resolve) {
         const timeoutId = setTimeout(function () {
@@ -3126,20 +3155,19 @@ function loadSingleCDN(source, cardId, metaMapData, noCache) {
                 source: source,
                 url: url,
                 status: 'timeout',
-                loadTime: TIMEOUT_MS,
+                loadTime: timeoutMs,
                 fileSize: null,
                 width: null,
                 height: null,
-                errorMsg: '加载超时（' + (TIMEOUT_MS / 1000) + '秒）'
+                errorMsg: '加载超时（' + (timeoutMs / 1000) + '秒）'
             });
-        }, TIMEOUT_MS);
+        }, timeoutMs);
 
         fetch(url, { mode: isRelativeUrl ? 'same-origin' : 'cors', cache: noCache ? 'no-store' : 'default' })
             .then(function (response) {
                 if (!response.ok) {
                     throw new Error('HTTP ' + response.status + ' ' + response.statusText);
                 }
-                // 获取文件大小
                 const contentLength = response.headers.get('content-length');
                 const fileSize = contentLength ? parseInt(contentLength) : null;
                 return response.blob().then(function (blob) {
@@ -3149,7 +3177,6 @@ function loadSingleCDN(source, cardId, metaMapData, noCache) {
             .then(function (data) {
                 clearTimeout(timeoutId);
                 const loadTime = Math.round(performance.now() - startTime);
-                // 将 blob 转为图片，获取宽高
                 const blobUrl = URL.createObjectURL(data.blob);
                 const img = new Image();
                 img.onload = function () {
@@ -3163,7 +3190,6 @@ function loadSingleCDN(source, cardId, metaMapData, noCache) {
                         height: img.naturalHeight,
                         imgElement: img
                     });
-                    // 释放 blob URL
                     URL.revokeObjectURL(blobUrl);
                 };
                 img.onerror = function () {
@@ -3184,7 +3210,7 @@ function loadSingleCDN(source, cardId, metaMapData, noCache) {
             .catch(function (err) {
                 clearTimeout(timeoutId);
                 const loadTime = Math.round(performance.now() - startTime);
-                console.warn('❌ [' + source.name + '] 加载失败:', err.message, '| URL:', url);
+                console.warn('❌ [' + source.name + '] fetch 加载失败:', err.message, '| URL:', url);
                 resolve({
                     source: source,
                     url: url,
@@ -3196,6 +3222,76 @@ function loadSingleCDN(source, cardId, metaMapData, noCache) {
                     errorMsg: err.message || '网络请求失败'
                 });
             });
+    });
+}
+
+/**
+ * 使用 new Image() 方式加载图片（适用于不支持 CORS 的源）
+ * 优点：<img> 标签天然支持跨域加载图片，无需 CORS 头
+ * 通过 Performance API 尝试获取传输大小
+ */
+function _loadCDNViaImage(source, url, startTime, timeoutMs) {
+    return new Promise(function (resolve) {
+        const timeoutId = setTimeout(function () {
+            img.src = ''; // 取消加载
+            resolve({
+                source: source,
+                url: url,
+                status: 'timeout',
+                loadTime: timeoutMs,
+                fileSize: null,
+                width: null,
+                height: null,
+                errorMsg: '加载超时（' + (timeoutMs / 1000) + '秒）'
+            });
+        }, timeoutMs);
+
+        const img = new Image();
+        img.onload = function () {
+            clearTimeout(timeoutId);
+            const loadTime = Math.round(performance.now() - startTime);
+            // 尝试通过 Performance API 获取文件传输大小
+            let fileSize = null;
+            try {
+                const entries = performance.getEntriesByName(url, 'resource');
+                if (entries.length > 0) {
+                    const entry = entries[entries.length - 1];
+                    if (entry.transferSize > 0) {
+                        fileSize = entry.transferSize;
+                    } else if (entry.encodedBodySize > 0) {
+                        fileSize = entry.encodedBodySize;
+                    }
+                }
+            } catch (e) { /* Performance API 不可用时忽略 */ }
+            resolve({
+                source: source,
+                url: url,
+                status: 'ok',
+                loadTime: loadTime,
+                fileSize: fileSize,
+                width: img.naturalWidth,
+                height: img.naturalHeight,
+                imgElement: img
+            });
+        };
+        img.onerror = function () {
+            clearTimeout(timeoutId);
+            const loadTime = Math.round(performance.now() - startTime);
+            console.warn('❌ [' + source.name + '] Image 加载失败 | URL:', url);
+            resolve({
+                source: source,
+                url: url,
+                status: 'error',
+                loadTime: loadTime,
+                fileSize: null,
+                width: null,
+                height: null,
+                errorMsg: '图片加载失败（可能是网络问题或图片不存在）'
+            });
+        };
+        // 注意：不设置 crossOrigin，因为目标 CDN 不支持 CORS
+        // 设置 crossOrigin 后浏览器会发送 CORS 请求，服务器不返回 CORS 头时会失败
+        img.src = url;
     });
 }
 
@@ -3410,55 +3506,87 @@ async function runBatchSpeedTest(options) {
         batchBtn.textContent = '⏳ 测试中...';
     }
 
-    // 随机选取 5 张测试卡片
+    // 为不同类型的源选取不同的测试卡片
+    // - 需要映射表的源（Cloudflare 本地、S3 CDN）→ 使用 LOCH 卡片
+    // - 不需要映射表的源（YGOCDB、YGOProDeck）→ 使用标准卡片
     const testCount = 5;
-    const shuffled = SAMPLE_CARD_IDS.slice().sort(function () { return Math.random() - .5; });
-    const testCards = shuffled.slice(0, testCount);
+    const shuffledStandard = SAMPLE_CARD_IDS_STANDARD.slice().sort(function () { return Math.random() - .5; });
+    const shuffledMeta = SAMPLE_CARD_IDS_META.slice().sort(function () { return Math.random() - .5; });
+    const testCardsStandard = shuffledStandard.slice(0, testCount);
+    const testCardsMeta = shuffledMeta.slice(0, testCount);
+    // 用于显示进度的合并列表（去重后的所有需要测试的卡片）
+    const allTestCardIds = [];
+    const cardIdSet = {};
+    testCardsStandard.concat(testCardsMeta).forEach(function (id) {
+        if (!cardIdSet[id]) {
+            cardIdSet[id] = true;
+            allTestCardIds.push(id);
+        }
+    });
 
     // 初始化每个 CDN 源的统计数据
     const statsMap = {};
     CDN_SOURCES.forEach(function (source) {
+        // 每个源只测试与其匹配的卡片
+        const sourceTestCards = source.needsMetaMap ? testCardsMeta : testCardsStandard;
         statsMap[source.id] = {
             source: source,
             times: [],       // 成功的加载时间列表
             failures: 0,     // 失败/超时次数
-            total: testCount
+            total: sourceTestCards.length,
+            testCards: sourceTestCards  // 记录该源使用的测试卡片
         };
     });
 
-    // 逐张卡片测试（卡片之间间隔 1 秒，避免触发限流）
-    for (let i = 0; i < testCards.length; i++) {
-        const cardId = testCards[i];
-        const progress = Math.round(((i) / testCount) * 100);
+    // 收集所有需要测试的卡片（按两组分别测试）
+    // 先测试标准卡片组（YGOCDB、YGOProDeck 等），再测试映射卡片组（Cloudflare、S3）
+    const testGroups = [
+        { label: '标准卡片', cards: testCardsStandard, filterFn: function (s) { return !s.needsMetaMap; } },
+        { label: 'LOCH 卡片', cards: testCardsMeta, filterFn: function (s) { return !!s.needsMetaMap; } }
+    ];
 
-        // 更新进度
-        batchArea.innerHTML = renderBatchProgress(i + 1, testCount, cardId, progress, testCards);
+    let totalSteps = testCardsStandard.length + testCardsMeta.length;
+    let currentStep = 0;
 
-        // 加载所有 CDN 源
-        const results = await loadCDNComparison(cardId, {
-            silent: true,
-            noCache: options.noCache
-        });
+    for (let g = 0; g < testGroups.length; g++) {
+        const group = testGroups[g];
+        for (let i = 0; i < group.cards.length; i++) {
+            const cardId = group.cards[i];
+            currentStep++;
+            const progress = Math.round(((currentStep - 1) / totalSteps) * 100);
 
-        // 汇总结果
-        results.forEach(function (result) {
-            const stat = statsMap[result.source.id];
-            if (!stat) return;
-            if (result.status === 'ok') {
-                stat.times.push(result.loadTime);
-            } else {
-                stat.failures++;
+            // 更新进度
+            batchArea.innerHTML = renderBatchProgress(currentStep, totalSteps, cardId, progress, allTestCardIds);
+
+            // 只加载该组匹配的 CDN 源
+            const groupSources = CDN_SOURCES.filter(group.filterFn);
+            const results = await loadCDNComparison(cardId, {
+                silent: true,
+                noCache: options.noCache
+            });
+
+            // 汇总结果（只统计匹配的源）
+            results.forEach(function (result) {
+                const stat = statsMap[result.source.id];
+                if (!stat) return;
+                // 只统计属于该组的源
+                if (!group.filterFn(result.source)) return;
+                if (result.status === 'ok') {
+                    stat.times.push(result.loadTime);
+                } else {
+                    stat.failures++;
+                }
+            });
+
+            // 卡片之间间隔 1 秒（最后一步不等待）
+            if (currentStep < totalSteps) {
+                await delay(1000);
             }
-        });
-
-        // 卡片之间间隔 1 秒（最后一张不等待）
-        if (i < testCards.length - 1) {
-            await delay(1000);
         }
     }
 
     // 测试完成，渲染最终结果
-    renderBatchResults(batchArea, statsMap, testCards, options.noCache);
+    renderBatchResults(batchArea, statsMap, allTestCardIds, options.noCache);
 
     // 恢复按钮状态
     if (batchBtn) {
@@ -3549,7 +3677,7 @@ function renderBatchResults(container, statsMap, testCards, noCache) {
     let html = '<div class="batch-results">';
     html += '<h3 class="batch-results__title">📊 批量速度测试结果</h3>';
     html += '<p class="batch-results__subtitle">';
-    html += '共测试 <strong>' + testCards.length + '</strong> 张卡片 × <strong>' + CDN_SOURCES.length + '</strong> 个 CDN 源';
+    html += '共测试 <strong>' + testCards.length + '</strong> 张卡片 × <strong>' + CDN_SOURCES.length + '</strong> 个 CDN 源（每源测 ' + statsList[0].total + ' 张）';
     html += noCache ? ' · <span class="batch-results__tag">绕过缓存</span>' : ' · <span class="batch-results__tag batch-results__tag--cache">含缓存</span>';
     html += '</p>';
 
