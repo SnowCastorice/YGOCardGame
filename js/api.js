@@ -749,8 +749,8 @@ async function getOCGCardSetData(packConfig, onProgress) {
 
         const cards = buildOCGCardsFromLocalData(packConfig, imageMap);
 
-        // 构建辅助包卡池（如果存在）
-        const supplementCards = buildSupplementCardsFromLocalData(packConfig);
+        // 构建辅助包卡池（如果存在），传入 imageMap 以支持 S3 CDN 卡图
+        const supplementCards = buildSupplementCardsFromLocalData(packConfig, imageMap);
 
         const setData = {
             setCode: packId,
@@ -895,7 +895,7 @@ function buildOCGCardsFromLocalData(packConfig, imageMap) {
  * @param {object} packConfig - 卡包配置（含 supplementPack 节点）
  * @returns {Array} 辅助包卡牌数组（格式与主卡池一致），无辅助包时返回空数组
  */
-function buildSupplementCardsFromLocalData(packConfig) {
+function buildSupplementCardsFromLocalData(packConfig, imageMap) {
     const supp = packConfig.supplementPack;
     if (!supp || !supp.cards || supp.cards.length === 0) {
         return [];
@@ -925,6 +925,10 @@ function buildSupplementCardsFromLocalData(packConfig) {
 
         const setNumber = cardDef.setNumber || '';
 
+        // 卡图URL：优先使用 imageMap（S3 CDN / 本地图片），回退到 YGOCDB CDN
+        const imgSmall = imageMap ? getCardImageUrl(cardDef.id, imageMap, 'small') : `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardDef.id}.jpg`;
+        const imgLarge = imageMap ? getCardImageUrl(cardDef.id, imageMap, 'large') : `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardDef.id}.jpg`;
+
         cards.push({
             id: cardDef.id,
             name: displayName,
@@ -939,10 +943,11 @@ function buildSupplementCardsFromLocalData(packConfig) {
             rarityVersions: rarityVersions,
             cardSetCode: setNumber,
             setNumber: setNumber,
-            imageUrl: `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardDef.id}.jpg`,
-            imageLargeUrl: `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardDef.id}.jpg`,
+            imageUrl: imgSmall,
+            imageLargeUrl: imgLarge,
             dataSource: 'local',
-            _isSupplement: true  // 标记为辅助包卡片
+            _isSupplement: true,  // 标记为辅助包卡片
+            _imageMap: imageMap   // 保存映射表引用，供开包时按稀有度动态获取对应卡图
         });
     });
 

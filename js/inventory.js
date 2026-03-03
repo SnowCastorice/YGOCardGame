@@ -399,7 +399,12 @@ const InventorySystem = (function () {
         if (nameEl) {
             const displayName = card.nameCN || card.name || '';
             const foreignName = card.nameOriginal || '';
-            nameEl.textContent = foreignName ? `${displayName}  ${foreignName}` : displayName;
+            // 中文名和日文名之间用换行分隔
+            if (foreignName && foreignName !== displayName) {
+                nameEl.innerHTML = displayName + '<br><span style="font-size:0.8em;opacity:0.7;">' + foreignName + '</span>';
+            } else {
+                nameEl.textContent = displayName;
+            }
         }
 
         viewer.classList.add('active');

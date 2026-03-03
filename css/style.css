@@ -798,6 +798,22 @@ body {
     color: #f5c842;
 }
 
+/* 开3盒按钮（蓝金渐变风格，区分1盒按钮） */
+.btn-open-3box {
+    width: 90%;
+    background: linear-gradient(135deg, #4a90d9, #6c5ce7, #f5c842);
+    border: 2px solid rgba(108, 92, 231, .6);
+    box-shadow: 0 4px 20px rgba(74, 144, 217, .5);
+}
+
+.btn-open-3box:hover {
+    box-shadow: 0 6px 30px rgba(108, 92, 231, .7);
+}
+
+.btn-open-3box .btn-box-sub {
+    color: #a8d8ff;
+}
+
 .btn-secondary {
     display: block;
     margin: 16px auto 0;
@@ -1715,15 +1731,14 @@ body {
 .card-image-viewer .viewer-card-name {
     position: absolute;
     bottom: 16px;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 8px;
+    right: 8px;
     color: #fff;
     font-size: .85rem;
     text-align: center;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
     opacity: 0;
     transition: opacity 0.8s ease 0.4s;
-    max-width: 90vw;
     line-height: 1.4;
 }
 

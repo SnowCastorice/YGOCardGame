@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>YGO Pack Opener - 游戏王卡包开封模拟器</title>
     <!-- 全局版本号：所有资源的缓存破坏参数、页脚版本号等都从这里读取，更新时只改这一处 -->
-<script>window.APP_VERSION = '1.6.6';</script>
+<script>window.APP_VERSION = '1.7.0';</script>
     <!-- CSS 版本号自动跟随 APP_VERSION -->
     <script>document.write('<link rel="stylesheet" href="css/style.css?v=' + window.APP_VERSION + '">');</script>
 </head>
@@ -73,7 +73,8 @@
             </div>
             <div class="open-btn-container">
                 <button id="btn-open-pack" class="btn-open-pack">开1包</button>
-                <button id="btn-open-box" class="btn-open-box">开1盒<span class="btn-box-sub">赠送 +1 辅助包</span></button>
+<button id="btn-open-box" class="btn-open-box">开1盒</button>
+                <button id="btn-open-3box" class="btn-open-box btn-open-3box" style="display:none;">开3盒<span class="btn-box-sub">赠送 +1 特别包</span></button>
 <button id="btn-back-to-packs" class="btn-secondary">← 返回上一层</button>
             </div>
         </section>
@@ -98,7 +99,7 @@
             <div id="rarity-stats" class="rarity-stats"></div>
             <!-- +1辅助包展示区域（仅开盒时显示） -->
             <div id="bonus-display" class="bonus-display" style="display:none;">
-                <h3 class="bonus-display__title">+1 辅助包</h3>
+<h3 class="bonus-display__title">+1 特别包</h3>
                 <div id="bonus-cards" class="bonus-display__cards"></div>
             </div>
             <div id="cards-display" class="cards-display">
@@ -106,7 +107,8 @@
             </div>
             <div class="result-actions">
                 <button id="btn-open-again" class="btn-open-pack">再开1包</button>
-                <button id="btn-open-again-box" class="btn-open-box">再开1盒<span class="btn-box-sub">赠送 +1 辅助包</span></button>
+<button id="btn-open-again-box" class="btn-open-box">再开1盒</button>
+                <button id="btn-open-again-3box" class="btn-open-box btn-open-3box" style="display:none;">再开3盒<span class="btn-box-sub">赠送 +1 特别包</span></button>
 <button id="btn-back-from-result" class="btn-secondary">← 返回上一层</button>
             </div>
         </section>

@@ -2,6 +2,18 @@
 
 > 从 DEVELOPMENT.md 拆分，记录各版本的变更和待处理事项。
 
+## v1.7.0（2026-03-03）— LOSP 特别包 + LOCH 开3盒功能
+- **新增 LOSP 特别包（10张全 PSER 卡片）**：购买 LOCH 3盒赠送1包 LOSP 特别包，随机获得1张
+- **LOCH 新增「开3盒」按钮**：一次性开 45 包（3盒），蓝金渐变风格，按钮宽度与开1包/开1盒统一
+- **LOSP 卡片数据**：10 张经典王牌怪兽（真红眼龙骑士、流天类星龙、超融合等），全部 PSER 稀有度
+- **LOSP 卡图本地化**：20 个卡图文件（10张×2尺寸）已下载到 `data/ocg/images/loch/`
+- **修复 BLZD 开1盒按钮**：恢复「赠送+1辅助包」提示文字（之前被误删）
+- **LOCH 特殊逻辑**：开1盒不赠送辅助包，只有开3盒才赠送+1 LOSP 特别包
+- **修复背包大图卡名换行**：中文名和日文名之间正确换行显示（`inventory.js` 的 `showCardViewer` 函数）
+- **卡图放大查看器卡名宽度优化**：从 `max-width: min(90vw, 420px)` 改为 `left:8px; right:8px` 布局，长卡名不再不必要换行
+- **涉及修改文件**：`ocg_loch.json`、`loch_image_map.json`、`packs.json`、`index.html`、`game.js`、`api.js`、`inventory.js`、`style.css`
+- **新增卡图文件**：`data/ocg/images/loch/` 下 20 个 LOSP 卡图
+
 ## v1.6.6（2026-03-02）— 开包统计数据清零修复
 - **清零线上KV脏数据**：由于 v1.6.5 期间开盒操作被错误记录为 `type='pack'` 导致 `totalPacks` 虚高、`totalBoxes` 未增加，已通过临时 DELETE 接口清零全部 KV 统计数据
 - 统计数据从零重新开始，此后开包/开盒记录将正确统计

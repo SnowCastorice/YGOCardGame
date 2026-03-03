@@ -412,6 +412,20 @@ function bindGameEvents() {
         openMultiPacks(boxCount);
     });
 
+    // 开3盒（仅LOCH等配置了boxesForBonus的卡包可用，买3盒赠1特别包）
+    bindEvent('btn-open-3box', 'click', function () {
+        const boxCount = (currentPack && currentPack.packsPerBox) || 30;
+        const boxesForBonus = (currentPack && currentPack.boxesForBonus) || 3;
+        openMultiPacks(boxCount * boxesForBonus, boxesForBonus);
+    });
+
+    // 再开3盒
+    bindEvent('btn-open-again-3box', 'click', function () {
+        const boxCount = (currentPack && currentPack.packsPerBox) || 30;
+        const boxesForBonus = (currentPack && currentPack.boxesForBonus) || 3;
+        openMultiPacks(boxCount * boxesForBonus, boxesForBonus);
+    });
+
     // 返回选择卡包（开包界面的返回按钮）
     bindEvent('btn-back-to-packs', 'click', showPackSelect);
     // 开包结果页返回按钮 → 返回开包界面（上一层）
@@ -1075,12 +1089,20 @@ function switchSection(sectionId) {
 function toggleResultButtons(mode) {
     const againBtn = document.getElementById('btn-open-again');
     const againBoxBtn = document.getElementById('btn-open-again-box');
+    const again3BoxBtn = document.getElementById('btn-open-again-3box');
     if (mode === 'pack') {
         if (againBtn) againBtn.style.display = '';
         if (againBoxBtn) againBoxBtn.style.display = 'none';
+        if (again3BoxBtn) again3BoxBtn.style.display = 'none';
+    } else if (mode === '3box') {
+        if (againBtn) againBtn.style.display = 'none';
+        if (againBoxBtn) againBoxBtn.style.display = 'none';
+        if (again3BoxBtn) again3BoxBtn.style.display = '';
     } else {
+        // mode === 'box'
         if (againBtn) againBtn.style.display = 'none';
         if (againBoxBtn) againBoxBtn.style.display = '';
+        if (again3BoxBtn) again3BoxBtn.style.display = 'none';
     }
 }
 
@@ -1134,8 +1156,11 @@ async function openPack() {
  * 一次性开 count 包，所有卡片汇总展示
  * @param {number} count - 开包数量
  */
-async function openMultiPacks(count) {
+async function openMultiPacks(count, boxesCount) {
     if (!currentPack || !currentPackCards) return;
+
+    // boxesCount: 开几盒（默认1盒），用于3盒模式
+    boxesCount = boxesCount || 1;
 
     const currency = currentPack.currency || 'gold';
     const price = currentPack.price || 0;
@@ -1177,12 +1202,14 @@ async function openMultiPacks(count) {
         allCards = boxResult.allCards;
         boxHasPSER = boxResult.boxHasPSER;
         console.log(`📦 整盒抽卡完成：${allCards.length}张卡，PSER=${boxHasPSER ? '是' : '否'}`);
-    } else if (scheme === 'loch_special' && count === ((currentPack && currentPack.packsPerBox) || 15)) {
-        // LOCH整盒方案：15包4号位按封入规则分配 1OF+1PSER+2UTR+2CR+9SER
-        const boxResult = drawCardsBox_LOCH(currentPack, currentPackCards);
-        allCards = boxResult.allCards;
-        boxHasPSER = boxResult.boxHasPSER;
-        console.log(`📦 LOCH整盒抽卡完成：${allCards.length}张卡`);
+    } else if (scheme === 'loch_special' && count >= ((currentPack && currentPack.packsPerBox) || 15)) {
+        // LOCH整盒方案：支持1盒或多盒（如3盒）
+        for (let b = 0; b < boxesCount; b++) {
+            const boxResult = drawCardsBox_LOCH(currentPack, currentPackCards);
+            allCards.push(...boxResult.allCards);
+            if (boxResult.boxHasPSER) boxHasPSER = true;
+        }
+        console.log(`📦 LOCH ${boxesCount}盒抽卡完成：${allCards.length}张卡`);
     } else {
         // 非OCG方案或非整盒：沿用逐包抽卡
         for (let i = 0; i < count; i++) {
@@ -1191,36 +1218,51 @@ async function openMultiPacks(count) {
         }
     }
 
-    // 5. +1辅助包：从辅助包专属卡池中抽1张卡（含PSER互斥规则）
+    // 5. +1特别包：从辅助包专属卡池中抽1张卡（含PSER互斥规则）
+    // 带 boxesForBonus 的卡包（如LOCH 3盒送1包）：仅在多盒模式才赠送特别包
+    // 普通卡包（如BLZD）：每盒送1张辅助包
     const bonusCards = [];
     const suppPool = currentSupplementCards || [];
-    if (suppPool.length > 0) {
-        const randomIndex = Math.floor(Math.random() * suppPool.length);
-        const bonusCard = { ...suppPool[randomIndex] };
-        // 标记为辅助包卡片，方便后续识别
-        bonusCard._isBonus = true;
-        
-        // 辅助包的PSER处理：
-        // - 同一盒中，原盒包和+1包合计只会出现一张PSER
-        // - 一箱24盒配4个辅助包PSER（概率约16.7%）
-        const versions = bonusCard.rarityVersions || [];
-        if (versions.length > 1) {
-            const bonusPSERChance = currentPack.bonusPSERChance || (4 / 24); // 约16.7%
-            if (boxHasPSER) {
-                // 原盒已出PSER → 辅助包强制不出PSER，用第一个版本（基础稀有度）
-                bonusCard.rarityVersions = [versions[0]];
-            } else if (Math.random() < bonusPSERChance && versions.indexOf('PSER') >= 0) {
-                // 原盒没出PSER + 中了辅助包PSER概率 + 这张卡有PSER版本
-                bonusCard.rarityVersions = ['PSER'];
-            } else {
-                // 正常情况：用基础稀有度
-                bonusCard.rarityVersions = [versions[0]];
+    const hasBoxesForBonus = currentPack.boxesForBonus && currentPack.boxesForBonus >= 2;
+    // 带 boxesForBonus 配置的卡包，开1盒不赠送辅助包，只有开满指定盒数才赠送
+    const shouldSkipBonus = hasBoxesForBonus && boxesCount < currentPack.boxesForBonus;
+    if (suppPool.length > 0 && !shouldSkipBonus) {
+        // 确定需要抽几张辅助包卡：
+        // - 带 boxesForBonus 的卡包（如LOCH 3盒送1包）：固定送1张特别包
+        // - 普通卡包（如BLZD）：每盒1张，多盒就多张
+        const bonusCount = hasBoxesForBonus ? 1 : boxesCount;
+
+        for (let bi = 0; bi < bonusCount; bi++) {
+            const randomIndex = Math.floor(Math.random() * suppPool.length);
+            const bonusCard = { ...suppPool[randomIndex] };
+            // 标记为辅助包卡片，方便后续识别
+            bonusCard._isBonus = true;
+            
+            // 辅助包的PSER处理：
+            // - 同一盒中，原盒包和+1包合计只会出现一张PSER
+            // - 一箱24盒配4个辅助包PSER（概率约16.7%）
+            // - LOSP 全部都是 PSER，无需互斥处理
+            const versions = bonusCard.rarityVersions || [];
+            if (versions.length > 1) {
+                const bonusPSERChance = currentPack.bonusPSERChance || (4 / 24); // 约16.7%
+                if (boxHasPSER) {
+                    // 原盒已出PSER → 辅助包强制不出PSER，用第一个版本（基础稀有度）
+                    bonusCard.rarityVersions = [versions[0]];
+                } else if (Math.random() < bonusPSERChance && versions.indexOf('PSER') >= 0) {
+                    // 原盒没出PSER + 中了辅助包PSER概率 + 这张卡有PSER版本
+                    bonusCard.rarityVersions = ['PSER'];
+                } else {
+                    // 正常情况：用基础稀有度
+                    bonusCard.rarityVersions = [versions[0]];
+                }
             }
+            
+            bonusCards.push(bonusCard);
         }
-        
-        bonusCards.push(bonusCard);
     } else {
-        console.warn('⚠️ 当前卡包没有辅助包卡池数据，跳过+1辅助包');
+        if (!shouldSkipBonus) {
+            console.warn('⚠️ 当前卡包没有辅助包卡池数据，跳过+1辅助包');
+        }
     }
 
     // 6. 根据稀有度更新卡图URL后存入背包
@@ -1232,18 +1274,18 @@ async function openMultiPacks(count) {
     }
 
     // 6.5 记录开盒统计（本地 + 全球上报）
-    // 开盒以 box 类型记录（1盒=1次），后台展示时根据 packsPerBox 折算实际包数
+    // 开盒以 box 类型记录，多盒模式记录多次
     if (typeof PackStats !== 'undefined') {
         const statsCode = currentPack.packCode || currentPack.setCode || currentPack.packId;
         const ppb = currentPack.packsPerBox || 30;
-        PackStats.recordOpen(statsCode, 'box', 1, ppb);
+        PackStats.recordOpen(statsCode, 'box', boxesCount, ppb);
     }
 
     // 7. 展示汇总结果（传入辅助包卡片）
     await showResults(allCards, bonusCards);
 
     // 根据开盒模式显示/隐藏对应的再开按钮
-    toggleResultButtons('box');
+    toggleResultButtons(boxesCount > 1 ? '3box' : 'box');
 
     // 更新价格信息（余额可能变化）
     updateOpenPackPriceInfo();
@@ -2646,15 +2688,17 @@ function updateOpenPackPriceInfo() {
     const openBoxBtn = document.getElementById('btn-open-box');
     const openAgainBoxBtn = document.getElementById('btn-open-again-box');
 
+    // 判断是否为普通辅助包卡包（有辅助包数据但没有 boxesForBonus，如BLZD）
+    const hasNormalSupplement = currentSupplementCards && currentSupplementCards.length > 0 && !currentPack.boxesForBonus;
+    const supplementSuffix = hasNormalSupplement ? '<span class="btn-box-sub">赠送 +1 辅助包</span>' : '';
+
     if (openBoxBtn) {
         if (!canAffordBox) {
             openBoxBtn.classList.add('insufficient');
             openBoxBtn.innerHTML = `余额不足 (需要 ${totalPriceBox} ${currDef.icon})`;
         } else {
         openBoxBtn.classList.remove('insufficient');
-            const hasSupp = currentPack && currentPack.supplementPack;
-            const suppHtml = hasSupp ? '<span class="btn-box-sub">赠送 +1 辅助包</span>' : '';
-            openBoxBtn.innerHTML = price > 0 ? `开1盒 (${boxCount}包 ${currDef.icon} ${totalPriceBox})${suppHtml}` : `开1盒 (${boxCount}包)${suppHtml}`;
+            openBoxBtn.innerHTML = (price > 0 ? `开1盒 (${boxCount}包 ${currDef.icon} ${totalPriceBox})` : `开1盒 (${boxCount}包)`) + supplementSuffix;
         }
     }
 
@@ -2664,10 +2708,49 @@ function updateOpenPackPriceInfo() {
             openAgainBoxBtn.innerHTML = `余额不足 (需要 ${totalPriceBox} ${currDef.icon})`;
         } else {
         openAgainBoxBtn.classList.remove('insufficient');
-            const hasSuppAgain = currentPack && currentPack.supplementPack;
-            const suppHtmlAgain = hasSuppAgain ? '<span class="btn-box-sub">赠送 +1 辅助包</span>' : '';
-            openAgainBoxBtn.innerHTML = price > 0 ? `再开1盒 (${boxCount}包 ${currDef.icon} ${totalPriceBox})${suppHtmlAgain}` : `再开1盒 (${boxCount}包)${suppHtmlAgain}`;
+            openAgainBoxBtn.innerHTML = (price > 0 ? `再开1盒 (${boxCount}包 ${currDef.icon} ${totalPriceBox})` : `再开1盒 (${boxCount}包)`) + supplementSuffix;
         }
+    }
+
+    // 更新「开3盒」按钮的可用状态（仅当配置了 boxesForBonus 时显示）
+    const boxesForBonus = currentPack.boxesForBonus || 0;
+    const open3BoxBtn = document.getElementById('btn-open-3box');
+    const openAgain3BoxBtn = document.getElementById('btn-open-again-3box');
+
+    if (boxesForBonus >= 2) {
+        const totalPrice3Box = price * boxCount * boxesForBonus;
+        const canAfford3Box = totalPrice3Box <= 0 || CurrencySystem.canAfford(currency, totalPrice3Box);
+
+        if (open3BoxBtn) {
+            open3BoxBtn.style.display = '';
+            if (!canAfford3Box) {
+                open3BoxBtn.classList.add('insufficient');
+                open3BoxBtn.innerHTML = `余额不足 (需要 ${totalPrice3Box} ${currDef.icon})`;
+            } else {
+                open3BoxBtn.classList.remove('insufficient');
+                const totalPacks3Box = boxCount * boxesForBonus;
+                open3BoxBtn.innerHTML = price > 0
+                    ? `开${boxesForBonus}盒 (${totalPacks3Box}包 ${currDef.icon} ${totalPrice3Box})<span class="btn-box-sub">赠送 +1 特别包</span>`
+                    : `开${boxesForBonus}盒 (${totalPacks3Box}包)<span class="btn-box-sub">赠送 +1 特别包</span>`;
+            }
+        }
+
+        if (openAgain3BoxBtn) {
+            if (!canAfford3Box) {
+                openAgain3BoxBtn.classList.add('insufficient');
+                openAgain3BoxBtn.innerHTML = `余额不足 (需要 ${totalPrice3Box} ${currDef.icon})`;
+            } else {
+                openAgain3BoxBtn.classList.remove('insufficient');
+                const totalPacks3Box = boxCount * boxesForBonus;
+                openAgain3BoxBtn.innerHTML = price > 0
+                    ? `再开${boxesForBonus}盒 (${totalPacks3Box}包 ${currDef.icon} ${totalPrice3Box})<span class="btn-box-sub">赠送 +1 特别包</span>`
+                    : `再开${boxesForBonus}盒 (${totalPacks3Box}包)<span class="btn-box-sub">赠送 +1 特别包</span>`;
+            }
+        }
+    } else {
+        // 没有 boxesForBonus 配置时隐藏3盒按钮
+        if (open3BoxBtn) open3BoxBtn.style.display = 'none';
+        if (openAgain3BoxBtn) openAgain3BoxBtn.style.display = 'none';
     }
 }
 
@@ -3711,7 +3794,7 @@ const rarityWeight = RARITY_ORDER_ASC;
 
         // 辅助包区域分隔标题
         html += '<div class="supplement-section">';
-        html += '<div class="supplement-section-header">📦 +1 辅助包</div>';
+        html += '<div class="supplement-section-header">📦 +1 特别包</div>';
 
         // 辅助包收集进度条
         let suppDetailHtml = '';

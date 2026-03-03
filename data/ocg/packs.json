@@ -74,7 +74,9 @@
       "price": 385,
       "currency": "gold",
       "packsPerBox": 15,
-      "_说明": "2026年2月OCG特殊包（主角篇），1包4张/1盒15包。全80种（38UR+42SR），无N/R。1号位必出SR，2号位必出SR，3号位必出UR，4号位全卡池随机。整盒4号位封入：1OF+1PSER+2UTR+2CR+9SER。同包4个卡位不得出现完全相同的卡（同编号不同版本不算重复）。",
+      "supplementPack": true,
+      "boxesForBonus": 3,
+      "_说明": "2026年2月OCG特殊包（主角篇），1包4张/1盒15包。全80种（38UR+42SR），无N/R。1号位必出SR，2号位必出SR，3号位必出UR，4号位全卡池随机。整盒4号位封入：1OF+1PSER+2UTR+2CR+9SER。同包4个卡位不得出现完全相同的卡（同编号不同版本不算重复）。购买3盒赠送1包LOSP辅助包（共10种全PSER）。",
       "_稀有度组合": "18种UR有5版本(UR/UR-OF/SER/PSER-OF/GMR-OF)、20种UR有3版本(UR/SER/PSER)、21种SR有CR版(SR/CR/SER/PSER)、21种SR有UTR版(SR/UTR/SER/PSER)",
       "_价格来源": "KONAMI官网含税价格: 1包 385日元"
     },
