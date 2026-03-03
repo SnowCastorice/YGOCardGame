@@ -2762,6 +2762,15 @@ function updateOpenPackPriceInfo() {
  */
 const CDN_SOURCES = [
     {
+        id: 'cloudflare_local',
+        name: 'Cloudflare Pages 本地卡图',
+        urlTemplate: 'data/ocg/images/loch/{metaId}_w420.webp',
+        format: 'WebP',
+        desc: '部署在 Cloudflare Pages 上的本地卡图（LOCH 卡包，需要映射表）',
+        usedBy: null,
+        needsMetaMap: true  // 需要 loch_image_map 映射表获取 metaId
+    },
+    {
         id: 'ygocdb_pics',
         name: 'YGOCDB CDN (pics)',
         urlTemplate: 'https://cdn.233.momobako.com/ygopro/pics/{id}.jpg',
@@ -2802,15 +2811,6 @@ const CDN_SOURCES = [
         usedBy: null
     },
     {
-        id: 'konami_official',
-        name: 'KONAMI 官网（日文卡图）',
-        urlTemplate: '/api/card-image?cid={cid}',
-        format: 'JPEG',
-        desc: 'KONAMI 游戏王官方数据库（通过 Pages Function 代理，需要 cid 映射，图片较小 200×290）',
-        usedBy: null,
-        needsCid: true  // 标记此源需要 cid 而非卡片密码
-    },
-    {
         id: 'yugiohmeta_s3',
         name: 'YugiohMeta S3 CDN',
         urlTemplate: 'https://s3.duellinksmeta.com/cards/{metaId}_w420.webp',
@@ -2822,19 +2822,18 @@ const CDN_SOURCES = [
 ];
 
 // 一些常用卡片 ID，用于随机测试
+// 包含 LOCH 卡片（100256xxx 系列），以便测试 Cloudflare 本地卡图和 S3 CDN 映射
 const SAMPLE_CARD_IDS = [
     89631139,  // 青眼白龙
     46986414,  // 黑魔导
     70903634,  // 骷髅仆人
-    66788016,  // 地割れ
-    74677422,  // 陷阱之穴
     44095762,  // 死者苏生
-    5318639,   // 光之护封剑
-    80604091,  // 混沌帝龙
     36996508,  // 灰流丽
     14558127,  // 増殖するG
-    24094653,  // 屋敷わらし
-    59438930,  // 电脑堺娘-娘々
+    100256001, // LOCH: Dark Magician, the Pharaoh's Servant
+    100256002, // LOCH: Multiplying Kuriboh!
+    100256040, // LOCH 卡片（用于 Cloudflare/S3 对比）
+    100256041, // LOCH 卡片（用于 Cloudflare/S3 对比）
 ];
 
 /** 打开开发者工具弹窗 */
@@ -2968,6 +2967,9 @@ function showDevTools() {
     const randomBtn = document.getElementById('btn-devtools-random');
     const input = document.getElementById('devtools-card-id');
 
+    const batchBtn = document.getElementById('btn-devtools-batch');
+    const noCacheCheckbox = document.getElementById('devtools-no-cache');
+
     // 移除旧事件，防止重复绑定
     loadBtn.onclick = function () {
         const cardId = input.value.trim();
@@ -2975,14 +2977,24 @@ function showDevTools() {
             alert('请输入有效的卡片ID（纯数字）');
             return;
         }
-        loadCDNComparison(parseInt(cardId));
+        const noCache = noCacheCheckbox ? noCacheCheckbox.checked : false;
+        loadCDNComparison(parseInt(cardId), { noCache: noCache });
     };
 
     randomBtn.onclick = function () {
         const randomId = SAMPLE_CARD_IDS[Math.floor(Math.random() * SAMPLE_CARD_IDS.length)];
         input.value = randomId;
-        loadCDNComparison(randomId);
+        const noCache = noCacheCheckbox ? noCacheCheckbox.checked : false;
+        loadCDNComparison(randomId, { noCache: noCache });
     };
+
+    // 批量测速按钮
+    if (batchBtn) {
+        batchBtn.onclick = function () {
+            const noCache = noCacheCheckbox ? noCacheCheckbox.checked : false;
+            runBatchSpeedTest({ noCache: noCache });
+        };
+    }
 
     // 回车键触发加载
     input.onkeydown = function (e) {
@@ -2996,72 +3008,65 @@ function hideDevTools() {
 }
 
 /**
- * 通过 YGOCDB API 获取卡片的 KONAMI cid 编号
- * KONAMI 官网使用内部 cid 而非卡片密码，YGOCDB API 返回数据中包含 cid 字段
- * 
- * @param {number} cardId - 卡片密码（password）
- * @returns {number|null} KONAMI 内部 cid 编号，失败返回 null
- */
-async function fetchCidFromYGOCDB(cardId) {
-    try {
-        const url = `https://ygocdb.com/api/v0/?search=${cardId}`;
-        const response = await fetch(url);
-        if (!response.ok) return null;
-
-        const data = await response.json();
-        if (!data.result || data.result.length === 0) return null;
-
-        // 找到 ID 精确匹配的卡片
-        const card = data.result.find(function (c) {
-            return c.id === cardId || c.id === parseInt(cardId);
-        });
-
-        if (card && card.cid) {
-            return card.cid;
-        }
-
-        // 如果第一个结果有 cid，也可以用
-        if (data.result[0] && data.result[0].cid) {
-            return data.result[0].cid;
-        }
-
-        return null;
-    } catch (error) {
-        console.warn(`⚠️ 获取卡片 ${cardId} 的 cid 失败:`, error);
-        return null;
-    }
-}
-
-/**
  * 加载 CDN 对比数据
  * 对指定卡片 ID，同时从所有 CDN 源加载图片并对比
  * @param {number} cardId - 卡片 ID
  */
-async function loadCDNComparison(cardId) {
+async function loadCDNComparison(cardId, options) {
+    options = options || {};
     const compareArea = document.getElementById('devtools-compare-area');
-    compareArea.innerHTML = '<p class="devtools-placeholder">⏳ 正在加载各 CDN 源的图片...</p>';
+    if (!options.silent) {
+        compareArea.innerHTML = '<p class="devtools-placeholder">⏳ 正在加载各 CDN 源的图片...</p>';
+    }
 
-    // 检查是否有需要 cid 的源，如果有则先获取 cid 映射
-    let cidValue = null;
-    const hasCidSource = CDN_SOURCES.some(function (s) { return s.needsCid; });
-    if (hasCidSource) {
-        cidValue = await fetchCidFromYGOCDB(cardId);
-        if (cidValue) {
-            console.log(`🔗 卡片 ${cardId} 的 KONAMI cid = ${cidValue}`);
+    // 检查是否有需要映射表的源（Cloudflare 本地卡图和 S3 CDN 都需要 metaId）
+    // 同时加载 TCG 映射表 + LOCH 映射表，合并后传给 loadSingleCDN
+    let metaMapData = null;
+    const hasMetaSource = CDN_SOURCES.some(function (s) { return s.needsMetaMap; });
+    if (hasMetaSource) {
+        // 并行加载两个映射表
+        const [tcgMap, lochMap] = await Promise.all([
+            loadYugiohMetaMap(),
+            fetch('data/ocg/loch_image_map.json').then(r => r.ok ? r.json() : null).catch(() => null)
+        ]);
+        // 合并为统一格式：cards[password] = { id: metaId }
+        metaMapData = { cards: {} };
+        // 先合入 TCG 映射表（字段名已是 id）
+        if (tcgMap && tcgMap.cards) {
+            Object.assign(metaMapData.cards, tcgMap.cards);
+        }
+        // 再合入 LOCH 映射表（字段名是 metaId，需要转为 id）
+        if (lochMap && lochMap.cards) {
+            Object.keys(lochMap.cards).forEach(function (pw) {
+                const entry = lochMap.cards[pw];
+                metaMapData.cards[pw] = { id: entry.metaId, name: entry.name };
+            });
+        }
+        const totalCards = Object.keys(metaMapData.cards).length;
+        if (totalCards > 0) {
+            console.log(`🗺️ 映射表已就绪，共 ${totalCards} 张卡片（TCG: ${tcgMap ? Object.keys(tcgMap.cards || {}).length : 0}, LOCH: ${lochMap ? Object.keys(lochMap.cards || {}).length : 0}）`);
         } else {
-            console.warn(`⚠️ 无法获取卡片 ${cardId} 的 cid 映射`);
+            console.warn('⚠️ 所有映射表均加载失败，需要映射表的 CDN 源将跳过');
+            metaMapData = null;
         }
     }
+
+    // 是否绕过缓存
+    const noCache = options.noCache || false;
 
     // 并行加载所有 CDN 源的图片
     const results = await Promise.all(
         CDN_SOURCES.map(function (source) {
-            return loadSingleCDN(source, cardId, cidValue);
+            return loadSingleCDN(source, cardId, metaMapData, noCache);
         })
     );
 
-    // 渲染对比结果
-    renderCDNComparison(results, cardId);
+    // 渲染对比结果（批量模式下不渲染单张结果）
+    if (!options.silent) {
+        renderCDNComparison(results, cardId);
+    }
+
+    return results;
 }
 
 /**
@@ -3070,126 +3075,128 @@ async function loadCDNComparison(cardId) {
  * @param {number} cardId - 卡片 ID
  * @returns {object} 加载结果（含时间、大小、状态等）
  */
-function loadSingleCDN(source, cardId, cidValue) {
-    // 处理需要 cid 的特殊源（如 KONAMI 官网）
+function loadSingleCDN(source, cardId, metaMapData, noCache) {
+    // 处理需要 YugiohMeta 映射表的源（Cloudflare 本地卡图 和 S3 CDN）
     let url;
-    if (source.needsCid) {
-        if (!cidValue) {
-            // 没有 cid 映射，直接返回错误
+    if (source.needsMetaMap) {
+        if (!metaMapData || !metaMapData.cards) {
             return Promise.resolve({
                 source: source,
-                url: '（无法获取 cid 映射）',
+                url: '（映射表未加载）',
                 status: 'error',
                 loadTime: 0,
                 fileSize: null,
                 width: null,
                 height: null,
-                errorMsg: '未找到此卡片的 KONAMI cid 编号'
+                errorMsg: 'YugiohMeta 映射表加载失败，请检查 data/tcg/yugiohmeta_map.json 是否存在'
             });
         }
-        url = source.urlTemplate.replace('{cid}', cidValue);
+        const cardMap = metaMapData.cards[String(cardId)];
+        if (!cardMap || !cardMap.id) {
+            return Promise.resolve({
+                source: source,
+                url: '（映射表中无此卡 ' + cardId + '）',
+                status: 'error',
+                loadTime: 0,
+                fileSize: null,
+                width: null,
+                height: null,
+                errorMsg: '映射表中未找到卡片 ' + cardId + ' 的 metaId（仅 LOCH/TCG 卡片有映射）'
+            });
+        }
+        url = source.urlTemplate.replace('{metaId}', cardMap.id);
     } else {
         url = source.urlTemplate.replace('{id}', cardId);
     }
+
+    // 绕过缓存：添加时间戳参数
+    if (noCache) {
+        url += (url.indexOf('?') >= 0 ? '&' : '?') + '_t=' + Date.now();
+    }
     const startTime = performance.now();
+    const TIMEOUT_MS = 10000; // 10秒超时
 
+    // 使用 fetch + blob 方式加载图片
+    // 相比 new Image() 方式，fetch 不受 Referer 防盗链限制
+    // 相对路径（如 Cloudflare 本地卡图）使用 same-origin，跨域 CDN 使用 cors
+    const isRelativeUrl = !url.startsWith('http');
     return new Promise(function (resolve) {
-        const img = new Image();
-        // 注意：不设置 crossOrigin，因为大多数图片 CDN 不支持 CORS
-        // 设置 crossOrigin 会导致浏览器在 CDN 不返回 CORS 头时直接拒绝加载
-
-        // 设置超时（15秒，给慢速 CDN 更多时间）
-        const timeout = setTimeout(function () {
+        const timeoutId = setTimeout(function () {
             resolve({
                 source: source,
                 url: url,
                 status: 'timeout',
-                loadTime: 15000,
+                loadTime: TIMEOUT_MS,
                 fileSize: null,
                 width: null,
-                height: null
+                height: null,
+                errorMsg: '加载超时（' + (TIMEOUT_MS / 1000) + '秒）'
             });
-        }, 15000);
+        }, TIMEOUT_MS);
 
-        img.onload = function () {
-            clearTimeout(timeout);
-            const loadTime = Math.round(performance.now() - startTime);
-
-            // 延迟一点获取文件大小，等 Performance API 记录完成
-            setTimeout(function () {
-                fetchImageSize(img.src).then(function (fileSize) {
+        fetch(url, { mode: isRelativeUrl ? 'same-origin' : 'cors', cache: noCache ? 'no-store' : 'default' })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status + ' ' + response.statusText);
+                }
+                // 获取文件大小
+                const contentLength = response.headers.get('content-length');
+                const fileSize = contentLength ? parseInt(contentLength) : null;
+                return response.blob().then(function (blob) {
+                    return { blob: blob, fileSize: fileSize || blob.size };
+                });
+            })
+            .then(function (data) {
+                clearTimeout(timeoutId);
+                const loadTime = Math.round(performance.now() - startTime);
+                // 将 blob 转为图片，获取宽高
+                const blobUrl = URL.createObjectURL(data.blob);
+                const img = new Image();
+                img.onload = function () {
                     resolve({
                         source: source,
                         url: url,
                         status: 'ok',
                         loadTime: loadTime,
-                        fileSize: fileSize,
+                        fileSize: data.fileSize,
                         width: img.naturalWidth,
                         height: img.naturalHeight,
                         imgElement: img
                     });
+                    // 释放 blob URL
+                    URL.revokeObjectURL(blobUrl);
+                };
+                img.onerror = function () {
+                    resolve({
+                        source: source,
+                        url: url,
+                        status: 'error',
+                        loadTime: loadTime,
+                        fileSize: data.fileSize,
+                        width: null,
+                        height: null,
+                        errorMsg: '图片数据解码失败'
+                    });
+                    URL.revokeObjectURL(blobUrl);
+                };
+                img.src = blobUrl;
+            })
+            .catch(function (err) {
+                clearTimeout(timeoutId);
+                const loadTime = Math.round(performance.now() - startTime);
+                console.warn('❌ [' + source.name + '] 加载失败:', err.message, '| URL:', url);
+                resolve({
+                    source: source,
+                    url: url,
+                    status: 'error',
+                    loadTime: loadTime,
+                    fileSize: null,
+                    width: null,
+                    height: null,
+                    errorMsg: err.message || '网络请求失败'
                 });
-            }, 100);
-        };
-
-        img.onerror = function () {
-            clearTimeout(timeout);
-            const loadTime = Math.round(performance.now() - startTime);
-            resolve({
-                source: source,
-                url: url,
-                status: 'error',
-                loadTime: loadTime,
-                fileSize: null,
-                width: null,
-                height: null
             });
-        };
-
-        // 直接使用原始 URL，不添加时间戳
-        // 时间戳可能导致某些 CDN 返回 404 或绕过缓存策略
-        img.src = url;
     });
-}
-
-/**
- * 通过 fetch HEAD 请求获取图片文件大小
- * @param {string} url - 图片 URL
- * @returns {number|null} 文件大小（字节），失败返回 null
- */
-/**
- * 获取图片文件大小
- * 优先使用 Performance API（无需 CORS），失败时尝试 fetch
- * 
- * @param {string} url - 图片 URL
- * @returns {number|null} 文件大小（字节），失败返回 null
- */
-async function fetchImageSize(url) {
-    // 方案1：使用 Performance API 获取 transferSize（无需 CORS）
-    try {
-        const entries = performance.getEntriesByName(url);
-        if (entries.length > 0) {
-            const entry = entries[entries.length - 1];
-            if (entry.transferSize > 0) {
-                return entry.transferSize;
-            }
-            if (entry.encodedBodySize > 0) {
-                return entry.encodedBodySize;
-            }
-        }
-    } catch (e) {
-        // Performance API 不可用，忽略
-    }
-
-    // 方案2：尝试 fetch（部分 CDN 支持 CORS）
-    try {
-        const resp = await fetch(url, { method: 'HEAD', mode: 'cors' });
-        const size = resp.headers.get('content-length');
-        return size ? parseInt(size) : null;
-    } catch (e) {
-        // CORS 被拦截，返回 null（不影响图片显示）
-        return null;
-    }
 }
 
 /**
@@ -3367,6 +3374,264 @@ function renderCDNComparison(results, cardId) {
     }
 
     compareArea.innerHTML = html;
+}
+
+// ====== 开发者工具：CDN 批量速度测试 ======
+
+// 批量测试是否正在运行（防止重复触发）
+let _batchTestRunning = false;
+
+/**
+ * 批量速度测试
+ * 从 SAMPLE_CARD_IDS 中选取卡片，逐张测试所有 CDN 源，最终汇总统计
+ * 
+ * @param {object} options - 测试选项
+ * @param {boolean} options.noCache - 是否绕过缓存
+ */
+async function runBatchSpeedTest(options) {
+    if (_batchTestRunning) {
+        alert('⏳ 批量测试正在运行中，请等待完成');
+        return;
+    }
+    _batchTestRunning = true;
+
+    options = options || {};
+    const batchArea = document.getElementById('devtools-batch-area');
+    const compareArea = document.getElementById('devtools-compare-area');
+    const batchBtn = document.getElementById('btn-devtools-batch');
+
+    // 隐藏单卡对比区域，显示批量测试区域
+    compareArea.style.display = 'none';
+    batchArea.style.display = '';
+
+    // 禁用按钮，防止重复点击
+    if (batchBtn) {
+        batchBtn.disabled = true;
+        batchBtn.textContent = '⏳ 测试中...';
+    }
+
+    // 随机选取 5 张测试卡片
+    const testCount = 5;
+    const shuffled = SAMPLE_CARD_IDS.slice().sort(function () { return Math.random() - .5; });
+    const testCards = shuffled.slice(0, testCount);
+
+    // 初始化每个 CDN 源的统计数据
+    const statsMap = {};
+    CDN_SOURCES.forEach(function (source) {
+        statsMap[source.id] = {
+            source: source,
+            times: [],       // 成功的加载时间列表
+            failures: 0,     // 失败/超时次数
+            total: testCount
+        };
+    });
+
+    // 逐张卡片测试（卡片之间间隔 1 秒，避免触发限流）
+    for (let i = 0; i < testCards.length; i++) {
+        const cardId = testCards[i];
+        const progress = Math.round(((i) / testCount) * 100);
+
+        // 更新进度
+        batchArea.innerHTML = renderBatchProgress(i + 1, testCount, cardId, progress, testCards);
+
+        // 加载所有 CDN 源
+        const results = await loadCDNComparison(cardId, {
+            silent: true,
+            noCache: options.noCache
+        });
+
+        // 汇总结果
+        results.forEach(function (result) {
+            const stat = statsMap[result.source.id];
+            if (!stat) return;
+            if (result.status === 'ok') {
+                stat.times.push(result.loadTime);
+            } else {
+                stat.failures++;
+            }
+        });
+
+        // 卡片之间间隔 1 秒（最后一张不等待）
+        if (i < testCards.length - 1) {
+            await delay(1000);
+        }
+    }
+
+    // 测试完成，渲染最终结果
+    renderBatchResults(batchArea, statsMap, testCards, options.noCache);
+
+    // 恢复按钮状态
+    if (batchBtn) {
+        batchBtn.disabled = false;
+        batchBtn.textContent = '🚀 批量测速';
+    }
+    _batchTestRunning = false;
+}
+
+/**
+ * 渲染批量测试进度
+ * @param {number} current - 当前第几张
+ * @param {number} total - 总共几张
+ * @param {number} cardId - 当前测试的卡片ID
+ * @param {number} percent - 进度百分比
+ * @param {Array} testCards - 全部测试卡片列表
+ * @returns {string} HTML 字符串
+ */
+function renderBatchProgress(current, total, cardId, percent, testCards) {
+    let html = '<div class="batch-progress">';
+    html += '<h3 class="batch-progress__title">🚀 批量速度测试中</h3>';
+    html += '<div class="batch-progress__bar-wrap">';
+    html += '<div class="batch-progress__bar" style="width:' + percent + '%"></div>';
+    html += '</div>';
+    html += '<p class="batch-progress__text">正在测试第 <strong>' + current + '</strong> / ' + total + ' 张卡片';
+    html += '（ID: ' + cardId + '）</p>';
+
+    // 显示测试卡片列表
+    html += '<div class="batch-progress__cards">';
+    testCards.forEach(function (id, idx) {
+        let cls = 'batch-progress__card-dot';
+        if (idx < current - 1) cls += ' batch-progress__card-dot--done';
+        else if (idx === current - 1) cls += ' batch-progress__card-dot--active';
+        html += '<span class="' + cls + '">' + (idx + 1) + '</span>';
+    });
+    html += '</div>';
+    html += '</div>';
+    return html;
+}
+
+/**
+ * 渲染批量测试最终结果
+ * @param {HTMLElement} container - 结果容器
+ * @param {object} statsMap - 每个 CDN 源的统计数据
+ * @param {Array} testCards - 测试过的卡片 ID 列表
+ * @param {boolean} noCache - 是否绕过了缓存
+ */
+function renderBatchResults(container, statsMap, testCards, noCache) {
+    // 将 statsMap 转为数组并计算统计值
+    const statsList = [];
+    Object.keys(statsMap).forEach(function (id) {
+        const stat = statsMap[id];
+        const times = stat.times;
+        const successCount = times.length;
+        const successRate = Math.round((successCount / stat.total) * 100);
+
+        let avg = 0, min = 0, max = 0;
+        if (times.length > 0) {
+            avg = Math.round(times.reduce(function (a, b) { return a + b; }, 0) / times.length);
+            min = Math.min.apply(null, times);
+            max = Math.max.apply(null, times);
+        }
+
+        statsList.push({
+            source: stat.source,
+            avg: avg,
+            min: min,
+            max: max,
+            successRate: successRate,
+            successCount: successCount,
+            failures: stat.failures,
+            total: stat.total
+        });
+    });
+
+    // 按平均加载时间排序（成功率为0的排最后）
+    statsList.sort(function (a, b) {
+        if (a.successRate === 0 && b.successRate > 0) return 1;
+        if (b.successRate === 0 && a.successRate > 0) return -1;
+        return a.avg - b.avg;
+    });
+
+    // 找出最快的有效源
+    const bestAvg = statsList.length > 0 && statsList[0].successRate > 0 ? statsList[0].avg : null;
+    // 找出最大 avg 用于柱状条宽度计算
+    const maxAvg = Math.max.apply(null, statsList.map(function (s) { return s.avg || 1; }));
+
+    let html = '<div class="batch-results">';
+    html += '<h3 class="batch-results__title">📊 批量速度测试结果</h3>';
+    html += '<p class="batch-results__subtitle">';
+    html += '共测试 <strong>' + testCards.length + '</strong> 张卡片 × <strong>' + CDN_SOURCES.length + '</strong> 个 CDN 源';
+    html += noCache ? ' · <span class="batch-results__tag">绕过缓存</span>' : ' · <span class="batch-results__tag batch-results__tag--cache">含缓存</span>';
+    html += '</p>';
+
+    // 排名列表
+    html += '<div class="batch-results__list">';
+    statsList.forEach(function (stat, idx) {
+        const isFirst = idx === 0 && stat.successRate > 0;
+        const isCurrent = stat.source.usedBy === currentGameMode;
+        const barWidth = maxAvg > 0 ? Math.round((stat.avg / maxAvg) * 100) : 0;
+
+        html += '<div class="batch-results__item' + (isFirst ? ' batch-results__item--best' : '') + (isCurrent ? ' batch-results__item--current' : '') + '">';
+
+        // 排名标记
+        html += '<div class="batch-results__rank">';
+        if (stat.successRate === 0) {
+            html += '<span class="batch-results__rank-num batch-results__rank-num--fail">✗</span>';
+        } else if (idx === 0) {
+            html += '<span class="batch-results__rank-num batch-results__rank-num--gold">🏆</span>';
+        } else {
+            html += '<span class="batch-results__rank-num">#' + (idx + 1) + '</span>';
+        }
+        html += '</div>';
+
+        // 名称和标签
+        html += '<div class="batch-results__info">';
+        html += '<div class="batch-results__name">' + stat.source.name;
+        if (isCurrent) html += ' <span class="devtools-cdn-badge badge-current">当前使用</span>';
+        html += '</div>';
+
+        // 柱状条 + 平均时间
+        if (stat.successRate > 0) {
+            html += '<div class="batch-results__bar-row">';
+            html += '<div class="batch-results__bar-bg">';
+            html += '<div class="batch-results__bar-fill' + (isFirst ? ' batch-results__bar-fill--best' : '') + '" style="width:' + barWidth + '%"></div>';
+            html += '</div>';
+            html += '<span class="batch-results__avg">' + stat.avg + 'ms</span>';
+            html += '</div>';
+
+            // 详细数据
+            html += '<div class="batch-results__details">';
+            html += '<span>最快 <strong>' + stat.min + 'ms</strong></span>';
+            html += '<span>最慢 <strong>' + stat.max + 'ms</strong></span>';
+            html += '<span>成功率 <strong class="' + (stat.successRate >= 100 ? 'batch-results__rate--good' : (stat.successRate >= 60 ? 'batch-results__rate--warn' : 'batch-results__rate--bad')) + '">' + stat.successRate + '%</strong></span>';
+            html += '</div>';
+        } else {
+            html += '<div class="batch-results__bar-row">';
+            html += '<span class="batch-results__avg batch-results__avg--fail">全部失败</span>';
+            html += '</div>';
+        }
+
+        html += '</div>'; // info
+        html += '</div>'; // item
+    });
+    html += '</div>'; // list
+
+    // 推荐建议
+    if (statsList.length > 0 && statsList[0].successRate > 0) {
+        const best = statsList[0];
+        html += '<div class="batch-results__recommendation">';
+        html += '<strong>💡 推荐：</strong> ';
+        html += '<span class="batch-results__rec-name">' + best.source.name + '</span>';
+        html += ' 平均加载最快（' + best.avg + 'ms），成功率 ' + best.successRate + '%';
+
+        // 如果推荐的不是当前使用的，给出提示
+        const currentSource = statsList.find(function (s) { return s.source.usedBy === currentGameMode; });
+        if (currentSource && currentSource !== best && currentSource.successRate > 0) {
+            const diff = currentSource.avg - best.avg;
+            if (diff > 50) {
+                html += '<br>⚡ 相比当前使用的 <strong>' + currentSource.source.name + '</strong>（' + currentSource.avg + 'ms）快 <strong>' + diff + 'ms</strong>';
+            }
+        }
+        html += '</div>';
+    }
+
+    // 返回单卡对比按钮
+    html += '<div class="batch-results__actions">';
+    html += '<button class="btn-devtools-action" onclick="document.getElementById(\'devtools-batch-area\').style.display=\'none\';document.getElementById(\'devtools-compare-area\').style.display=\'\';">🔙 返回单卡对比</button>';
+    html += '<button class="btn-devtools-action btn-devtools-batch" onclick="runBatchSpeedTest({noCache:' + (noCache ? 'true' : 'false') + '})">🔄 重新测试</button>';
+    html += '</div>';
+
+    html += '</div>'; // batch-results
+    container.innerHTML = html;
 }
 
 // ============================================

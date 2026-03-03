@@ -2095,6 +2095,299 @@ body {
     color: #4caf50;
 }
 
+/* --- 测试选项区域 --- */
+.devtools-test-options {
+    padding: 8px 0;
+}
+
+.devtools-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .82rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.devtools-checkbox-label input[type="checkbox"] {
+    accent-color: var(--accent-gold);
+    width: 16px;
+    height: 16px;
+}
+
+/* --- 批量测速按钮 --- */
+.btn-devtools-batch {
+    background: linear-gradient(135deg, #ff6b35 0%, #f7c948 100%);
+    color: #000;
+}
+
+.btn-devtools-batch:hover,
+.btn-devtools-batch:active {
+    background: linear-gradient(135deg, #ff8555 0%, #f9d968 100%);
+}
+
+.btn-devtools-batch:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+/* --- 批量测试进度 --- */
+.batch-progress {
+    text-align: center;
+    padding: 24px 14px;
+}
+
+.batch-progress__title {
+    font-size: 1rem;
+    color: var(--accent-gold);
+    margin-bottom: 16px;
+}
+
+.batch-progress__bar-wrap {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, .08);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.batch-progress__bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-gold), #ff6b35);
+    border-radius: 4px;
+    transition: width .4s ease;
+}
+
+.batch-progress__text {
+    font-size: .85rem;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+
+.batch-progress__cards {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.batch-progress__card-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .7rem;
+    font-weight: bold;
+    background: rgba(255, 255, 255, .06);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    transition: all .3s;
+}
+
+.batch-progress__card-dot--done {
+    background: #4caf50;
+    color: #fff;
+    border-color: #4caf50;
+}
+
+.batch-progress__card-dot--active {
+    background: var(--accent-gold);
+    color: #000;
+    border-color: var(--accent-gold);
+    animation: batch-dot-pulse 1s infinite;
+}
+
+@keyframes batch-dot-pulse {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 215, 0, .4);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(255, 215, 0, 0);
+    }
+}
+
+/* --- 批量测试结果 --- */
+.batch-results {
+    padding: 4px 0;
+}
+
+.batch-results__title {
+    font-size: 1rem;
+    color: var(--accent-gold);
+    margin-bottom: 4px;
+}
+
+.batch-results__subtitle {
+    font-size: .8rem;
+    color: var(--text-secondary);
+    margin-bottom: 14px;
+}
+
+.batch-results__tag {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: .7rem;
+    background: rgba(255, 107, 53, .2);
+    color: #ff6b35;
+}
+
+.batch-results__tag--cache {
+    background: rgba(76, 175, 80, .2);
+    color: #4caf50;
+}
+
+/* 排名列表 */
+.batch-results__list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.batch-results__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: border-color .3s;
+}
+
+.batch-results__item--best {
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 10px rgba(255, 215, 0, .1);
+}
+
+.batch-results__item--current {
+    background: rgba(255, 215, 0, .03);
+}
+
+/* 排名标记 */
+.batch-results__rank {
+    flex-shrink: 0;
+    width: 32px;
+    text-align: center;
+    padding-top: 2px;
+}
+
+.batch-results__rank-num {
+    font-size: .85rem;
+    font-weight: bold;
+    color: var(--text-secondary);
+}
+
+.batch-results__rank-num--gold {
+    font-size: 1.1rem;
+}
+
+.batch-results__rank-num--fail {
+    color: var(--accent-red);
+}
+
+/* 信息区 */
+.batch-results__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.batch-results__name {
+    font-size: .85rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+/* 柱状条行 */
+.batch-results__bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.batch-results__bar-bg {
+    flex: 1;
+    height: 10px;
+    background: rgba(255, 255, 255, .06);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.batch-results__bar-fill {
+    height: 100%;
+    background: var(--accent-blue);
+    border-radius: 5px;
+    transition: width .6s ease;
+}
+
+.batch-results__bar-fill--best {
+    background: linear-gradient(90deg, #4caf50, var(--accent-gold));
+}
+
+.batch-results__avg {
+    flex-shrink: 0;
+    font-size: .85rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    min-width: 54px;
+    text-align: right;
+}
+
+.batch-results__avg--fail {
+    color: var(--accent-red);
+    font-size: .8rem;
+}
+
+/* 详细数据 */
+.batch-results__details {
+    display: flex;
+    gap: 12px;
+    font-size: .72rem;
+    color: var(--text-secondary);
+}
+
+.batch-results__rate--good {
+    color: #4caf50;
+}
+
+.batch-results__rate--warn {
+    color: #ff9800;
+}
+
+.batch-results__rate--bad {
+    color: var(--accent-red);
+}
+
+/* 推荐建议 */
+.batch-results__recommendation {
+    padding: 10px 12px;
+    background: rgba(76, 175, 80, .08);
+    border: 1px solid rgba(76, 175, 80, .2);
+    border-radius: 8px;
+    font-size: .82rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 14px;
+}
+
+.batch-results__rec-name {
+    color: #4caf50;
+    font-weight: bold;
+}
+
+/* 操作按钮 */
+.batch-results__actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
 /* ============================================
    背包系统样式 (v1.1.0)
    ============================================ */

@@ -178,11 +178,21 @@
                     <div class="devtools-input-actions">
                         <button id="btn-devtools-load" class="btn-devtools-action">🔍 加载对比</button>
                         <button id="btn-devtools-random" class="btn-devtools-action btn-devtools-random">🎲 随机卡片</button>
+                        <button id="btn-devtools-batch" class="btn-devtools-action btn-devtools-batch">🚀 批量测速</button>
+                    </div>
+                    <!-- 测试选项 -->
+                    <div class="devtools-test-options">
+                        <label class="devtools-checkbox-label">
+                            <input type="checkbox" id="devtools-no-cache" />
+                            <span>绕过缓存（加时间戳）</span>
+                        </label>
                     </div>
                     <!-- CDN 对比结果区 -->
                     <div id="devtools-compare-area" class="devtools-compare-area">
                         <p class="devtools-placeholder">输入卡片 ID 后点击「加载对比」，或使用「🎲 随机卡片」来测试</p>
                     </div>
+                    <!-- 批量测试结果区（独立于单卡对比） -->
+                    <div id="devtools-batch-area" class="devtools-batch-area" style="display:none;"></div>
                 </div>
 
                 <!-- ▸ 隐藏板块：管理后台入口（需点击开发者工具标题5次解锁） -->
