@@ -262,7 +262,10 @@
 - `getCardImageUrl` 返回 `{url, fallbackUrl}` 对象，`handleCardImageError` 全局函数自动 fallback
 - 已于 2026-03-04 验证通过
 
-## 🟢 图片资源自建 CDN 方案（后续规划）
+## � 优化网页 UI（待规划）
+- 作为大方向记录，具体优化内容待后续细化
+
+## �🟢 图片资源自建 CDN 方案（后续规划）
 - 当前使用第三方 CDN（YGOCDB / KONAMI / YugiohMeta），暂时够用
 - 后续计划迁移到 Cloudflare R2 对象存储
 - **触发时机**：活跃卡包超 10 个或第三方 CDN 不稳定时启动
