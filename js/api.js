@@ -736,11 +736,11 @@ async function getOCGCardSetData(packConfig, onProgress) {
                 if (mapResp.ok) {
                     const mapData = await mapResp.json();
                     imageMap = mapData.cards || null;
-                    // 如果配置了本地图片目录，附加到 imageMap 供 getCardImageUrl 优先使用本地图片
+                    // 如果配置了本地图片目录，附加到 imageMap 供 getCardImageUrl 生成 Cloudflare 本地备份 URL
                     if (imageMap && packConfig.localImagesDir) {
                         imageMap._localDir = packConfig.localImagesDir;
                     }
-                    console.log(`🗺️ 已加载卡图映射表 [${packConfig.imageMapFile}]，共 ${Object.keys(imageMap).length} 条${packConfig.localImagesDir ? '（本地图片优先）' : ''}`);
+                    console.log(`🗺️ 已加载卡图映射表 [${packConfig.imageMapFile}]，共 ${Object.keys(imageMap).length} 条${packConfig.localImagesDir ? '（S3 CDN 优先，Cloudflare 本地备份）' : ''}`);
                 }
             } catch (e) {
                 console.warn(`⚠️ 卡图映射表 [${packConfig.imageMapFile}] 加载失败，使用默认图源:`, e);
@@ -774,14 +774,14 @@ async function getOCGCardSetData(packConfig, onProgress) {
 }
 
 /**
- * 获取卡图URL —— 优先使用映射表（S3 CDN），回退到默认 YGOCDB CDN
+ * 获取卡图URL —— S3 CDN 优先，Cloudflare 本地图片备份，回退到 YGOCDB CDN
  * 支持按稀有度获取不同版本的卡图（如 LOCH 卡包中 OF 超框卡版本使用超框卡图）
  * 
  * @param {number|string} cardId - 卡片密码（password）
  * @param {object|null} imageMap - 卡图映射表（password → {metaId, name, altMetaId?}），null 时使用默认图源
  * @param {string} size - 图片尺寸：'small' = 列表用（200px）, 'large' = 大图（420px）
  * @param {string} [rarityCode] - 可选，稀有度代码（如 'UR-OF'、'GMR-OF'），用于查找该稀有度的替代卡图
- * @returns {string} 图片URL
+ * @returns {{ url: string, fallbackUrl: string|null }} 主图URL和备份URL（Cloudflare 本地图片）
  */
 function getCardImageUrl(cardId, imageMap, size, rarityCode) {
     const pw = String(cardId);
@@ -795,14 +795,24 @@ function getCardImageUrl(cardId, imageMap, size, rarityCode) {
         const sizeSuffix = size === 'large'
             ? API_CONFIG.YUGIOHMETA.SIZE_LARGE   // _w420
             : API_CONFIG.YUGIOHMETA.SIZE_SMALL;  // _w200
-        // 优先使用本地图片（如果配置了 localImagesDir），回退到 S3 CDN
-        if (imageMap._localDir) {
-            return `${imageMap._localDir}/${metaId}${sizeSuffix}.webp`;
-        }
-        return `${API_CONFIG.YUGIOHMETA.CDN_BASE}/${metaId}${sizeSuffix}.webp`;
+        // 主图源：S3 CDN；备份：Cloudflare 本地图片（如果配置了 localImagesDir）
+        const s3Url = `${API_CONFIG.YUGIOHMETA.CDN_BASE}/${metaId}${sizeSuffix}.webp`;
+        const localUrl = imageMap._localDir
+            ? `${imageMap._localDir}/${metaId}${sizeSuffix}.webp`
+            : null;
+        return { url: s3Url, fallbackUrl: localUrl };
     }
     // 回退到默认 YGOCDB CDN（百鸽日文卡图）
-    return `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardId}.jpg`;
+    return { url: `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardId}.jpg`, fallbackUrl: null };
+}
+
+/**
+ * 获取卡图URL字符串 —— 兼容旧逻辑，只返回主URL字符串
+ * 内部调用 getCardImageUrl 获取完整结果，只取 url 部分
+ */
+function getCardImageUrlString(cardId, imageMap, size, rarityCode) {
+    const result = getCardImageUrl(cardId, imageMap, size, rarityCode);
+    return result.url;
 }
 
 /**
@@ -861,6 +871,10 @@ function buildOCGCardsFromLocalData(packConfig, imageMap) {
         // 卡包内编号
         const setNumber = cardDef.setNumber || (packCode + '-JP' + String(idx).padStart(3, '0'));
 
+        // 获取卡图URL（包含主URL和备份URL）
+        const imgSmallResult = getCardImageUrl(cardDef.id, imageMap, 'small');
+        const imgLargeResult = getCardImageUrl(cardDef.id, imageMap, 'large');
+
         cards.push({
             id: cardDef.id,
             name: displayName,
@@ -877,9 +891,11 @@ function buildOCGCardsFromLocalData(packConfig, imageMap) {
             rarityVersions: rarityVersions,
             cardSetCode: typeof setNumber === 'string' ? setNumber : (packCode + '-JP' + String(idx).padStart(3, '0')),
             setNumber: idx,
-            // 卡图URL：优先使用映射表（S3 CDN），回退到默认 YGOCDB CDN
-            imageUrl: getCardImageUrl(cardDef.id, imageMap, 'small'),
-            imageLargeUrl: getCardImageUrl(cardDef.id, imageMap, 'large'),
+            // 卡图URL：主图源 S3 CDN，备份 Cloudflare 本地图片
+            imageUrl: imgSmallResult.url,
+            imageLargeUrl: imgLargeResult.url,
+            imageFallbackUrl: imgSmallResult.fallbackUrl,
+            imageLargeFallbackUrl: imgLargeResult.fallbackUrl,
             dataSource: 'local',
             _imageMap: imageMap  // 保存映射表引用，用于开包时按稀有度动态获取对应卡图
         });
@@ -925,9 +941,9 @@ function buildSupplementCardsFromLocalData(packConfig, imageMap) {
 
         const setNumber = cardDef.setNumber || '';
 
-        // 卡图URL：优先使用 imageMap（S3 CDN / 本地图片），回退到 YGOCDB CDN
-        const imgSmall = imageMap ? getCardImageUrl(cardDef.id, imageMap, 'small') : `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardDef.id}.jpg`;
-        const imgLarge = imageMap ? getCardImageUrl(cardDef.id, imageMap, 'large') : `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardDef.id}.jpg`;
+        // 卡图URL：优先使用 S3 CDN（主），Cloudflare 本地图片（备份），回退到 YGOCDB CDN
+        const imgSmallResult = imageMap ? getCardImageUrl(cardDef.id, imageMap, 'small') : { url: `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardDef.id}.jpg`, fallbackUrl: null };
+        const imgLargeResult = imageMap ? getCardImageUrl(cardDef.id, imageMap, 'large') : { url: `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardDef.id}.jpg`, fallbackUrl: null };
 
         cards.push({
             id: cardDef.id,
@@ -943,8 +959,10 @@ function buildSupplementCardsFromLocalData(packConfig, imageMap) {
             rarityVersions: rarityVersions,
             cardSetCode: setNumber,
             setNumber: setNumber,
-            imageUrl: imgSmall,
-            imageLargeUrl: imgLarge,
+            imageUrl: imgSmallResult.url,
+            imageLargeUrl: imgLargeResult.url,
+            imageFallbackUrl: imgSmallResult.fallbackUrl,
+            imageLargeFallbackUrl: imgLargeResult.fallbackUrl,
             dataSource: 'local',
             _isSupplement: true,  // 标记为辅助包卡片
             _imageMap: imageMap   // 保存映射表引用，供开包时按稀有度动态获取对应卡图

@@ -34,6 +34,32 @@ let RARITY_ORDER_DESC = Object.assign({}, RARITY_ORDER_ASC);
 // 降序稀有度代码数组：['GMR-OF', 'PSER-OF', 'PSER', ...] —— 用于遍历展示
 let RARITY_CODES_DESC = Object.keys(RARITY_ORDER_ASC).sort(function (a, b) { return RARITY_ORDER_ASC[b] - RARITY_ORDER_ASC[a]; });
 
+/**
+ * 卡图加载失败时的备份切换处理
+ * S3 CDN 加载失败 → 尝试 Cloudflare 本地备份 → 仍然失败则隐藏图片
+ * 
+ * @param {HTMLImageElement} img - 加载失败的 img 元素
+ */
+function handleCardImageError(img) {
+    const fallback = img.getAttribute('data-fallback');
+    if (fallback && img.src !== fallback) {
+        // 第一次失败：切换到 Cloudflare 本地备份
+        console.warn('⚠️ S3 CDN 卡图加载失败，切换到 Cloudflare 备份:', img.src, '→', fallback);
+        img.src = fallback;
+        // 同步更新大图备份URL（如果有）
+        const largeFallback = img.getAttribute('data-large-fallback');
+        if (largeFallback) {
+            img.setAttribute('data-large-url', largeFallback);
+        }
+    } else {
+        // 备份也失败了（或没有备份），隐藏图片显示兜底内容
+        img.style.display = 'none';
+        img.classList.remove('clickable');
+        const next = img.nextElementSibling;
+        if (next) next.style.display = next.classList.contains('preview-card-placeholder') ? 'flex' : 'block';
+    }
+}
+
 // ====== 页面加载完成后初始化 ======
 document.addEventListener('DOMContentLoaded', async function () {
     console.log('🚀 DOMContentLoaded 触发，开始初始化...');
@@ -472,6 +498,7 @@ function bindCardImageViewer() {
 
         // 获取大图 URL 和卡片名称
         const largeUrl = img.getAttribute('data-large-url');
+        const largeFallback = img.getAttribute('data-large-fallback') || '';
         const cardName = img.getAttribute('data-card-name') || '';
         const foreignName = img.getAttribute('data-card-foreign') || '';
 
@@ -480,6 +507,13 @@ function bindCardImageViewer() {
         // 设置大图和名称
         viewerImage.src = largeUrl;
         viewerImage.alt = cardName;
+        // 大图加载失败时尝试 Cloudflare 本地备份
+        viewerImage.onerror = largeFallback ? function() {
+            if (this.src !== largeFallback) {
+                console.warn('⚠️ S3 大图加载失败，切换到 Cloudflare 备份');
+                this.src = largeFallback;
+            }
+        } : null;
 
         // 构建显示名称（中文名 + 外文名）
         let displayName = cardName;
@@ -501,14 +535,22 @@ function bindCardImageViewer() {
 
             e.stopPropagation();
 
-            const largeUrl = img.getAttribute('data-large-url');
+            const bonusLargeUrl = img.getAttribute('data-large-url');
+            const bonusLargeFallback = img.getAttribute('data-large-fallback') || '';
             const cardName = img.getAttribute('data-card-name') || '';
             const foreignName = img.getAttribute('data-card-foreign') || '';
 
-            if (!largeUrl) return;
+            if (!bonusLargeUrl) return;
 
-            viewerImage.src = largeUrl;
+            viewerImage.src = bonusLargeUrl;
             viewerImage.alt = cardName;
+            // 大图加载失败时尝试 Cloudflare 本地备份
+            viewerImage.onerror = bonusLargeFallback ? function() {
+                if (this.src !== bonusLargeFallback) {
+                    console.warn('⚠️ S3 大图加载失败，切换到 Cloudflare 备份');
+                    this.src = bonusLargeFallback;
+                }
+            } : null;
 
             let displayName = cardName;
             if (foreignName && foreignName !== cardName) {
@@ -1305,8 +1347,12 @@ function updateCardsImageUrl(cards) {
     cards.forEach(function (card) {
         if (card._imageMap) {
             const rarity = (card.rarityVersions || ['N'])[0];
-            card.imageUrl = getCardImageUrl(card.id, card._imageMap, 'small', rarity);
-            card.imageLargeUrl = getCardImageUrl(card.id, card._imageMap, 'large', rarity);
+            const smallResult = getCardImageUrl(card.id, card._imageMap, 'small', rarity);
+            const largeResult = getCardImageUrl(card.id, card._imageMap, 'large', rarity);
+            card.imageUrl = smallResult.url;
+            card.imageLargeUrl = largeResult.url;
+            card.imageFallbackUrl = smallResult.fallbackUrl;
+            card.imageLargeFallbackUrl = largeResult.fallbackUrl;
         }
     });
 }
@@ -1861,8 +1907,12 @@ function drawCards_LOCH(pack, cards) {
     results.forEach(function(card) {
         if (card._imageMap) {
             const rarity = (card.rarityVersions || ['N'])[0];
-            card.imageUrl = getCardImageUrl(card.id, card._imageMap, 'small', rarity);
-            card.imageLargeUrl = getCardImageUrl(card.id, card._imageMap, 'large', rarity);
+            const smallResult = getCardImageUrl(card.id, card._imageMap, 'small', rarity);
+            const largeResult = getCardImageUrl(card.id, card._imageMap, 'large', rarity);
+            card.imageUrl = smallResult.url;
+            card.imageLargeUrl = largeResult.url;
+            card.imageFallbackUrl = smallResult.fallbackUrl;
+            card.imageLargeFallbackUrl = largeResult.fallbackUrl;
         }
     });
 
@@ -2043,8 +2093,12 @@ function drawCardsBox_LOCH(pack, cards) {
     allCards.forEach(function(card) {
         if (card._imageMap) {
             const rarity = (card.rarityVersions || ['N'])[0];
-            card.imageUrl = getCardImageUrl(card.id, card._imageMap, 'small', rarity);
-            card.imageLargeUrl = getCardImageUrl(card.id, card._imageMap, 'large', rarity);
+            const smallResult = getCardImageUrl(card.id, card._imageMap, 'small', rarity);
+            const largeResult = getCardImageUrl(card.id, card._imageMap, 'large', rarity);
+            card.imageUrl = smallResult.url;
+            card.imageLargeUrl = largeResult.url;
+            card.imageFallbackUrl = smallResult.fallbackUrl;
+            card.imageLargeFallbackUrl = largeResult.fallbackUrl;
         }
     });
 
@@ -2302,9 +2356,12 @@ async function showResults(cards, bonusCards) {
             const cardName = card.nameCN || card.name;
             const foreignName = card.nameOriginal || '';
             // 使用 API 提供的卡图，添加 clickable 类和 data 属性供放大查看
+            const fallbackUrl = card.imageFallbackUrl || '';
+            const largeFallbackUrl = card.imageLargeFallbackUrl || '';
             imageHtml = `<img class="card-image clickable" src="${card.imageUrl}" alt="${cardName}" loading="lazy" 
                               data-large-url="${largeUrl}" data-card-name="${cardName}" data-card-foreign="${foreignName}"
-                              onerror="this.style.display='none';this.classList.remove('clickable');this.nextElementSibling.style.display='block';">
+                              data-fallback="${fallbackUrl}" data-large-fallback="${largeFallbackUrl}"
+                              onerror="handleCardImageError(this)">
                          <span class="card-icon" style="display:none;">${getCardIcon(rarityCode)}</span>`;
         } else {
             // 没有卡图时显示图标
@@ -2358,9 +2415,12 @@ async function showResults(cards, bonusCards) {
                     const largeUrl = card.imageLargeUrl || card.imageUrl;
                     const cardName = card.nameCN || card.name;
                     const foreignName = card.nameOriginal || '';
+                    const bonusFallbackUrl = card.imageFallbackUrl || '';
+                    const bonusLargeFallbackUrl = card.imageLargeFallbackUrl || '';
                     imageHtml = `<img class="card-image clickable" src="${card.imageUrl}" alt="${cardName}" loading="lazy" 
                                       data-large-url="${largeUrl}" data-card-name="${cardName}" data-card-foreign="${foreignName}"
-                                      onerror="this.style.display='none';this.classList.remove('clickable');this.nextElementSibling.style.display='block';">
+                                      data-fallback="${bonusFallbackUrl}" data-large-fallback="${bonusLargeFallbackUrl}"
+                                      onerror="handleCardImageError(this)">
                                  <span class="card-icon" style="display:none;">${getCardIcon(rarityCode)}</span>`;
                 } else {
                     imageHtml = `<span class="card-icon">${getCardIcon(rarityCode)}</span>`;
@@ -3911,15 +3971,15 @@ function renderCardPreview(sortBy, cards, pack, supplementCards) {
             });
             sorted.forEach(function(rarity) {
                 // 为每个稀有度版本创建独立的卡位对象
+                // 获取对应稀有度的卡图URL（OF超框卡版本使用超框卡图，普通版使用普通卡图）
+                const expSmall = card._imageMap ? getCardImageUrl(card.id, card._imageMap, 'small', rarity) : null;
+                const expLarge = card._imageMap ? getCardImageUrl(card.id, card._imageMap, 'large', rarity) : null;
                 const expanded = Object.assign({}, card, {
                     rarityVersions: [rarity],
-                    // 使用对应稀有度的卡图URL（OF超框卡版本使用超框卡图，普通版使用普通卡图）
-                    imageUrl: card._imageMap
-                        ? getCardImageUrl(card.id, card._imageMap, 'small', rarity)
-                        : card.imageUrl,
-                    imageLargeUrl: card._imageMap
-                        ? getCardImageUrl(card.id, card._imageMap, 'large', rarity)
-                        : card.imageLargeUrl,
+                    imageUrl: expSmall ? expSmall.url : card.imageUrl,
+                    imageLargeUrl: expLarge ? expLarge.url : card.imageLargeUrl,
+                    imageFallbackUrl: expSmall ? expSmall.fallbackUrl : card.imageFallbackUrl,
+                    imageLargeFallbackUrl: expLarge ? expLarge.fallbackUrl : card.imageLargeFallbackUrl,
                     // 标记用于区分展开后的卡位（用于收集判断）
                     _expandedRarity: rarity
                 });
@@ -4170,9 +4230,11 @@ const rarityWeight = RARITY_ORDER_ASC;
         // 卡图
         let imageHtml;
         if (card.imageUrl) {
+            const prevFallback = card.imageFallbackUrl || '';
             imageHtml = `<img class="preview-card-image ${!isOwned ? 'not-owned' : ''}" 
                               src="${card.imageUrl}" alt="${displayName}" loading="lazy"
-                              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                              data-fallback="${prevFallback}"
+                              onerror="handleCardImageError(this)">
                          <div class="preview-card-placeholder" style="display:none;">🃏</div>`;
         } else {
             imageHtml = `<div class="preview-card-placeholder ${!isOwned ? 'not-owned' : ''}">🃏</div>`;
@@ -4326,7 +4388,8 @@ const rarityWeight = RARITY_ORDER_ASC;
             // 卡图
             let imageHtml;
             if (card.imageUrl) {
-                imageHtml = '<img class="preview-card-image ' + (!isOwned ? 'not-owned' : '') + '" src="' + card.imageUrl + '" alt="' + displayName + '" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">';
+                const suppFallback = card.imageFallbackUrl || '';
+                imageHtml = '<img class="preview-card-image ' + (!isOwned ? 'not-owned' : '') + '" src="' + card.imageUrl + '" alt="' + displayName + '" loading="lazy" data-fallback="' + suppFallback + '" onerror="handleCardImageError(this)">';
                 imageHtml += '<div class="preview-card-placeholder" style="display:none;">🃏</div>';
             } else {
                 imageHtml = '<div class="preview-card-placeholder ' + (!isOwned ? 'not-owned' : '') + '">🃏</div>';
@@ -4383,13 +4446,23 @@ const rarityWeight = RARITY_ORDER_ASC;
 
             if (card) {
                 const imgUrl = card.imageLargeUrl || card.imageUrl;
+                const imgFallbackUrl = card.imageLargeFallbackUrl || card.imageFallbackUrl || '';
                 if (imgUrl) {
                     // 复用已有的卡片大图查看器
                     const viewer = document.getElementById('card-image-viewer');
                     if (!viewer) return;
                     const img = viewer.querySelector('.viewer-image');
                     const nameEl = viewer.querySelector('.viewer-card-name');
-                    if (img) img.src = imgUrl;
+                    if (img) {
+                        img.src = imgUrl;
+                        // 大图加载失败时尝试 Cloudflare 本地备份
+                        img.onerror = imgFallbackUrl ? function() {
+                            if (this.src !== imgFallbackUrl) {
+                                console.warn('⚠️ S3 大图加载失败，切换到 Cloudflare 备份');
+                                this.src = imgFallbackUrl;
+                            }
+                        } : null;
+                    }
                     if (nameEl) {
                         const displayName = card.nameCN || card.name || '';
                         const foreignName = card.nameOriginal || '';
