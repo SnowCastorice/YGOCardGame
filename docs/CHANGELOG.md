@@ -250,9 +250,17 @@
 - 12种稀有度 UI 支持（含破框版本 UR-OF / PSER-OF / GMR-OF）
 - **已确认**：散包4号位复用整盒概率分布（`boxSlot4Distribution` + `ofTypeOdds`），不使用 `versionOdds`，概率与整盒完全一致
 
-## 🔴 KONAMI 卡图代理无法获取真实卡图（挂起）
-- 根本原因：KONAMI Imperva WAF 要求 JS 挑战验证，服务端代理无法通过
-- 替代方案：使用 YGOProDeck / YGOCDB CDN（已集成）
+## 🔴 YGOProDeck 图源限流（挂起）
+- 现象：YGOProDeck 图源在 CDN 测试工具中始终加载失败
+- 原因：YGOProDeck 启用了 Cloudflare Turnstile 人机验证，程序化请求被拦截
+- 已尝试：串行请求 + 500ms 间隔 + referrerPolicy=no-referrer + 失败重试，仍然被限流
+- 影响范围：仅影响 CDN 测试工具中的 YGOProDeck 图源对比，不影响游戏正常功能
+- 待后续决策：是否从 CDN 测试工具中移除 YGOProDeck 图源
+
+## ✅ LOCH/LOSP 卡图 CDN 切换（已完成）
+- S3 CDN（s3.duellinksmeta.com）作为主图源，Cloudflare Pages 本地图片作为备份
+- `getCardImageUrl` 返回 `{url, fallbackUrl}` 对象，`handleCardImageError` 全局函数自动 fallback
+- 已于 2026-03-04 验证通过
 
 ## 🟢 图片资源自建 CDN 方案（后续规划）
 - 当前使用第三方 CDN（YGOCDB / KONAMI / YugiohMeta），暂时够用

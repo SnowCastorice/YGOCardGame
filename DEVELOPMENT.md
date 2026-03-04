@@ -7,6 +7,11 @@
 
 最新变更：LOSP 特别包功能上线，LOCH 新增开3盒按钮。详见 [CHANGELOG.md](docs/CHANGELOG.md)。
 
+### 🔧 近期维护（2026-03-04）
+- ✅ LOCH/LOSP 卡图 CDN 切换为 S3 优先 + Cloudflare 本地备份（已验证通过）
+- 🔴 YGOProDeck 图源限流（Cloudflare Turnstile 人机验证拦截，挂起中）
+- 🗑️ KONAMI 卡图代理问题已从待处理列表移除（无法解决）
+
 ## 📚 文档索引
 
 | 文档 | 内容 |
