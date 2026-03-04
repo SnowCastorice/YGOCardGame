@@ -2805,7 +2805,8 @@ const CDN_SOURCES = [
         format: 'JPEG',
         desc: 'YGOProDeck 小图（TCG 备用图源）',
         usedBy: null,
-        supportsCors: false
+        supportsCors: false,
+        isRateLimited: true  // YGOProDeck 有 Cloudflare 防护 + 限流，需要串行请求 + 重试
     },
     {
         id: 'ygoprodeck_large',
@@ -2814,7 +2815,8 @@ const CDN_SOURCES = [
         format: 'JPEG',
         desc: 'YGOProDeck 大图',
         usedBy: null,
-        supportsCors: false
+        supportsCors: false,
+        isRateLimited: true
     },
     {
         id: 'yugiohmeta_s3',
@@ -3071,12 +3073,47 @@ async function loadCDNComparison(cardId, options) {
     // 是否绕过缓存
     const noCache = options.noCache || false;
 
-    // 并行加载所有 CDN 源的图片
-    const results = await Promise.all(
-        CDN_SOURCES.map(function (source) {
+    // 分组加载：普通源并行加载，限流源（YGOProDeck）串行加载 + 重试
+    const normalSources = CDN_SOURCES.filter(function (s) { return !s.isRateLimited; });
+    const rateLimitedSources = CDN_SOURCES.filter(function (s) { return !!s.isRateLimited; });
+
+    // 1. 普通源并行加载
+    const normalResults = await Promise.all(
+        normalSources.map(function (source) {
             return loadSingleCDN(source, cardId, metaMapData, noCache);
         })
     );
+
+    // 2. 限流源串行加载（每个源之间间隔 500ms，失败后等 2 秒重试 1 次）
+    const rateLimitedResults = [];
+    for (let i = 0; i < rateLimitedSources.length; i++) {
+        const source = rateLimitedSources[i];
+        // 源与源之间间隔 500ms（第一个不等待）
+        if (i > 0) {
+            await new Promise(function (r) { setTimeout(r, 500); });
+        }
+        let result = await loadSingleCDN(source, cardId, metaMapData, noCache);
+        // 如果失败或超时，等 2 秒后重试 1 次
+        if (result.status !== 'ok') {
+            console.log('🔄 [' + source.name + '] 首次加载失败（' + (result.errorMsg || result.status) + '），2秒后重试...');
+            await new Promise(function (r) { setTimeout(r, 2000); });
+            result = await loadSingleCDN(source, cardId, metaMapData, noCache);
+            if (result.status !== 'ok') {
+                console.warn('❌ [' + source.name + '] 重试仍然失败：' + (result.errorMsg || result.status));
+            } else {
+                console.log('✅ [' + source.name + '] 重试成功，耗时 ' + result.loadTime + 'ms');
+            }
+        }
+        rateLimitedResults.push(result);
+    }
+
+    // 合并结果（保持 CDN_SOURCES 的原始顺序）
+    const results = CDN_SOURCES.map(function (source) {
+        const found = normalResults.concat(rateLimitedResults).find(function (r) {
+            return r.source.id === source.id;
+        });
+        return found;
+    });
 
     // 渲染对比结果（批量模式下不渲染单张结果）
     if (!options.silent) {
@@ -3291,6 +3328,8 @@ function _loadCDNViaImage(source, url, startTime, timeoutMs) {
         };
         // 注意：不设置 crossOrigin，因为目标 CDN 不支持 CORS
         // 设置 crossOrigin 后浏览器会发送 CORS 请求，服务器不返回 CORS 头时会失败
+        // 设置 referrerPolicy 为 no-referrer，避免被 YGOProDeck 等站点的 Referer 防盗链拦截
+        img.referrerPolicy = 'no-referrer';
         img.src = url;
     });
 }
