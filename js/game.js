@@ -1221,8 +1221,10 @@ function toggleResultButtons(mode) {
         if (again3BoxBtn) again3BoxBtn.style.display = 'none';
     }
 
-    // 更新快捷再开按钮的样式和显示
-    if (quickReopen) quickReopen.style.display = '';
+    // 更新快捷再开按钮的样式和显示（仅开盒模式显示，单包模式隐藏）
+    if (quickReopen) {
+        quickReopen.style.display = (mode === 'pack') ? 'none' : '';
+    }
     if (quickBtn) {
         // 移除所有模式样式类
         quickBtn.classList.remove('btn-quick-reopen--box', 'btn-quick-reopen--3box');
