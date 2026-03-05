@@ -1257,6 +1257,10 @@ async function openPack() {
         InventorySystem.recordSpent(price);
     }
 
+    // 3. 抽卡
+    const drawnCards = drawCards(currentPack, currentPackCards);
+
+    // 4. 更新卡图URL
     // 5. 根据稀有度更新卡图URL后存入背包
     updateCardsImageUrl(drawnCards);
     InventorySystem.addCards(drawnCards);
