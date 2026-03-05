@@ -106,6 +106,17 @@ const InventorySystem = (function () {
             const cardId = String(card.id);
             const rarity = (card.rarityVersions || ['N'])[0];
 
+            // 利用卡片上的 _imageMap 为当前稀有度预计算卡图URL
+            // _imageMap 是运行时大对象不能直接存储，所以只保存计算后的URL
+            let raritySmallUrl = card.imageUrl || '';
+            let rarityLargeUrl = card.imageLargeUrl || '';
+            if (card._imageMap && typeof getCardImageUrl === 'function') {
+                const smallResult = getCardImageUrl(card.id, card._imageMap, 'small', rarity);
+                const largeResult = getCardImageUrl(card.id, card._imageMap, 'large', rarity);
+                if (smallResult && smallResult.url) raritySmallUrl = smallResult.url;
+                if (largeResult && largeResult.url) rarityLargeUrl = largeResult.url;
+            }
+
             if (inventory[cardId]) {
                 // 已有该卡：总数量+1，并记录对应稀有度版本+1
                 inventory[cardId].count += 1;
@@ -113,10 +124,26 @@ const InventorySystem = (function () {
                     inventory[cardId].rarityVersionsOwned = {};
                 }
                 inventory[cardId].rarityVersionsOwned[rarity] = (inventory[cardId].rarityVersionsOwned[rarity] || 0) + 1;
+                // 保存该稀有度版本对应的卡图URL（超框卡等特殊版本使用不同卡图）
+                if (!inventory[cardId].rarityImageUrls) {
+                    inventory[cardId].rarityImageUrls = {};
+                }
+                if (!inventory[cardId].rarityImageUrls[rarity]) {
+                    inventory[cardId].rarityImageUrls[rarity] = {
+                        imageUrl: raritySmallUrl,
+                        imageLargeUrl: rarityLargeUrl
+                    };
+                }
             } else {
                 // 新卡：创建记录
                 const versionsOwned = {};
                 versionsOwned[rarity] = 1;
+                // 初始化稀有度卡图映射
+                const rarityImageUrls = {};
+                rarityImageUrls[rarity] = {
+                    imageUrl: raritySmallUrl,
+                    imageLargeUrl: rarityLargeUrl
+                };
                 inventory[cardId] = {
                     id: card.id,
                     name: card.name || '',
@@ -127,6 +154,7 @@ const InventorySystem = (function () {
                     imageLargeUrl: card.imageLargeUrl || '',
                     count: 1,
                     rarityVersionsOwned: versionsOwned,
+                    rarityImageUrls: rarityImageUrls,
                     firstObtained: Date.now()
                 };
             }
@@ -180,19 +208,22 @@ const InventorySystem = (function () {
         var expandedList = [];
         Object.values(inventory).forEach(function (card) {
             var versionsOwned = card.rarityVersionsOwned || {};
+            var rarityImages = card.rarityImageUrls || {};
             var hasVersions = Object.keys(versionsOwned).length > 0;
             if (hasVersions) {
                 // 按每种稀有度版本各生成一条记录
                 Object.keys(versionsOwned).forEach(function (rarity) {
                     var count = versionsOwned[rarity];
                     if (count > 0) {
+                        // 优先使用该稀有度预存的卡图URL（超框卡等特殊版本使用不同卡图）
+                        var imgUrls = rarityImages[rarity] || {};
                         expandedList.push({
                             id: card.id,
                             name: card.name,
                             nameCN: card.nameCN,
                             nameOriginal: card.nameOriginal,
-                            imageUrl: card.imageUrl,
-                            imageLargeUrl: card.imageLargeUrl,
+                            imageUrl: imgUrls.imageUrl || card.imageUrl,
+                            imageLargeUrl: imgUrls.imageLargeUrl || card.imageLargeUrl,
                             firstObtained: card.firstObtained,
                             displayRarity: rarity,
                             displayCount: count
