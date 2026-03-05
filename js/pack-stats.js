@@ -8,10 +8,12 @@
  * 
  * 优化：
  *   - 上报请求使用缓冲区 + 节流合并机制，减少 KV 写入次数
- *   - 30秒内的多次开包数据会被合并为一次请求上报
+ *   - 60秒内的多次开包数据会被合并为一次请求上报
  *   - 页面关闭时通过 sendBeacon 发送最后一批缓冲数据
  *   - 方案A：上报失败时数据持久化到 localStorage，后续自动补发
  *   - 方案C：服务端 KV 写入接近限额时返回降级信号，前端暂停上报
+ *   - 单用户每日上报上限 50 次，防止少量用户大量开包刷爆服务端额度
+ *   - GET 查询缓存 5 分钟，全球统计不需要实时性
  * 
  * 依赖：
  *   - Cloudflare Pages Function: /api/pack-stats
@@ -39,11 +41,17 @@ const PackStats = (function() {
   /** API 基础路径 */
   const API_URL = '/api/pack-stats';
 
-  /** 全球统计缓存有效期（毫秒），避免频繁请求 */
-  const CACHE_TTL = 60 * 1000; // 60秒
+  /** 全球统计缓存有效期（毫秒），避免频繁请求，全球统计不需要实时性 */
+  const CACHE_TTL = 5 * 60 * 1000; // 5分钟
 
-  /** 上报缓冲区刷写间隔（毫秒）：攒够这个时间后统一上报一次 */
-  const REPORT_FLUSH_INTERVAL = 30 * 1000; // 30秒
+  /** 上报缓冲区刷写间隔（毫秒）：攒够这个时间后统一上报一次，攒更多数据减少请求次数 */
+  const REPORT_FLUSH_INTERVAL = 60 * 1000; // 60秒
+
+  /** 单用户每日上报次数上限（防止少量用户大量开包刷爆服务端额度） */
+  const DAILY_REPORT_LIMIT = 50;
+
+  /** 单用户每日上报计数的 localStorage Key */
+  const DAILY_REPORT_COUNT_KEY = 'ygo_daily_report_count';
 
   // ============================================
   // 本地数据管理
@@ -120,12 +128,20 @@ const PackStats = (function() {
 
   /**
    * 将开包数据写入缓冲区（不立即上报）
+   * 超过每日上报上限时，数据仍然记录到本地，但不再上报服务端
    * @param {string} packCode - 卡包代码
    * @param {'pack'|'box'} type - 开包类型
    * @param {number} [count=1] - 数量
    */
   function addToBuffer(packCode, type, count) {
     count = count || 1;
+
+    // 检查单用户每日上报上限
+    if (isDailyReportLimitReached()) {
+      console.log('📊 今日上报次数已达上限（' + DAILY_REPORT_LIMIT + '次），数据仅保存在本地');
+      return;
+    }
+
     if (!reportBuffer[packCode]) {
       reportBuffer[packCode] = { packs: 0, boxes: 0 };
     }
@@ -141,6 +157,49 @@ const PackStats = (function() {
         flushBuffer();
       }, REPORT_FLUSH_INTERVAL);
     }
+  }
+
+  // ============================================
+  // 单用户每日上报限制
+  // ============================================
+
+  /**
+   * 检查今日上报次数是否已达上限
+   * 跨天自动重置（UTC）
+   */
+  function isDailyReportLimitReached() {
+    try {
+      const raw = localStorage.getItem(DAILY_REPORT_COUNT_KEY);
+      if (!raw) return false;
+      const data = JSON.parse(raw);
+      const today = new Date().toISOString().slice(0, 10);
+      if (data.date !== today) return false; // 跨天重置
+      return data.count >= DAILY_REPORT_LIMIT;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * 增加今日上报计数
+   * @param {number} count - 本次上报的条数
+   */
+  function incrementDailyReportCount(count) {
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const raw = localStorage.getItem(DAILY_REPORT_COUNT_KEY);
+      let data;
+      if (raw) {
+        data = JSON.parse(raw);
+        if (data.date !== today) {
+          data = { date: today, count: 0 }; // 跨天重置
+        }
+      } else {
+        data = { date: today, count: 0 };
+      }
+      data.count += count;
+      localStorage.setItem(DAILY_REPORT_COUNT_KEY, JSON.stringify(data));
+    } catch {}
   }
 
   // ============================================
@@ -335,6 +394,9 @@ const PackStats = (function() {
             timestamp: Date.now()
           };
         }
+        // 更新单用户每日上报计数
+        incrementDailyReportCount(allEntries.length);
+
         console.log('📊 开包统计批量上报成功（含补发）:', allEntries.length, '条');
         return result;
       } else {

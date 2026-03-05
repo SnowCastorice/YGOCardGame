@@ -32,3 +32,9 @@ __pycache__/
 
 # 测试截图和输出文件
 test_output/
+
+# OCR工具素材和参考图片
+pack_references/
+
+# 本地Python工具脚本（OCR等）
+tools/*.py
