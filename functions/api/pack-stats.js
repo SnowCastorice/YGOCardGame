@@ -10,6 +10,11 @@
  *   GET  /api/pack-stats            - 查询指定卡包的全球开包统计
  *   GET  /api/pack-stats?admin=1    - 查询所有卡包的全局统计（管理后台用，无需鉴权）
  * 
+ * KV 写入限流保护：
+ *   - 追踪每日 KV 写入次数（meta:daily_writes）
+ *   - 接近免费限额（1000次/天）时返回 throttled 信号，前端暂停上报
+ *   - 前端收到信号后将数据暂存 localStorage，次日自动补发
+ * 
  * POST 请求格式：
  *   批量上报（推荐）: { batch: [{ packCode: "LOCH", packs: 5, boxes: 1 }, ...] }
  *   单条上报（兼容）: { packCode: "LOCH", type: "pack"|"box", count: 1 }
@@ -20,6 +25,7 @@
  *   Key: "stats:{packCode}"  Value: JSON { totalPacks, totalBoxes, lastUpdated }
  *   Key: "stats:_all"        Value: JSON { totalPacks, totalBoxes, lastUpdated }
  *   Key: "index:packs"       Value: JSON [ "LOCH", "BLZD", ... ] （所有有数据的卡包列表）
+ *   Key: "meta:daily_writes"  Value: JSON { date, count } （每日写入计数）
  * 
  * KV 操作优化：
  *   - 批量上报时，同一卡包的数据先合并，全局统计只写入一次
@@ -40,6 +46,16 @@ const ALLOWED_ORIGINS = [
   'http://localhost',
   'http://127.0.0.1',
 ];
+
+/**
+ * 每日 KV 写入限额保护阈值（方案C）
+ * Cloudflare 免费计划每日允许 1,000 次写入
+ * 设为 900，预留 100 次作为安全余量
+ */
+const DAILY_WRITE_THRESHOLD = 900;
+
+/** 每日写入计数的 KV Key */
+const DAILY_WRITES_KEY = 'meta:daily_writes';
 
 
 
@@ -176,15 +192,22 @@ async function handleReport(context) {
     allStats.lastUpdated = new Date().toISOString();
     await KV.put(allKey, JSON.stringify(allStats));
 
-    // 维护卡包索引（批量检查，只在有新卡包时写入）
+    // 维护卡包索引（批量检查，只在有新卡包时才写入）
     await addToPackIndexBatch(KV, packCodes);
+
+    // 方案C：更新每日写入计数，检查是否接近限额
+    // 本次写入次数 = 卡包种类数 + 1（全局） + 索引更新（0或1）
+    const writesThisRequest = packCodes.length + 1; // 索引更新在 addToPackIndexBatch 内部处理
+    const dailyWriteStatus = await updateDailyWriteCount(KV, writesThisRequest);
+    const isThrottled = dailyWriteStatus.count >= DAILY_WRITE_THRESHOLD;
 
     return jsonResponse({
       success: true,
       updatedPacks: updatedPacks,
-      globalStats: { totalPacks: allStats.totalPacks, totalBoxes: allStats.totalBoxes }
+      globalStats: { totalPacks: allStats.totalPacks, totalBoxes: allStats.totalBoxes },
+      throttled: isThrottled,
+      dailyWrites: dailyWriteStatus.count
     }, 200, origin);
-
   } catch (error) {
     return jsonResponse({ error: '统计更新失败', message: error.message }, 500, origin);
   }
@@ -262,6 +285,34 @@ async function handleQuery(context) {
 // ============================================
 // KV 辅助函数
 // ============================================
+
+/**
+ * 方案C：更新每日 KV 写入计数
+ * 用于追踪当天已使用的写入次数，接近阈值时通知前端降级
+ * @param {object} KV - KV 命名空间
+ * @param {number} writes - 本次请求的写入次数
+ * @returns {{ date: string, count: number }}
+ */
+async function updateDailyWriteCount(KV, writes) {
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
+  let dailyData;
+  try {
+    dailyData = await KV.get(DAILY_WRITES_KEY, 'json');
+  } catch {
+    dailyData = null;
+  }
+
+  // 如果是新的一天，重置计数
+  if (!dailyData || dailyData.date !== today) {
+    dailyData = { date: today, count: 0 };
+  }
+
+  // 累加本次写入次数 + 1（这次 put 本身也是一次写入）
+  dailyData.count += writes + 1;
+  await KV.put(DAILY_WRITES_KEY, JSON.stringify(dailyData));
+
+  return dailyData;
+}
 
 /** 从 KV 获取统计数据，不存在则返回初始值 */
 async function getStats(KV, key) {

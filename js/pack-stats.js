@@ -10,6 +10,8 @@
  *   - 上报请求使用缓冲区 + 节流合并机制，减少 KV 写入次数
  *   - 30秒内的多次开包数据会被合并为一次请求上报
  *   - 页面关闭时通过 sendBeacon 发送最后一批缓冲数据
+ *   - 方案A：上报失败时数据持久化到 localStorage，后续自动补发
+ *   - 方案C：服务端 KV 写入接近限额时返回降级信号，前端暂停上报
  * 
  * 依赖：
  *   - Cloudflare Pages Function: /api/pack-stats
@@ -27,6 +29,12 @@ const PackStats = (function() {
 
   /** localStorage 存储键名 */
   const STORAGE_KEY = 'ygo_pack_stats';
+
+  /** localStorage 待补发数据存储键名（上报失败时暂存） */
+  const PENDING_KEY = 'ygo_pending_reports';
+
+  /** localStorage 节流状态存储键名（服务端降级信号） */
+  const THROTTLE_KEY = 'ygo_report_throttled';
 
   /** API 基础路径 */
   const API_URL = '/api/pack-stats';
@@ -135,8 +143,98 @@ const PackStats = (function() {
     }
   }
 
+  // ============================================
+  // 待补发数据持久化（方案A）
+  // ============================================
+
+  /** 从 localStorage 加载待补发数据 */
+  function loadPendingReports() {
+    try {
+      const raw = localStorage.getItem(PENDING_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  /** 将待补发数据保存到 localStorage */
+  function savePendingReports(entries) {
+    try {
+      // 合并同卡包数据，避免无限膨胀
+      const merged = {};
+      for (const entry of entries) {
+        if (!merged[entry.packCode]) {
+          merged[entry.packCode] = { packCode: entry.packCode, packs: 0, boxes: 0 };
+        }
+        merged[entry.packCode].packs += entry.packs;
+        merged[entry.packCode].boxes += entry.boxes;
+      }
+      const compacted = Object.values(merged);
+      // 最多保留 100 条，防止极端情况下 localStorage 溢出
+      const limited = compacted.slice(0, 100);
+      localStorage.setItem(PENDING_KEY, JSON.stringify(limited));
+    } catch (e) {
+      console.warn('📊 待补发数据保存失败:', e);
+    }
+  }
+
+  /** 清空待补发数据 */
+  function clearPendingReports() {
+    try {
+      localStorage.removeItem(PENDING_KEY);
+    } catch {}
+  }
+
+  /** 追加条目到待补发列表 */
+  function appendPendingReports(newEntries) {
+    const existing = loadPendingReports();
+    savePendingReports(existing.concat(newEntries));
+  }
+
+  // ============================================
+  // 服务端降级状态管理（方案C）
+  // ============================================
+
+  /**
+   * 检查当前是否处于服务端降级（节流）状态
+   * 降级状态每天 UTC 00:00 自动重置
+   */
+  function isThrottled() {
+    try {
+      const raw = localStorage.getItem(THROTTLE_KEY);
+      if (!raw) return false;
+      const data = JSON.parse(raw);
+      // 检查是否已跨天（UTC），跨天则自动恢复
+      const today = new Date().toISOString().slice(0, 10);
+      if (data.date !== today) {
+        localStorage.removeItem(THROTTLE_KEY);
+        return false;
+      }
+      return data.throttled === true;
+    } catch {
+      return false;
+    }
+  }
+
+  /** 设置节流状态 */
+  function setThrottled(throttled) {
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      localStorage.setItem(THROTTLE_KEY, JSON.stringify({
+        throttled: throttled,
+        date: today
+      }));
+    } catch {}
+  }
+
+  // ============================================
+  // 缓冲区刷写
+  // ============================================
+
   /**
    * 刷写缓冲区：将所有缓冲的数据合并为一次批量请求发送
+   * - 方案A：失败时保存到 localStorage，下次成功时补发
+   * - 方案C：收到 throttled 信号后暂停上报，数据暂存本地
    * @param {boolean} [useBeacon=false] - 是否使用 sendBeacon（页面关闭时）
    */
   async function flushBuffer(useBeacon) {
@@ -167,13 +265,32 @@ const PackStats = (function() {
     // 没有数据则跳过
     if (entries.length === 0) return;
 
-    const payload = JSON.stringify({ batch: entries });
+    // 方案C：如果服务端已降级，直接存入本地待补发队列
+    if (isThrottled()) {
+      appendPendingReports(entries);
+      console.log('📊 服务端限流中，数据已暂存本地，待恢复后补发:', entries.length, '条');
+      return;
+    }
+
+    // 合并本地待补发的历史数据（如果有），一起发送
+    const pending = loadPendingReports();
+    const allEntries = pending.concat(entries);
+
+    const payload = JSON.stringify({ batch: allEntries });
 
     // 页面关闭时使用 sendBeacon（保证请求能发出去）
     if (useBeacon && navigator.sendBeacon) {
       const blob = new Blob([payload], { type: 'application/json' });
       const sent = navigator.sendBeacon(API_URL, blob);
-      console.log('📊 开包统计 sendBeacon 上报:', sent ? '成功' : '失败', entries);
+      if (sent) {
+        // sendBeacon 只保证发出，无法获取响应，乐观清除待补发
+        clearPendingReports();
+        console.log('📊 sendBeacon 上报成功（含补发数据）:', allEntries.length, '条');
+      } else {
+        // sendBeacon 失败，保存全部数据到 localStorage
+        appendPendingReports(entries);
+        console.warn('📊 sendBeacon 发送失败，数据已暂存本地');
+      }
       return;
     }
 
@@ -187,6 +304,19 @@ const PackStats = (function() {
 
       if (resp.ok) {
         const result = await resp.json();
+
+        // 上报成功：清除待补发数据
+        clearPendingReports();
+
+        // 方案C：检查服务端返回的节流信号
+        if (result.throttled) {
+          setThrottled(true);
+          console.warn('📊 服务端通知：KV 写入接近限额，暂停远程上报');
+        } else {
+          // 如果之前是节流状态，现在恢复了
+          setThrottled(false);
+        }
+
         // 用返回的最新全球数据更新缓存
         if (result.updatedPacks) {
           for (const packCode in result.updatedPacks) {
@@ -205,12 +335,17 @@ const PackStats = (function() {
             timestamp: Date.now()
           };
         }
-        console.log('📊 开包统计批量上报成功:', entries);
+        console.log('📊 开包统计批量上报成功（含补发）:', allEntries.length, '条');
         return result;
+      } else {
+        // 服务端返回错误（如 429），保存到本地待补发
+        appendPendingReports(entries);
+        console.warn('📊 上报失败（HTTP', resp.status + '），数据已暂存本地');
       }
     } catch (e) {
-      // 静默失败：网络问题不影响开包体验
-      console.warn('📊 开包统计批量上报失败（不影响游戏）:', e.message);
+      // 网络错误：保存到本地待补发
+      appendPendingReports(entries);
+      console.warn('📊 上报失败（网络错误），数据已暂存本地:', e.message);
     }
     return null;
   }
@@ -227,11 +362,42 @@ const PackStats = (function() {
 
   /**
    * 从服务端查询指定卡包的全球统计
+   * 同时检查节流状态是否已恢复（新的一天），如已恢复则自动补发
    * @param {string} packCode - 卡包代码
    * @param {boolean} [forceRefresh=false] - 是否强制刷新缓存
    * @returns {Promise<{ packStats, globalStats } | null>}
    */
   async function fetchGlobalStats(packCode, forceRefresh) {
+    // 方案C：查询时检查节流状态是否已跨天恢复
+    if (!isThrottled()) {
+      // 节流已恢复（新的一天），尝试补发历史待补发数据
+      const pending = loadPendingReports();
+      if (pending.length > 0) {
+        console.log('📊 检测到', pending.length, '条待补发数据，尝试补发...');
+        try {
+          const resp = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ batch: pending })
+          });
+          if (resp.ok) {
+            const result = await resp.json();
+            clearPendingReports();
+            console.log('📊 历史数据补发成功:', pending.length, '条');
+            // 检查补发后是否又触发了节流
+            if (result.throttled) {
+              setThrottled(true);
+              console.warn('📊 补发后服务端再次进入限流状态');
+            }
+          } else {
+            console.warn('📊 历史数据补发失败（HTTP', resp.status + '）');
+          }
+        } catch (e) {
+          console.warn('📊 历史数据补发失败:', e.message);
+        }
+      }
+    }
+
     // 检查缓存
     if (!forceRefresh && globalCache[packCode]) {
       const cached = globalCache[packCode];

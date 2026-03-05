@@ -11,6 +11,9 @@
 - ✅ 优化 Cloudflare KV 写入频率：开包统计上报改为缓冲区 + 节流合并（30秒合并一次），预计减少 70-80% KV 写入
 - ✅ 服务端 API 支持批量上报格式，全局统计只写入一次，卡包索引只在新增时写入
 - ✅ 页面关闭时通过 sendBeacon 发送最后一批缓冲数据，确保数据不丢失
+- ✅ KV 写入限流保护（方案A+C）：上报失败时数据持久化到 localStorage，后续自动补发；服务端追踪每日写入次数，接近限额（900/1000）时返回降级信号，前端暂停远程上报，次日自动恢复
+- ✅ 新增 localStorage Key：`ygo_pending_reports`（待补发数据）、`ygo_report_throttled`（节流状态）
+- ✅ 服务端新增 KV Key：`meta:daily_writes`（每日写入计数，UTC 跨天自动重置）
 - ✅ 新增市场价格系统（`js/priceSystem.js`）：独立的价格查询模块，从 `data/ocg/prices/` 加载集换社市场价格
 - ✅ 新增 LOCH+LOSP 价格数据（`data/ocg/prices/loch_prices.json`）：90张卡各稀有度版本真实市场价（OCR 识别）
 - ✅ 背包系统接入真实价格：优先显示市场价格（¥人民币），无市场数据时回退到固定金币价格
