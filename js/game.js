@@ -225,6 +225,18 @@ function applyRarityColors(raritiesData) {
         return luminance > 160 ? '#000' : '#fff';
     }
 
+    // 将十六进制颜色转换为 "r, g, b" 格式字符串（用于 rgba() 表达式）
+    function hexToRgb(hexColor) {
+        var hex = hexColor.replace('#', '');
+        if (hex.length === 3) {
+            hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        }
+        var r = parseInt(hex.substring(0, 2), 16);
+        var g = parseInt(hex.substring(2, 4), 16);
+        var b = parseInt(hex.substring(4, 6), 16);
+        return r + ', ' + g + ', ' + b;
+    }
+
     raritiesData.rarities.forEach(function (r) {
         // 注入 CSS 变量到 :root（如 --rarity-UR: #f5c842）
         root.style.setProperty('--rarity-' + r.code, r.cssColor);
@@ -250,6 +262,42 @@ function applyRarityColors(raritiesData) {
         dynamicCSS += '.preview-rarity-tag.rarity-tag-' + r.code + ' { color: var(--rarity-' + r.code + '); border: 1px solid var(--rarity-' + r.code + '); }\n';
         // 生成图鉴进度条填充颜色（rarity-fill-{code}）
         dynamicCSS += '.rarity-fill-' + r.code + ' { background: var(--rarity-' + r.code + '); }\n';
+
+        // ---- 动态生成边框样式（确保所有稀有度都有对应的边框效果） ----
+        // 根据 sortWeight 决定边框发光强度和动画
+        var weight = r.sortWeight;
+        var glowAlpha = weight >= 60 ? '.35' : (weight >= 40 ? '.2' : '0');
+        var hasShine = weight >= 50; // UR及以上有呼吸光动画
+
+        // 1. 开包结果卡片边框 .card-item.rarity-{code}
+        dynamicCSS += '.card-item.rarity-' + r.code + ' { border-color: var(--rarity-' + r.code + ');';
+        if (glowAlpha !== '0') {
+            dynamicCSS += ' box-shadow: 0 0 ' + (weight >= 60 ? '25' : (weight >= 40 ? '18' : '8')) + 'px rgba(' + hexToRgb(r.cssColor) + ', ' + (weight >= 60 ? '0.6' : (weight >= 40 ? '0.5' : '0.3')) + ');';
+        }
+        if (hasShine) {
+            dynamicCSS += ' animation: cardReveal .6s ease forwards, urShine 2s ease-in-out infinite;';
+        }
+        dynamicCSS += ' }\n';
+
+        // 2. 背包卡片边框 .inventory-card-item.rarity-border-{code}
+        dynamicCSS += '.inventory-card-item.rarity-border-' + r.code + ' { border-color: var(--rarity-' + r.code + ');';
+        if (glowAlpha !== '0') {
+            dynamicCSS += ' box-shadow: 0 0 ' + (weight >= 60 ? '8' : '6') + 'px rgba(' + hexToRgb(r.cssColor) + ', ' + glowAlpha + ');';
+        }
+        dynamicCSS += ' }\n';
+
+        // 3. 图鉴预览卡片边框 .preview-card-item.owned.rarity-border-{code}
+        dynamicCSS += '.preview-card-item.owned.rarity-border-' + r.code + ' { border-color: var(--rarity-' + r.code + ');';
+        if (glowAlpha !== '0') {
+            dynamicCSS += ' box-shadow: 0 0 ' + (weight >= 60 ? '8' : '6') + 'px rgba(' + hexToRgb(r.cssColor) + ', ' + (weight >= 60 ? '.3' : '.2') + ');';
+        }
+        dynamicCSS += ' }\n';
+
+        // 4. 稀有度统计行颜色 .rarity-stats__item--{code}
+        dynamicCSS += '.rarity-stats__item--' + r.code + ' { color: var(--rarity-' + r.code + '); }\n';
+
+        // 5. 价格参考说明中的稀有度颜色 .inventory-price-note .rarity-price.rarity-{code}
+        dynamicCSS += '.inventory-price-note .rarity-price.rarity-' + r.code + ' { color: var(--rarity-' + r.code + '); }\n';
     });
 
     // 将动态生成的颜色类注入到页面中

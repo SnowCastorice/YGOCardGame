@@ -171,6 +171,53 @@ const InventorySystem = (function () {
     }
 
     /**
+     * 获取背包中所有卡片（按 cardId + rarity 展开为独立条目）
+     * 同一张卡的不同稀有度版本会分开显示，每条记录包含 displayRarity 和 displayCount
+     * @returns {Array} 展开后的卡片数组
+     */
+    function getExpandedCards() {
+        if (!initialized) init();
+        var expandedList = [];
+        Object.values(inventory).forEach(function (card) {
+            var versionsOwned = card.rarityVersionsOwned || {};
+            var hasVersions = Object.keys(versionsOwned).length > 0;
+            if (hasVersions) {
+                // 按每种稀有度版本各生成一条记录
+                Object.keys(versionsOwned).forEach(function (rarity) {
+                    var count = versionsOwned[rarity];
+                    if (count > 0) {
+                        expandedList.push({
+                            id: card.id,
+                            name: card.name,
+                            nameCN: card.nameCN,
+                            nameOriginal: card.nameOriginal,
+                            imageUrl: card.imageUrl,
+                            imageLargeUrl: card.imageLargeUrl,
+                            firstObtained: card.firstObtained,
+                            displayRarity: rarity,
+                            displayCount: count
+                        });
+                    }
+                });
+            } else {
+                // 兼容旧数据：使用第一个稀有度
+                expandedList.push({
+                    id: card.id,
+                    name: card.name,
+                    nameCN: card.nameCN,
+                    nameOriginal: card.nameOriginal,
+                    imageUrl: card.imageUrl,
+                    imageLargeUrl: card.imageLargeUrl,
+                    firstObtained: card.firstObtained,
+                    displayRarity: (card.rarityVersions || ['N'])[0],
+                    displayCount: card.count || 1
+                });
+            }
+        });
+        return expandedList;
+    }
+
+    /**
      * 获取背包中卡片的种类数
      * @returns {number}
      */
@@ -276,7 +323,8 @@ const InventorySystem = (function () {
         sortBy = currentSortBy;
         sortOrder = currentSortOrder;
 
-        const cards = getAllCards();
+        // 使用展开后的卡片列表（同一张卡的不同稀有度版本分开显示）
+        const cards = getExpandedCards();
 
         // 如果背包为空
         if (cards.length === 0) {
@@ -293,9 +341,9 @@ const InventorySystem = (function () {
         // 按指定方式排序（支持升序/降序）
         const sortedCards = sortCards(cards, sortBy || 'rarity', sortOrder || 'desc');
 
-        // 统计信息
+        // 统计信息（种类数 = 展开后的条目数，即 cardId+rarity 组合数）
         const totalCards = getTotalCardCount();
-        const uniqueCards = getUniqueCardCount();
+        const uniqueCards = cards.length; // 展开后的种类数（按 cardId+rarity 去重）
         const totalValue = getTotalValue();
         const totalSpent = getTotalSpent();
         const profitLoss = totalValue - totalSpent;
@@ -363,7 +411,8 @@ const InventorySystem = (function () {
         // 卡片网格列表
         html += '<div class="inventory-grid">';
         sortedCards.forEach(function (card) {
-            const rarityCode = (card.rarityVersions || ['N'])[0];
+            const rarityCode = card.displayRarity || (card.rarityVersions || ['N'])[0];
+            const cardCount = card.displayCount || card.count || 1;
             const price = getCardPrice(rarityCode, card.id);
             const isMarket = hasMarketPrice(card.id);
             const displayName = card.nameCN || card.name || card.nameOriginal || '未知卡片';
@@ -396,7 +445,7 @@ const InventorySystem = (function () {
                     <div class="inventory-card-img-wrapper">
                         ${imageHtml}
                         <span class="inventory-rarity-badge rarity-${rarityCode}">${rarityCode}</span>
-                        ${card.count > 1 ? `<span class="inventory-count-badge">×${card.count}</span>` : ''}
+                        ${cardCount > 1 ? `<span class="inventory-count-badge">×${cardCount}</span>` : ''}
                     </div>
                     <div class="inventory-card-info">
                         <div class="inventory-card-name" title="${displayName}">${displayName}</div>
@@ -479,29 +528,38 @@ const InventorySystem = (function () {
         // 排序方向系数：降序=1，升序=-1
         const dir = (sortOrder === 'asc') ? -1 : 1;
 
+        // 辅助函数：获取卡片的稀有度（兼容展开后和原始格式）
+        function getCardRarity(card) {
+            return card.displayRarity || (card.rarityVersions || ['N'])[0];
+        }
+        // 辅助函数：获取卡片的数量（兼容展开后和原始格式）
+        function getCardCount(card) {
+            return card.displayCount || card.count || 1;
+        }
+
         switch (sortBy) {
             case 'rarity':
                 // 稀有度排序，同稀有度按数量排序
                 sorted.sort(function (a, b) {
-                    const rDiff = (rarityOrder[(b.rarityVersions || ['N'])[0]] || 0) - (rarityOrder[(a.rarityVersions || ['N'])[0]] || 0);
+                    const rDiff = (rarityOrder[getCardRarity(b)] || 0) - (rarityOrder[getCardRarity(a)] || 0);
                     if (rDiff !== 0) return rDiff * dir;
-                    return (b.count - a.count) * dir;
+                    return (getCardCount(b) - getCardCount(a)) * dir;
                 });
                 break;
             case 'count':
                 // 数量排序
                 sorted.sort(function (a, b) {
-                    return (b.count - a.count) * dir;
+                    return (getCardCount(b) - getCardCount(a)) * dir;
                 });
                 break;
             case 'price':
                 // 价格排序：无报价卡片（价值0）降序排最后，升序排最前
                 sorted.sort(function (a, b) {
-                    const aPrice = getCardPrice((a.rarityVersions || ['N'])[0], a.id);
-                    const bPrice = getCardPrice((b.rarityVersions || ['N'])[0], b.id);
+                    const aPrice = getCardPrice(getCardRarity(a), a.id);
+                    const bPrice = getCardPrice(getCardRarity(b), b.id);
                     const pDiff = bPrice - aPrice;
                     if (pDiff !== 0) return pDiff * dir;
-                    return (b.count - a.count) * dir;
+                    return (getCardCount(b) - getCardCount(a)) * dir;
                 });
                 break;
             case 'newest':
