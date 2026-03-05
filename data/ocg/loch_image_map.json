@@ -503,6 +503,7 @@
       "altMetaId": {
         "PSER-OF": "6947062fcaeb20b7384c25d4"
       }
+    },
     "32828466": {
       "metaId": "6947072c73f1136e4c0c27f6",
       "name": "Wake Up Your Elemental HERO",
@@ -510,7 +511,7 @@
       "altMetaId": {
         "PSER-OF": "6947072c73f1136e4c0c27f6"
       }
-    }    },
+    },
     "35952884": {
       "metaId": "6947073d8f70e9b6225d24aa",
       "name": "Shooting Quasar Dragon",
@@ -518,6 +519,7 @@
       "altMetaId": {
         "PSER-OF": "6947073d8f70e9b6225d24aa"
       }
+    },
     "95134948": {
       "metaId": "694981852206957906e8c09b",
       "name": "Number 99: Utopia Dragonar",
@@ -525,7 +527,7 @@
       "altMetaId": {
         "PSER-OF": "694981852206957906e8c09b"
       }
-    }    },
+    },
     "6218704": {
       "metaId": "69498195ea609b2f5710487c",
       "name": "Odd-Eyes Arcray Dragon",
@@ -533,6 +535,7 @@
       "altMetaId": {
         "PSER-OF": "69498195ea609b2f5710487c"
       }
+    },
     "21637210": {
       "metaId": "694981a44673698fff9b6bc1",
       "name": "Firewall Dragon Singularity",
@@ -540,7 +543,7 @@
       "altMetaId": {
         "PSER-OF": "694981a44673698fff9b6bc1"
       }
-    }    },
+    },
     "35405755": {
       "metaId": "694706f0caeb20b7384c3576",
       "name": "Kurikara Divincarnate",
@@ -548,6 +551,7 @@
       "altMetaId": {
         "PSER-OF": "694706f0caeb20b7384c3576"
       }
+    },
     "44146295": {
       "metaId": "694981ba4673698fff9b6d49",
       "name": "Mirrorjade the Iceblade Dragon",
@@ -555,7 +559,7 @@
       "altMetaId": {
         "PSER-OF": "694981ba4673698fff9b6d49"
       }
-    }    },
+    },
     "48130397": {
       "metaId": "6947071b73f1136e4c0c26d3",
       "name": "Super Polymerization",
@@ -563,6 +567,7 @@
       "altMetaId": {
         "PSER-OF": "6947071b73f1136e4c0c26d3"
       }
+    },
     "97045737": {
       "metaId": "6947063a649f7306c2078e47",
       "name": "Dominus Purge",
@@ -570,5 +575,6 @@
       "altMetaId": {
         "PSER-OF": "6947063a649f7306c2078e47"
       }
-    }  }
+    }
+  }
 }
