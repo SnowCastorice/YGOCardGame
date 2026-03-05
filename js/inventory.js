@@ -472,7 +472,7 @@ const InventorySystem = (function () {
                 priceHtml = '<div class="inventory-card-price inventory-card-price--no-data">暂无报价</div>';
             }
             html += `
-                <div class="inventory-card-item rarity-border-${rarityCode}" data-card-id="${card.id}">
+                <div class="inventory-card-item rarity-border-${rarityCode}" data-card-id="${card.id}" data-rarity="${rarityCode}">
                     <div class="inventory-card-img-wrapper">
                         ${imageHtml}
                         <span class="inventory-rarity-badge rarity-${rarityCode}">${rarityCode}</span>
@@ -508,11 +508,20 @@ const InventorySystem = (function () {
         contentEl.querySelectorAll('.inventory-card-item').forEach(function (item) {
             item.addEventListener('click', function () {
                 const cardId = this.getAttribute('data-card-id');
+                const rarity = this.getAttribute('data-rarity');
                 const card = getCard(cardId);
-                if (card && card.imageLargeUrl) {
-                    showCardViewer(card);
-                } else if (card && card.imageUrl) {
-                    showCardViewer(card);
+                if (card) {
+                    // 从 rarityImageUrls 中获取对应稀有度的大图URL（超框卡等特殊版本使用不同卡图）
+                    const rarityImgs = (card.rarityImageUrls && card.rarityImageUrls[rarity]) || {};
+                    const viewerCard = {
+                        id: card.id,
+                        name: card.name,
+                        nameCN: card.nameCN,
+                        nameOriginal: card.nameOriginal,
+                        imageUrl: rarityImgs.imageUrl || card.imageUrl,
+                        imageLargeUrl: rarityImgs.imageLargeUrl || card.imageLargeUrl
+                    };
+                    showCardViewer(viewerCard);
                 }
             });
         });
