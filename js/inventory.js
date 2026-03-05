@@ -7,7 +7,7 @@
  * 负责管理玩家的卡片收藏（背包）：
  * 1. 开包获得的卡片自动存入背包
  * 2. 按卡片密码(id)去重，记录每张卡的数量
- * 3. 根据稀有度设定卡片价格（临时方案，后续接入真实价格）
+ * 3. 根据稀有度设定卡片价格（优先使用真实市场价格，回退到固定金币价格）
  * 4. 数据通过 localStorage 持久化存储
  * 5. 提供背包弹窗 UI 渲染
  * ============================================
@@ -15,16 +15,20 @@
 
 const InventorySystem = (function () {
 
-    // ====== 稀有度 → 价格映射（临时固定价格，后续可替换为API价格） ======
+    // ====== 稀有度 → 固定金币价格（兜底用，当真实市场价格不可用时使用） ======
     const RARITY_PRICES = {
-        'PSER': 2000, // 棱镜秘密闪：2000 金币
-        'SER':  1500, // 秘密闪：1500 金币
-        'UTR':  1000, // 终极闪：1000 金币
-        'UR':   500,  // 极稀有：500 金币
-        'SR':   200,  // 超稀有：200 金币
-        'R':    50,   // 稀有：50 金币
-        'NR':   20,   // 普通闪：20 金币
-        'N':    10    // 普通：10 金币
+        'PSER': 2000,   // 棱镜秘密闪
+        'PSER-OF': 2000,// 棱镜秘密闪-OF
+        'GMR-OF': 3000, // 幽金闪-OF
+        'SER':  1500,   // 秘密闪
+        'UTR':  1000,   // 终极闪
+        'UR':   500,    // 极稀有
+        'UR-OF': 500,   // 极稀有-OF
+        'CR':   300,    // 收藏闪
+        'SR':   200,    // 超稀有
+        'R':    50,     // 稀有
+        'NR':   20,     // 普通闪
+        'N':    10      // 普通
     };
 
     // ====== localStorage 存储 key ======
@@ -197,27 +201,56 @@ const InventorySystem = (function () {
     // ====== 价格相关 ======
 
     /**
-     * 获取卡片价格（根据稀有度）
+     * 获取卡片价格（优先真实市场价格，回退到固定金币价格）
      * @param {string} rarity - 稀有度代码
-     * @returns {number} 价格（金币）
+     * @param {number|string} [cardId] - 卡片密码（传入则尝试获取真实市场价格）
+     * @returns {number} 价格
      */
-    function getCardPrice(rarity) {
+    function getCardPrice(rarity, cardId) {
+        // 优先尝试获取真实市场价格
+        if (cardId && typeof PriceSystem !== 'undefined') {
+            var marketPrice = PriceSystem.getCardPrice(cardId, rarity);
+            if (marketPrice !== null) return marketPrice;
+        }
+        // 回退到固定金币价格
         return RARITY_PRICES[rarity] || RARITY_PRICES['N'];
     }
 
     /**
-     * 获取背包总价值
-     * @returns {number} 总价值（金币）
+     * 检查指定卡片是否有真实市场价格数据
+     * @param {number|string} cardId - 卡片密码
+     * @returns {boolean}
+     */
+    function hasMarketPrice(cardId) {
+        return typeof PriceSystem !== 'undefined' && PriceSystem.hasPrice(cardId);
+    }
+
+    /**
+     * 获取背包总价值（市场价格，人民币）
+     * @returns {number} 总价值
      */
     function getTotalValue() {
         if (!initialized) init();
         return Object.values(inventory).reduce(function (sum, card) {
-            return sum + getCardPrice((card.rarityVersions || ['N'])[0]) * card.count;
+            // 遍历每个稀有度版本分别计算价值
+            var cardValue = 0;
+            var versionsOwned = card.rarityVersionsOwned || {};
+            var hasVersions = Object.keys(versionsOwned).length > 0;
+            if (hasVersions) {
+                Object.keys(versionsOwned).forEach(function (rarity) {
+                    var count = versionsOwned[rarity];
+                    cardValue += getCardPrice(rarity, card.id) * count;
+                });
+            } else {
+                // 兼容旧数据：使用第一个稀有度
+                cardValue = getCardPrice((card.rarityVersions || ['N'])[0], card.id) * card.count;
+            }
+            return sum + cardValue;
         }, 0);
     }
 
     /**
-     * 获取稀有度价格表（供UI展示）
+     * 获取固定稀有度价格表（供UI展示兜底用）
      * @returns {object}
      */
     function getRarityPrices() {
@@ -273,6 +306,9 @@ const InventorySystem = (function () {
         const totalCards = getTotalCardCount();
         const uniqueCards = getUniqueCardCount();
         const totalValue = getTotalValue();
+        // 判断是否有市场价格数据（如果有，展示人民币；没有则展示金币）
+        const hasAnyMarketPrice = Object.values(inventory).some(function (c) { return hasMarketPrice(c.id); });
+        const priceUnit = hasAnyMarketPrice ? '¥' : '🪙';
 
         // 构建HTML
         let html = '';
@@ -290,7 +326,7 @@ const InventorySystem = (function () {
                 </div>
                 <div class="inventory-stat-item">
                     <span class="stat-label">总价值</span>
-                    <span class="stat-value">🪙 ${formatNumber(totalValue)}</span>
+                    <span class="stat-value">${priceUnit} ${formatPrice(totalValue)}</span>
                 </div>
             </div>
         `;
@@ -307,24 +343,33 @@ const InventorySystem = (function () {
         `;
 
         // 价格参考说明
-        html += `
-            <div class="inventory-price-note">
-                💡 价格参考：<span class="rarity-price rarity-PSER">PSER ${RARITY_PRICES['PSER']}🪙</span> 
-                <span class="rarity-price rarity-UTR">UTR ${RARITY_PRICES['UTR']}🪙</span> 
-                <span class="rarity-price rarity-SER">SER ${RARITY_PRICES['SER']}🪙</span> 
-                <span class="rarity-price rarity-UR">UR ${RARITY_PRICES['UR']}🪙</span> 
-                <span class="rarity-price rarity-SR">SR ${RARITY_PRICES['SR']}🪙</span> 
-                <span class="rarity-price rarity-R">R ${RARITY_PRICES['R']}🪙</span> 
-                <span class="rarity-price rarity-NR">NR ${RARITY_PRICES['NR']}🪙</span> 
-                <span class="rarity-price rarity-N">N ${RARITY_PRICES['N']}🪙</span>
-            </div>
-        `;
+        if (hasAnyMarketPrice) {
+            html += `
+                <div class="inventory-price-note">
+                    💡 价格数据来源：集换社（单位：人民币元）
+                </div>
+            `;
+        } else {
+            html += `
+                <div class="inventory-price-note">
+                    💡 价格参考：<span class="rarity-price rarity-PSER">PSER ${RARITY_PRICES['PSER']}🪙</span> 
+                    <span class="rarity-price rarity-UTR">UTR ${RARITY_PRICES['UTR']}🪙</span> 
+                    <span class="rarity-price rarity-SER">SER ${RARITY_PRICES['SER']}🪙</span> 
+                    <span class="rarity-price rarity-UR">UR ${RARITY_PRICES['UR']}🪙</span> 
+                    <span class="rarity-price rarity-SR">SR ${RARITY_PRICES['SR']}🪙</span> 
+                    <span class="rarity-price rarity-R">R ${RARITY_PRICES['R']}🪙</span> 
+                    <span class="rarity-price rarity-NR">NR ${RARITY_PRICES['NR']}🪙</span> 
+                    <span class="rarity-price rarity-N">N ${RARITY_PRICES['N']}🪙</span>
+                </div>
+            `;
+        }
 
         // 卡片网格列表
         html += '<div class="inventory-grid">';
         sortedCards.forEach(function (card) {
-            const price = getCardPrice((card.rarityVersions || ['N'])[0]);
             const rarityCode = (card.rarityVersions || ['N'])[0];
+            const price = getCardPrice(rarityCode, card.id);
+            const isMarket = hasMarketPrice(card.id);
             const displayName = card.nameCN || card.name || card.nameOriginal || '未知卡片';
 
             // 卡图 HTML —— 带 fallback 机制：主图源失败时自动尝试备用 CDN
@@ -352,7 +397,7 @@ const InventorySystem = (function () {
                     </div>
                     <div class="inventory-card-info">
                         <div class="inventory-card-name" title="${displayName}">${displayName}</div>
-                        <div class="inventory-card-price">🪙 ${price}</div>
+                        <div class="inventory-card-price">${isMarket ? '¥' : '🪙'} ${formatPrice(price)}</div>
                     </div>
                 </div>
             `;
@@ -437,9 +482,9 @@ const InventorySystem = (function () {
                 });
                 break;
             case 'price':
-                // 价格高→低
+                // 价格高→低（使用真实市场价格排序）
                 sorted.sort(function (a, b) {
-                    const pDiff = getCardPrice((b.rarityVersions || ['N'])[0]) - getCardPrice((a.rarityVersions || ['N'])[0]);
+                    const pDiff = getCardPrice((b.rarityVersions || ['N'])[0], b.id) - getCardPrice((a.rarityVersions || ['N'])[0], a.id);
                     if (pDiff !== 0) return pDiff;
                     return b.count - a.count;
                 });
@@ -464,6 +509,20 @@ const InventorySystem = (function () {
             return num.toLocaleString();
         }
         return String(num);
+    }
+
+    /**
+     * 格式化价格（小数点后最多2位，整数不显示小数点）
+     */
+    function formatPrice(price) {
+        if (price === 0) return '0';
+        if (Number.isInteger(price)) {
+            return price >= 10000 ? price.toLocaleString() : String(price);
+        }
+        // 保留最多2位小数，去除尾部多余的0
+        var formatted = price.toFixed(2).replace(/\.?0+$/, '');
+        var num = parseFloat(formatted);
+        return num >= 10000 ? num.toLocaleString() : formatted;
     }
 
     // ====== 调试/管理接口 ======
@@ -500,6 +559,7 @@ const InventorySystem = (function () {
         getUniqueCardCount: getUniqueCardCount,
         getTotalCardCount: getTotalCardCount,
         getCardPrice: getCardPrice,
+        hasMarketPrice: hasMarketPrice,
         getTotalValue: getTotalValue,
         getRarityPrices: getRarityPrices,
         updateBadge: updateBadge,

@@ -1,0 +1,463 @@
+{
+  "_说明": "LOCH + LOSP 卡包市场价格数据（集换社）",
+  "_单位": "人民币/元",
+  "_数据来源": "集换社App截图 OCR 识别",
+  "_更新时间": "2026-03-04",
+  "_价格说明": "所有价格为集换社'起'价（最低在售价），GMR-OF 中 'W' 表示万元",
+  "packPrices": {
+    "LOCH": { "box": 385, "pack": 22 },
+    "LOSP": { "pack": 77 }
+  },
+  "cards": {
+    "100256001": {
+      "setNumber": "LOCH-JP001",
+      "name": "王之仆人-黑魔术师",
+      "prices": { "UR": 0.5, "UR-OF": 33, "SER": 0.6, "PSER-OF": 500, "GMR-OF": 42000 }
+    },
+    "100256002": {
+      "setNumber": "LOCH-JP002",
+      "name": "增殖的栗子球！",
+      "prices": { "UR": 0.5, "UR-OF": 13, "SER": 2.9, "PSER-OF": 110, "GMR-OF": 16000 }
+    },
+    "100256003": {
+      "setNumber": "LOCH-JP003",
+      "name": "黑魔导的幕帘",
+      "prices": { "UR": 7, "UR-OF": 200, "SER": 12, "PSER-OF": 1888, "GMR-OF": 96700 }
+    },
+    "100256004": {
+      "setNumber": "LOCH-JP004",
+      "name": "至爱英雄 闪光火焰翼侠",
+      "prices": { "UR": 0.5, "UR-OF": 3, "SER": 0.5, "PSER-OF": 70, "GMR-OF": 10000 }
+    },
+    "100256005": {
+      "setNumber": "LOCH-JP005",
+      "name": "至爱英雄 火焰翼侠",
+      "prices": { "UR": 0.5, "UR-OF": 12, "SER": 0.9, "PSER-OF": 110, "GMR-OF": 15900 }
+    },
+    "100256006": {
+      "setNumber": "LOCH-JP006",
+      "name": "羽翼栗子球·萨巴希尔 LV10",
+      "prices": { "UR": 0.5, "UR-OF": 6, "SER": 0.5, "PSER-OF": 87, "GMR-OF": 10000 }
+    },
+    "100256007": {
+      "setNumber": "LOCH-JP007",
+      "name": "星尘龙-牺牲者的圣域",
+      "prices": { "UR": 0.5, "UR-OF": 8, "SER": 0.5, "PSER-OF": 100, "GMR-OF": 24900 }
+    },
+    "100256008": {
+      "setNumber": "LOCH-JP008",
+      "name": "群星废品同调士",
+      "prices": { "UR": 0.5, "UR-OF": 4.5, "SER": 0.5, "PSER-OF": 36, "GMR-OF": 6500 }
+    },
+    "100256009": {
+      "setNumber": "LOCH-JP009",
+      "name": "同调紧急",
+      "prices": { "UR": 0.5, "UR-OF": 17, "SER": 2.8, "PSER-OF": 100, "GMR-OF": 4666 }
+    },
+    "100256010": {
+      "setNumber": "LOCH-JP010",
+      "name": "No.39 光之使者 希望皇 霍普",
+      "prices": { "UR": 0.5, "UR-OF": 5, "SER": 0.5, "PSER-OF": 35, "GMR-OF": 9000 }
+    },
+    "100256011": {
+      "setNumber": "LOCH-JP011",
+      "name": "我我我魔术师-我我我魔导",
+      "prices": { "UR": 0.5, "UR-OF": 4, "SER": 0.5, "PSER-OF": 44.9, "GMR-OF": 8000 }
+    },
+    "100256012": {
+      "setNumber": "LOCH-JP012",
+      "name": "我我我少女-零零通话",
+      "prices": { "UR": 0.5, "UR-OF": 22, "SER": 1.5, "PSER-OF": 290, "GMR-OF": 35000 }
+    },
+    "100256013": {
+      "setNumber": "LOCH-JP013",
+      "name": "四天之龙 异色眼灵摆龙",
+      "prices": { "UR": 0.5, "UR-OF": 2, "SER": 0.5, "PSER-OF": 32, "GMR-OF": 4990 }
+    },
+    "100256014": {
+      "setNumber": "LOCH-JP014",
+      "name": "星读之魔术师-星占之魔术士",
+      "prices": { "UR": 0.5, "UR-OF": 2, "SER": 0.5, "PSER-OF": 72, "GMR-OF": 4800 }
+    },
+    "100256015": {
+      "setNumber": "LOCH-JP015",
+      "name": "星霜之魔术师-宙读之魔术士",
+      "prices": { "UR": 0.5, "UR-OF": 7, "SER": 1, "PSER-OF": 99.99, "GMR-OF": 7799 }
+    },
+    "100256016": {
+      "setNumber": "LOCH-JP016",
+      "name": "解码语者·集成",
+      "prices": { "UR": 0.5, "UR-OF": 2, "SER": 0.5, "PSER-OF": 17, "GMR-OF": 4300 }
+    },
+    "100256017": {
+      "setNumber": "LOCH-JP017",
+      "name": "电子界代码魔术师",
+      "prices": { "UR": 0.5, "UR-OF": 2.9, "SER": 0.5, "PSER-OF": 48, "GMR-OF": 4000 }
+    },
+    "100256018": {
+      "setNumber": "LOCH-JP018",
+      "name": "电子界契约魔女",
+      "prices": { "UR": 0.5, "UR-OF": 35, "SER": 1.9, "PSER-OF": 234, "GMR-OF": 23300 }
+    },
+    "100256019": {
+      "setNumber": "LOCH-JP019",
+      "name": "黄泉天轮",
+      "prices": { "UR": 0.5, "SER": 0.5, "PSER": 8.99 }
+    },
+    "100256020": {
+      "setNumber": "LOCH-JP020",
+      "name": "山铜魔封剑",
+      "prices": { "UR": 0.5, "SER": 0.5, "PSER": 2 }
+    },
+    "100256021": {
+      "setNumber": "LOCH-JP021",
+      "name": "虹桥 碧佛洛斯特",
+      "prices": { "UR": 0.5, "SER": 0.5, "PSER": 15 }
+    },
+    "100256022": {
+      "setNumber": "LOCH-JP022",
+      "name": "罪 力量",
+      "prices": { "UR": 0.5, "SER": 0.5, "PSER": 2.88 }
+    },
+    "100256023": {
+      "setNumber": "LOCH-JP023",
+      "name": "罪 范式转移",
+      "prices": { "UR": 0.5, "SER": 0.5, "PSER": 3 }
+    },
+    "100256024": {
+      "setNumber": "LOCH-JP024",
+      "name": "强袭黑羽-丛云之草薙剑鸟",
+      "prices": { "UR": 0.5, "SER": 0.5, "PSER": 2 }
+    },
+    "100256025": {
+      "setNumber": "LOCH-JP025",
+      "name": "大精灵机巧军-灵摆支配者",
+      "prices": { "UR": 0.5, "SER": 0.5, "PSER": 2 }
+    },
+    "100201001": {
+      "setNumber": "LOCH-JP026",
+      "name": "W：P化装舞会组合",
+      "prices": { "UR": 6, "SER": 11.9, "PSER": 245 }
+    },
+    "65741786": {
+      "setNumber": "LOCH-JP027",
+      "name": "I：P伪装舞会莱娜",
+      "prices": { "UR": 1, "SER": 5.9, "PSER": 139 }
+    },
+    "29301450": {
+      "setNumber": "LOCH-JP028",
+      "name": "S：P小夜",
+      "prices": { "UR": 17, "SER": 29, "PSER": 319 }
+    },
+    "21522601": {
+      "setNumber": "LOCH-JP029",
+      "name": "魔女术师傅·玻璃女巫",
+      "prices": { "UR": 0.5, "SER": 0.8, "PSER": 36 }
+    },
+    "72270339": {
+      "setNumber": "LOCH-JP030",
+      "name": "黑魔女 迪亚贝尔斯塔尔",
+      "prices": { "UR": 0.5, "SER": 0.5, "PSER": 58 }
+    },
+    "14391625": {
+      "setNumber": "LOCH-JP031",
+      "name": "维萨斯-僧娑洛",
+      "prices": { "UR": 0.5, "SER": 0.5, "PSER": 15 }
+    },
+    "94677445": {
+      "setNumber": "LOCH-JP032",
+      "name": "星杯的神子 夏娃",
+      "prices": { "UR": 0.5, "SER": 0.5, "PSER": 15 }
+    },
+    "90448279": {
+      "setNumber": "LOCH-JP033",
+      "name": "天霆号 阿宙斯",
+      "prices": { "UR": 0.5, "SER": 1.5, "PSER": 36.88 }
+    },
+    "59242457": {
+      "setNumber": "LOCH-JP034",
+      "name": "救祓少女们的圣母颂歌",
+      "prices": { "UR": 0.5, "SER": 0.8, "PSER": 45 }
+    },
+    "21887175": {
+      "setNumber": "LOCH-JP035",
+      "name": "双穹之骑士 阿斯特拉姆",
+      "prices": { "UR": 0.5, "SER": 0.5, "PSER": 10 }
+    },
+    "4731783": {
+      "setNumber": "LOCH-JP036",
+      "name": "无光之影 阿-宝·阿·库",
+      "prices": { "UR": 1, "SER": 2.9, "PSER": 98.88 }
+    },
+    "63166095": {
+      "setNumber": "LOCH-JP037",
+      "name": "闪刀起动-交闪",
+      "prices": { "UR": 0.5, "SER": 1, "PSER": 80 }
+    },
+    "54693926": {
+      "setNumber": "LOCH-JP038",
+      "name": "冥王结界波",
+      "prices": { "UR": 0.5, "SER": 0.5, "PSER": 28 }
+    },
+    "15771991": {
+      "setNumber": "LOCH-JP039",
+      "name": "守护者史莱姆",
+      "prices": { "SR": 0.5, "CR": 0.5, "SER": 0.5, "PSER": 3 }
+    },
+    "2563463": {
+      "setNumber": "LOCH-JP040",
+      "name": "流离的狮鹫骑手",
+      "prices": { "SR": 0.5, "UTR": 0.5, "SER": 0.5, "PSER": 4.4 }
+    },
+    "45659520": {
+      "setNumber": "LOCH-JP041",
+      "name": "邪心英雄 凶灵尸魔",
+      "prices": { "SR": 0.5, "UTR": 0.5, "SER": 0.5, "PSER": 9 }
+    },
+    "60764609": {
+      "setNumber": "LOCH-JP042",
+      "name": "刻印群魔的刻魔锻冶师",
+      "prices": { "SR": 0.5, "CR": 1.9, "SER": 0.5, "PSER": 25 }
+    },
+    "87209160": {
+      "setNumber": "LOCH-JP043",
+      "name": "铁兽战线 弗拉克杜尔",
+      "prices": { "SR": 0.5, "UTR": 0.5, "SER": 0.5, "PSER": 24 }
+    },
+    "16428514": {
+      "setNumber": "LOCH-JP044",
+      "name": "地中族导师",
+      "prices": { "SR": 0.5, "UTR": 0.5, "SER": 0.5, "PSER": 2 }
+    },
+    "28803166": {
+      "setNumber": "LOCH-JP045",
+      "name": "红泪之魔 落泪",
+      "prices": { "SR": 0.5, "CR": 2, "SER": 0.5, "PSER": 38 }
+    },
+    "84192580": {
+      "setNumber": "LOCH-JP046",
+      "name": "欢聚友伴·抖抖海月水母",
+      "prices": { "SR": 0.5, "CR": 4, "SER": 5, "PSER": 124 }
+    },
+    "42141493": {
+      "setNumber": "LOCH-JP047",
+      "name": "欢聚友伴·茸茸长尾山雀",
+      "prices": { "SR": 16.5, "CR": 30, "SER": 29, "PSER": 680 }
+    },
+    "87126721": {
+      "setNumber": "LOCH-JP048",
+      "name": "欢聚友伴·喵喵豹猫",
+      "prices": { "SR": 0.5, "CR": 1.3, "SER": 1, "PSER": 44 }
+    },
+    "48017189": {
+      "setNumber": "LOCH-JP049",
+      "name": "EM：P猫型手雷",
+      "prices": { "SR": 0.5, "UTR": 0.5, "SER": 0.5, "PSER": 14.99 }
+    },
+    "25148255": {
+      "setNumber": "LOCH-JP050",
+      "name": "废品压阵者",
+      "prices": { "SR": 0.5, "CR": 0.5, "SER": 0.5, "PSER": 4 }
+    },
+    "20357457": {
+      "setNumber": "LOCH-JP051",
+      "name": "未来之柱-奇亚诺丝",
+      "prices": { "SR": 0.5, "UTR": 0.5, "SER": 0.5, "PSER": 35 }
+    },
+    "88753594": {
+      "setNumber": "LOCH-JP052",
+      "name": "月光舞剑虎姬",
+      "prices": { "SR": 0.5, "CR": 0.5, "SER": 0.5, "PSER": 7 }
+    },
+    "73452089": {
+      "setNumber": "LOCH-JP053",
+      "name": "超魔导骑士-黑魔导骑兵",
+      "prices": { "SR": 0.5, "CR": 0.5, "SER": 0.5, "PSER": 4 }
+    },
+    "39402797": {
+      "setNumber": "LOCH-JP054",
+      "name": "三叉戟龙军王",
+      "prices": { "SR": 0.5, "CR": 0.5, "SER": 0.5, "PSER": 18.28 }
+    },
+    "63265554": {
+      "setNumber": "LOCH-JP055",
+      "name": "动力工具勇气龙",
+      "prices": { "SR": 0.5, "CR": 0.5, "SER": 0.5, "PSER": 8 }
+    },
+    "45742626": {
+      "setNumber": "LOCH-JP056",
+      "name": "巡死神 收割者",
+      "prices": { "SR": 0.5, "UTR": 0.5, "SER": 0.5, "PSER": 8 }
+    },
+    "45852939": {
+      "setNumber": "LOCH-JP057",
+      "name": "食之双仔",
+      "prices": { "SR": 0.5, "UTR": 0.5, "SER": 0.5, "PSER": 14 }
+    },
+    "42752141": {
+      "setNumber": "LOCH-JP058",
+      "name": "进化帝·蛙颌翼龙",
+      "prices": { "SR": 0.5, "CR": 0.5, "SER": 0.5, "PSER": 14.9 }
+    },
+    "11398059": {
+      "setNumber": "LOCH-JP059",
+      "name": "精怪王",
+      "prices": { "SR": 0.5, "UTR": 0.5, "SER": 0.5, "PSER": 9.9 }
+    },
+    "32530043": {
+      "setNumber": "LOCH-JP060",
+      "name": "御影志士",
+      "prices": { "SR": 0.5, "UTR": 0.5, "SER": 0.5, "PSER": 30 }
+    },
+    "90809975": {
+      "setNumber": "LOCH-JP061",
+      "name": "饼蛙",
+      "prices": { "SR": 0.5, "UTR": 0.5, "SER": 0.5, "PSER": 38 }
+    },
+    "54191698": {
+      "setNumber": "LOCH-JP062",
+      "name": "No.29 招财猫人偶",
+      "prices": { "SR": 0.5, "CR": 0.5, "SER": 0.5, "PSER": 14.5 }
+    },
+    "52698008": {
+      "setNumber": "LOCH-JP063",
+      "name": "电子界小男巫",
+      "prices": { "SR": 0.5, "UTR": 0.5, "SER": 0.5, "PSER": 59 }
+    },
+    "40216089": {
+      "setNumber": "LOCH-JP064",
+      "name": "白金零件",
+      "prices": { "SR": 0.5, "CR": 0.5, "SER": 0.5, "PSER": 8 }
+    },
+    "61668670": {
+      "setNumber": "LOCH-JP065",
+      "name": "G石人·水晶心",
+      "prices": { "SR": 0.5, "CR": 0.5, "SER": 0.5, "PSER": 16 }
+    },
+    "49867899": {
+      "setNumber": "LOCH-JP066",
+      "name": "刻魔的大圣棺",
+      "prices": { "SR": 0.5, "CR": 0.5, "SER": 0.5, "PSER": 18 }
+    },
+    "46411259": {
+      "setNumber": "LOCH-JP067",
+      "name": "突然变异",
+      "prices": { "SR": 0.5, "UTR": 1, "SER": 0.5, "PSER": 15 }
+    },
+    "93600443": {
+      "setNumber": "LOCH-JP068",
+      "name": "假面变化二型",
+      "prices": { "SR": 0.5, "UTR": 0.5, "SER": 0.5, "PSER": 15 }
+    },
+    "71344451": {
+      "setNumber": "LOCH-JP069",
+      "name": "一击必杀！居合抽卡",
+      "prices": { "SR": 0.5, "UTR": 0.5, "SER": 0.5, "PSER": 13 }
+    },
+    "78665705": {
+      "setNumber": "LOCH-JP070",
+      "name": "古之咒文",
+      "prices": { "SR": 0.5, "CR": 0.5, "SER": 0.5, "PSER": 4.99 }
+    },
+    "51697825": {
+      "setNumber": "LOCH-JP071",
+      "name": "吓人手中盒",
+      "prices": { "SR": 0.5, "UTR": 0.5, "SER": 0.5, "PSER": 1.99 }
+    },
+    "3285551": {
+      "setNumber": "LOCH-JP072",
+      "name": "阿拉弥赛亚之仪",
+      "prices": { "SR": 0.5, "UTR": 0.5, "SER": 0.5, "PSER": 30 }
+    },
+    "98567237": {
+      "setNumber": "LOCH-JP073",
+      "name": "刻魔的咏圣",
+      "prices": { "SR": 0.5, "CR": 0.5, "SER": 0.5, "PSER": 49 }
+    },
+    "58570206": {
+      "setNumber": "LOCH-JP074",
+      "name": "多层融合",
+      "prices": { "SR": 0.5, "CR": 0.5, "SER": 0.5, "PSER": 22.88 }
+    },
+    "35480699": {
+      "setNumber": "LOCH-JP075",
+      "name": "日全食之书",
+      "prices": { "SR": 0.5, "UTR": 0.5, "SER": 0.5, "PSER": 39.9 }
+    },
+    "5253985": {
+      "setNumber": "LOCH-JP076",
+      "name": "交错之魂",
+      "prices": { "SR": 0.5, "CR": 0.5, "SER": 0.5, "PSER": 4 }
+    },
+    "80845034": {
+      "setNumber": "LOCH-JP077",
+      "name": "罪宝狩猎之恶魔",
+      "prices": { "SR": 0.5, "UTR": 0.8, "SER": 0.5, "PSER": 50 }
+    },
+    "21862633": {
+      "setNumber": "LOCH-JP078",
+      "name": "被斩裂的黑暗",
+      "prices": { "SR": 0.5, "CR": 0.5, "SER": 0.5, "PSER": 18 }
+    },
+    "90846359": {
+      "setNumber": "LOCH-JP079",
+      "name": "群雄割据",
+      "prices": { "SR": 0.5, "UTR": 1, "SER": 0.5, "PSER": 35 }
+    },
+    "23626223": {
+      "setNumber": "LOCH-JP080",
+      "name": "苦纹样的土像",
+      "prices": { "SR": 0.5, "UTR": 0.5, "SER": 0.5, "PSER": 8 }
+    },
+    "37818794": {
+      "setNumber": "LOSP-JP001",
+      "name": "超魔导龙骑士-真红眼龙骑士",
+      "prices": { "PSER": 120 }
+    },
+    "32828466": {
+      "setNumber": "LOSP-JP002",
+      "name": "唤醒你沉睡的元素英雄",
+      "prices": { "PSER": 10 }
+    },
+    "35952884": {
+      "setNumber": "LOSP-JP003",
+      "name": "流天类星龙",
+      "prices": { "PSER": 85 }
+    },
+    "95134948": {
+      "setNumber": "LOSP-JP004",
+      "name": "No.99 希望皇 霍普德拉戈纳",
+      "prices": { "PSER": 25 }
+    },
+    "6218704": {
+      "setNumber": "LOSP-JP005",
+      "name": "霸王天龙 异色眼霸弧光迹龙",
+      "prices": { "PSER": 10 }
+    },
+    "21637210": {
+      "setNumber": "LOSP-JP006",
+      "name": "防火龙·奇点",
+      "prices": { "PSER": 14.99 }
+    },
+    "35405755": {
+      "setNumber": "LOSP-JP007",
+      "name": "俱利伽罗天童",
+      "prices": { "PSER": 139 }
+    },
+    "44146295": {
+      "setNumber": "LOSP-JP008",
+      "name": "冰剑龙 幻冰龙",
+      "prices": { "PSER": 100 }
+    },
+    "48130397": {
+      "setNumber": "LOSP-JP009",
+      "name": "超融合",
+      "prices": { "PSER": 107 }
+    },
+    "97045737": {
+      "setNumber": "LOSP-JP010",
+      "name": "圣王的粉碎",
+      "prices": { "PSER": 180 }
+    }
+  }
+}

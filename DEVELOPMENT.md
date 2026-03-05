@@ -7,11 +7,34 @@
 
 最新变更：LOSP 特别包功能上线，LOCH 新增开3盒按钮。详见 [CHANGELOG.md](docs/CHANGELOG.md)。
 
+### 🔧 近期维护（2026-03-05）
+- ✅ 优化 Cloudflare KV 写入频率：开包统计上报改为缓冲区 + 节流合并（30秒合并一次），预计减少 70-80% KV 写入
+- ✅ 服务端 API 支持批量上报格式，全局统计只写入一次，卡包索引只在新增时写入
+- ✅ 页面关闭时通过 sendBeacon 发送最后一批缓冲数据，确保数据不丢失
+- ✅ 新增市场价格系统（`js/priceSystem.js`）：独立的价格查询模块，从 `data/ocg/prices/` 加载集换社市场价格
+- ✅ 新增 LOCH+LOSP 价格数据（`data/ocg/prices/loch_prices.json`）：90张卡各稀有度版本真实市场价（OCR 识别）
+- ✅ 背包系统接入真实价格：优先显示市场价格（¥人民币），无市场数据时回退到固定金币价格
+- ✅ 价格数据与卡片数据分离（方案A），便于独立更新和扩展
+
 ### 🔧 近期维护（2026-03-04）
 - ✅ LOCH/LOSP 卡图 CDN 切换为 S3 优先 + Cloudflare 本地备份（已验证通过）
 - 🔴 YGOProDeck 图源限流（Cloudflare Turnstile 人机验证拦截，挂起中）
 - 🗑️ KONAMI 卡图代理问题已从待处理列表移除（无法解决）
 - 🟡 新增待处理事项：优化网页 UI（大方向，待细化）
+- 🟢 OCR 价格提取工具（`tools/ocr_price.py`）— 基于 PaddleOCR 3.x，可从集换社价格截图中提取卡名、编号、稀有度、价格
+
+### 🐍 Python OCR 工具环境
+- **虚拟环境**：`tools/venv/`（Python 3.11 + PaddlePaddle-GPU 3.0.0 CUDA 12.6 + PaddleOCR 3.4.0）
+- **GPU 加速**：RTX 4060 (8GB VRAM)，每段识别 ~1 秒（CPU 约 8-10 秒/段，提速约 8x）
+- **用法**：`tools/venv/Scripts/python.exe tools/ocr_price.py <截图路径> --output <输出JSON>`
+- **注意**：PaddleOCR 不支持 Python 3.14，必须使用 3.11 虚拟环境运行
+
+### 🔌 PaddleOCR MCP Server（2026-03-04 新增）
+- **功能**：让 AI 编辑器直接调用本地 OCR 能力识别图片中的文字
+- **配置文件**：`C:\Users\chihayadu\.gongfeng-copilot\mcp.json`（服务名: `paddleocr`）
+- **启动方式**：CodeBuddy 自动通过 STDIO 模式管理进程，使用 GPU 加速
+- **包版本**：`paddleocr-mcp 0.5.0`（pip 安装在 tools/venv 中）
+- **验证**：重启 CodeBuddy 后，MCP 工具列表中应出现 PaddleOCR 相关工具
 
 ## 📚 文档索引
 

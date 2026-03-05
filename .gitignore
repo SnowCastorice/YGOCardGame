@@ -1,4 +1,4 @@
-# 系统文件
+sd# 系统文件
 .DS_Store
 Thumbs.db
 desktop.ini
@@ -24,6 +24,11 @@ _cardids_output.txt
 # 卡牌数据库更新工具产生的临时文件
 data/common/.cards_md5
 data/common/cards.json.bak
+
+# Python 虚拟环境
+tools/venv/
+__pycache__/
+*.pyc
 
 # 测试截图和输出文件
 test_output/

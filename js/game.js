@@ -70,6 +70,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     // 初始化背包系统
     InventorySystem.init();
 
+    // 初始化市场价格系统（异步加载价格数据，不阻塞 UI）
+    PriceSystem.init();
+
     // 先绑定导航栏按钮事件（缓存、日志、模式切换、货币兑换），确保即使加载失败也能使用
     bindNavEvents();
 
