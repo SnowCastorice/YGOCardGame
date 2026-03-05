@@ -21,8 +21,8 @@ const CurrencySystem = (function () {
             name: '金币',
             icon: '🪙',
             color: '#ffd700',
-            // 初始赠送数量（新用户首次进入时赠送）
-            initialAmount: 100000
+            // 初始赠送数量（新用户首次进入时赠送，100万金币）
+            initialAmount: 1000000
         }
     };
 
@@ -197,13 +197,23 @@ const CurrencySystem = (function () {
     }
 
     /**
-     * 格式化数字显示（千分位分隔）
+     * 格式化数字显示（大数字使用万/亿缩写，小数字千分位分隔）
+     * - < 10000: 原样显示
+     * - >= 10000 且 < 1亿: 显示为 x.xx万
+     * - >= 1亿: 显示为 x.xx亿
      * @param {number} num - 数字
      * @returns {string} 格式化后的字符串
      */
     function formatNumber(num) {
+        if (num >= 100000000) {
+            // 亿级别
+            var val = (num / 100000000).toFixed(2).replace(/\.?0+$/, '');
+            return val + '亿';
+        }
         if (num >= 10000) {
-            return num.toLocaleString();
+            // 万级别
+            var val = (num / 10000).toFixed(2).replace(/\.?0+$/, '');
+            return val + '万';
         }
         return String(num);
     }

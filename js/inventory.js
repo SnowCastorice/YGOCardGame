@@ -7,37 +7,29 @@
  * 负责管理玩家的卡片收藏（背包）：
  * 1. 开包获得的卡片自动存入背包
  * 2. 按卡片密码(id)去重，记录每张卡的数量
- * 3. 根据稀有度设定卡片价格（优先使用真实市场价格，回退到固定金币价格）
- * 4. 数据通过 localStorage 持久化存储
- * 5. 提供背包弹窗 UI 渲染
+ * 3. 展示卡片市场价格（来源：集换社），未录入价格的卡片显示"暂无报价"
+ * 4. 记录累计开包花费，计算总盈亏（背包总价值 - 累计花费）
+ * 5. 数据通过 localStorage 持久化存储
+ * 6. 提供背包弹窗 UI 渲染
  * ============================================
  */
 
 const InventorySystem = (function () {
 
-    // ====== 稀有度 → 固定金币价格（兜底用，当真实市场价格不可用时使用） ======
-    const RARITY_PRICES = {
-        'PSER': 2000,   // 棱镜秘密闪
-        'PSER-OF': 2000,// 棱镜秘密闪-OF
-        'GMR-OF': 3000, // 幽金闪-OF
-        'SER':  1500,   // 秘密闪
-        'UTR':  1000,   // 终极闪
-        'UR':   500,    // 极稀有
-        'UR-OF': 500,   // 极稀有-OF
-        'CR':   300,    // 收藏闪
-        'SR':   200,    // 超稀有
-        'R':    50,     // 稀有
-        'NR':   20,     // 普通闪
-        'N':    10      // 普通
-    };
+
 
     // ====== localStorage 存储 key ======
     const STORAGE_KEY = 'ygo_inventory_data';
+    const SPENT_KEY = 'ygo_inventory_spent'; // 累计开包花费（历史记录，不受价格调整影响）
 
     // ====== 内部状态 ======
     // 背包数据结构：{ "卡片密码": { id, name, nameCN, nameOriginal, rarityVersions, imageUrl, imageLargeUrl, count, rarityVersionsOwned: { "SR": 2, "SER": 1 }, firstObtained } }
     let inventory = {};
     let initialized = false;
+
+    // 当前排序状态
+    let currentSortBy = 'rarity';   // 当前排序维度
+    let currentSortOrder = 'desc';  // 当前排序方向：desc=降序, asc=升序
 
     // ====== 初始化 ======
 
@@ -201,19 +193,18 @@ const InventorySystem = (function () {
     // ====== 价格相关 ======
 
     /**
-     * 获取卡片价格（优先真实市场价格，回退到固定金币价格）
+     * 获取卡片市场价格
      * @param {string} rarity - 稀有度代码
-     * @param {number|string} [cardId] - 卡片密码（传入则尝试获取真实市场价格）
-     * @returns {number} 价格
+     * @param {number|string} [cardId] - 卡片密码
+     * @returns {number} 市场价格，无报价返回 0
      */
     function getCardPrice(rarity, cardId) {
-        // 优先尝试获取真实市场价格
         if (cardId && typeof PriceSystem !== 'undefined') {
             var marketPrice = PriceSystem.getCardPrice(cardId, rarity);
             if (marketPrice !== null) return marketPrice;
         }
-        // 回退到固定金币价格
-        return RARITY_PRICES[rarity] || RARITY_PRICES['N'];
+        // 无市场报价，价值为 0
+        return 0;
     }
 
     /**
@@ -226,7 +217,7 @@ const InventorySystem = (function () {
     }
 
     /**
-     * 获取背包总价值（市场价格，人民币）
+     * 获取背包总价值（仅计入有市场报价的卡片）
      * @returns {number} 总价值
      */
     function getTotalValue() {
@@ -249,13 +240,7 @@ const InventorySystem = (function () {
         }, 0);
     }
 
-    /**
-     * 获取固定稀有度价格表（供UI展示兜底用）
-     * @returns {object}
-     */
-    function getRarityPrices() {
-        return { ...RARITY_PRICES };
-    }
+
 
     // ====== UI 渲染 ======
 
@@ -279,11 +264,17 @@ const InventorySystem = (function () {
      * 【排序规则】
      * 默认按稀有度排序：UR → SR → R → N，同稀有度按数量降序
      */
-    function renderInventoryModal(sortBy) {
+    function renderInventoryModal(sortBy, sortOrder) {
         if (!initialized) init();
 
         const contentEl = document.getElementById('inventory-content');
         if (!contentEl) return;
+
+        // 更新排序状态
+        if (sortBy) currentSortBy = sortBy;
+        if (sortOrder) currentSortOrder = sortOrder;
+        sortBy = currentSortBy;
+        sortOrder = currentSortOrder;
 
         const cards = getAllCards();
 
@@ -299,16 +290,27 @@ const InventorySystem = (function () {
             return;
         }
 
-        // 按指定方式排序
-        const sortedCards = sortCards(cards, sortBy || 'rarity');
+        // 按指定方式排序（支持升序/降序）
+        const sortedCards = sortCards(cards, sortBy || 'rarity', sortOrder || 'desc');
 
         // 统计信息
         const totalCards = getTotalCardCount();
         const uniqueCards = getUniqueCardCount();
         const totalValue = getTotalValue();
-        // 判断是否有市场价格数据（如果有，展示人民币；没有则展示金币）
-        const hasAnyMarketPrice = Object.values(inventory).some(function (c) { return hasMarketPrice(c.id); });
-        const priceUnit = hasAnyMarketPrice ? '¥' : '🪙';
+        const totalSpent = getTotalSpent();
+        const profitLoss = totalValue - totalSpent;
+        const priceUnit = '🪙';
+
+        // 盈亏显示：盈利绿色带+号，亏损红色带-号，持平白色
+        let profitClass = 'stat-value--neutral';
+        let profitPrefix = '';
+        if (profitLoss > 0) {
+            profitClass = 'stat-value--profit';
+            profitPrefix = '+';
+        } else if (profitLoss < 0) {
+            profitClass = 'stat-value--loss';
+            profitPrefix = '';  // 负号由数字自带
+        }
 
         // 构建HTML
         let html = '';
@@ -328,41 +330,35 @@ const InventorySystem = (function () {
                     <span class="stat-label">总价值</span>
                     <span class="stat-value">${priceUnit} ${formatPrice(totalValue)}</span>
                 </div>
+                <div class="inventory-stat-item">
+                    <span class="stat-label">总盈亏</span>
+                    <span class="stat-value ${profitClass}">${priceUnit} ${profitPrefix}${formatPrice(profitLoss)}</span>
+                </div>
             </div>
         `;
 
-        // 排序控制栏
+        // 排序控制栏（带升降序箭头提示）
+        const sortOptions = [
+            { key: 'rarity', label: '稀有度' },
+            { key: 'count', label: '数量' },
+            { key: 'price', label: '价格' },
+            { key: 'newest', label: '最新' }
+        ];
+        html += '<div class="inventory-sort-bar">';
+        html += '<span class="sort-label">排序：</span>';
+        sortOptions.forEach(function (opt) {
+            const isActive = (sortBy === opt.key) || (!sortBy && opt.key === 'rarity');
+            const arrow = isActive ? (sortOrder === 'desc' ? ' ↓' : ' ↑') : '';
+            html += '<button class="sort-btn ' + (isActive ? 'active' : '') + '" data-sort="' + opt.key + '">' + opt.label + (arrow ? '<span class="sort-arrow">' + arrow + '</span>' : '') + '</button>';
+        });
+        html += '</div>';
+
+        // 价格数据来源说明
         html += `
-            <div class="inventory-sort-bar">
-                <span class="sort-label">排序：</span>
-                <button class="sort-btn ${sortBy === 'rarity' || !sortBy ? 'active' : ''}" data-sort="rarity">稀有度</button>
-                <button class="sort-btn ${sortBy === 'count' ? 'active' : ''}" data-sort="count">数量</button>
-                <button class="sort-btn ${sortBy === 'price' ? 'active' : ''}" data-sort="price">价格</button>
-                <button class="sort-btn ${sortBy === 'newest' ? 'active' : ''}" data-sort="newest">最新</button>
+            <div class="inventory-price-note">
+                💡 价格数据来源：集换社
             </div>
         `;
-
-        // 价格参考说明
-        if (hasAnyMarketPrice) {
-            html += `
-                <div class="inventory-price-note">
-                    💡 价格数据来源：集换社（单位：人民币元）
-                </div>
-            `;
-        } else {
-            html += `
-                <div class="inventory-price-note">
-                    💡 价格参考：<span class="rarity-price rarity-PSER">PSER ${RARITY_PRICES['PSER']}🪙</span> 
-                    <span class="rarity-price rarity-UTR">UTR ${RARITY_PRICES['UTR']}🪙</span> 
-                    <span class="rarity-price rarity-SER">SER ${RARITY_PRICES['SER']}🪙</span> 
-                    <span class="rarity-price rarity-UR">UR ${RARITY_PRICES['UR']}🪙</span> 
-                    <span class="rarity-price rarity-SR">SR ${RARITY_PRICES['SR']}🪙</span> 
-                    <span class="rarity-price rarity-R">R ${RARITY_PRICES['R']}🪙</span> 
-                    <span class="rarity-price rarity-NR">NR ${RARITY_PRICES['NR']}🪙</span> 
-                    <span class="rarity-price rarity-N">N ${RARITY_PRICES['N']}🪙</span>
-                </div>
-            `;
-        }
 
         // 卡片网格列表
         html += '<div class="inventory-grid">';
@@ -388,6 +384,13 @@ const InventorySystem = (function () {
                              <div class="inventory-card-placeholder" style="display:none;">🃏</div>`;
             }
 
+            // 有市场报价显示价格，无报价显示"暂无报价"
+            let priceHtml;
+            if (isMarket) {
+                priceHtml = `<div class="inventory-card-price">🪙 ${formatPrice(price)}</div>`;
+            } else {
+                priceHtml = '<div class="inventory-card-price inventory-card-price--no-data">暂无报价</div>';
+            }
             html += `
                 <div class="inventory-card-item rarity-border-${rarityCode}" data-card-id="${card.id}">
                     <div class="inventory-card-img-wrapper">
@@ -397,7 +400,7 @@ const InventorySystem = (function () {
                     </div>
                     <div class="inventory-card-info">
                         <div class="inventory-card-name" title="${displayName}">${displayName}</div>
-                        <div class="inventory-card-price">${isMarket ? '¥' : '🪙'} ${formatPrice(price)}</div>
+                        ${priceHtml}
                     </div>
                 </div>
             `;
@@ -406,10 +409,18 @@ const InventorySystem = (function () {
 
         contentEl.innerHTML = html;
 
-        // 绑定排序按钮事件
+        // 绑定排序按钮事件（点击同一按钮切换升降序，点击不同按钮重置为降序）
         contentEl.querySelectorAll('.sort-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
-                renderInventoryModal(this.getAttribute('data-sort'));
+                const clickedSort = this.getAttribute('data-sort');
+                if (clickedSort === currentSortBy) {
+                    // 同一按钮：切换排序方向
+                    const newOrder = currentSortOrder === 'desc' ? 'asc' : 'desc';
+                    renderInventoryModal(clickedSort, newOrder);
+                } else {
+                    // 不同按钮：切换维度，默认降序
+                    renderInventoryModal(clickedSort, 'desc');
+                }
             });
         });
 
@@ -461,38 +472,42 @@ const InventorySystem = (function () {
      * @param {string} sortBy - 排序方式
      * @returns {Array} 排序后的数组
      */
-    function sortCards(cards, sortBy) {
+    function sortCards(cards, sortBy, sortOrder) {
         // 使用全局 RARITY_ORDER_ASC（由 rarities.json 动态生成）
         const rarityOrder = (typeof RARITY_ORDER_ASC !== 'undefined') ? RARITY_ORDER_ASC : {};
         const sorted = cards.slice(); // 复制一份
+        // 排序方向系数：降序=1，升序=-1
+        const dir = (sortOrder === 'asc') ? -1 : 1;
 
         switch (sortBy) {
             case 'rarity':
-                // 稀有度高→低，同稀有度按数量降序
+                // 稀有度排序，同稀有度按数量排序
                 sorted.sort(function (a, b) {
                     const rDiff = (rarityOrder[(b.rarityVersions || ['N'])[0]] || 0) - (rarityOrder[(a.rarityVersions || ['N'])[0]] || 0);
-                    if (rDiff !== 0) return rDiff;
-                    return b.count - a.count;
+                    if (rDiff !== 0) return rDiff * dir;
+                    return (b.count - a.count) * dir;
                 });
                 break;
             case 'count':
-                // 数量多→少
+                // 数量排序
                 sorted.sort(function (a, b) {
-                    return b.count - a.count;
+                    return (b.count - a.count) * dir;
                 });
                 break;
             case 'price':
-                // 价格高→低（使用真实市场价格排序）
+                // 价格排序：无报价卡片（价值0）降序排最后，升序排最前
                 sorted.sort(function (a, b) {
-                    const pDiff = getCardPrice((b.rarityVersions || ['N'])[0], b.id) - getCardPrice((a.rarityVersions || ['N'])[0], a.id);
-                    if (pDiff !== 0) return pDiff;
-                    return b.count - a.count;
+                    const aPrice = getCardPrice((a.rarityVersions || ['N'])[0], a.id);
+                    const bPrice = getCardPrice((b.rarityVersions || ['N'])[0], b.id);
+                    const pDiff = bPrice - aPrice;
+                    if (pDiff !== 0) return pDiff * dir;
+                    return (b.count - a.count) * dir;
                 });
                 break;
             case 'newest':
-                // 最新获得在前
+                // 按获得时间排序
                 sorted.sort(function (a, b) {
-                    return b.firstObtained - a.firstObtained;
+                    return (b.firstObtained - a.firstObtained) * dir;
                 });
                 break;
             default:
@@ -502,27 +517,91 @@ const InventorySystem = (function () {
     }
 
     /**
-     * 格式化数字（千分位）
+     * 格式化数字（大数字使用万/亿缩写）
+     * - < 10000: 原样显示
+     * - >= 10000 且 < 1亿: 显示为 x.xx万
+     * - >= 1亿: 显示为 x.xx亿
      */
     function formatNumber(num) {
+        if (num >= 100000000) {
+            var val = (num / 100000000).toFixed(2).replace(/\.?0+$/, '');
+            return val + '亿';
+        }
         if (num >= 10000) {
-            return num.toLocaleString();
+            var val = (num / 10000).toFixed(2).replace(/\.?0+$/, '');
+            return val + '万';
         }
         return String(num);
     }
 
     /**
-     * 格式化价格（小数点后最多2位，整数不显示小数点）
+     * 格式化价格（大数字使用万/亿缩写，小数字保留最多2位小数）
+     * - < 10000: 原样显示（整数不显示小数点）
+     * - >= 10000 且 < 1亿: 显示为 x.xx万
+     * - >= 1亿: 显示为 x.xx亿
      */
     function formatPrice(price) {
         if (price === 0) return '0';
-        if (Number.isInteger(price)) {
-            return price >= 10000 ? price.toLocaleString() : String(price);
+        // 处理负数：取绝对值格式化后再加负号
+        var isNegative = price < 0;
+        var absPrice = Math.abs(price);
+        var result;
+        if (absPrice >= 100000000) {
+            // 亿级别
+            result = (absPrice / 100000000).toFixed(2).replace(/\.?0+$/, '') + '亿';
+        } else if (absPrice >= 10000) {
+            // 万级别
+            result = (absPrice / 10000).toFixed(2).replace(/\.?0+$/, '') + '万';
+        } else if (Number.isInteger(absPrice)) {
+            result = String(absPrice);
+        } else {
+            // 保留最多2位小数，去除尾部多余的0
+            result = absPrice.toFixed(2).replace(/\.?0+$/, '');
         }
-        // 保留最多2位小数，去除尾部多余的0
-        var formatted = price.toFixed(2).replace(/\.?0+$/, '');
-        var num = parseFloat(formatted);
-        return num >= 10000 ? num.toLocaleString() : formatted;
+        return isNegative ? '-' + result : result;
+    }
+
+    // ====== 开包花费记录 ======
+
+    /**
+     * 记录一次开包花费
+     * 每次开包时由 game.js 调用，将花费金额累加到历史记录中
+     * @param {number} amount - 本次开包花费的金币数
+     */
+    function recordSpent(amount) {
+        if (!amount || amount <= 0) return;
+        var current = getTotalSpent();
+        var newTotal = current + amount;
+        try {
+            localStorage.setItem(SPENT_KEY, String(newTotal));
+        } catch (e) {
+            console.warn('⚠️ 保存开包花费记录失败:', e);
+        }
+    }
+
+    /**
+     * 获取累计开包花费总额
+     * @returns {number} 累计花费金币数
+     */
+    function getTotalSpent() {
+        try {
+            var saved = localStorage.getItem(SPENT_KEY);
+            if (saved) return parseFloat(saved) || 0;
+        } catch (e) {
+            console.warn('⚠️ 读取开包花费记录失败:', e);
+        }
+        return 0;
+    }
+
+    /**
+     * 清空累计开包花费记录（重置游戏时调用）
+     */
+    function clearSpent() {
+        try {
+            localStorage.removeItem(SPENT_KEY);
+        } catch (e) {
+            console.warn('⚠️ 清除开包花费记录失败:', e);
+        }
     }
 
     // ====== 调试/管理接口 ======
@@ -533,8 +612,9 @@ const InventorySystem = (function () {
     function clearAll() {
         inventory = {};
         saveToStorage();
+        clearSpent();
         updateBadge();
-        console.log('🎒 背包已清空');
+        console.log('🎒 背包已清空（含花费记录）');
     }
 
     /**
@@ -561,7 +641,9 @@ const InventorySystem = (function () {
         getCardPrice: getCardPrice,
         hasMarketPrice: hasMarketPrice,
         getTotalValue: getTotalValue,
-        getRarityPrices: getRarityPrices,
+        recordSpent: recordSpent,
+        getTotalSpent: getTotalSpent,
+
         updateBadge: updateBadge,
         renderInventoryModal: renderInventoryModal,
         clearAll: clearAll

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>YGO Pack Opener - 游戏王卡包开封模拟器</title>
     <!-- 全局版本号：所有资源的缓存破坏参数、页脚版本号等都从这里读取，更新时只改这一处 -->
-<script>window.APP_VERSION = '1.7.0';</script>
+<script>window.APP_VERSION = '1.7.1';</script>
     <!-- CSS 版本号自动跟随 APP_VERSION -->
     <script>document.write('<link rel="stylesheet" href="css/style.css?v=' + window.APP_VERSION + '">');</script>
 </head>
@@ -27,14 +27,14 @@
                 <span class="currency-value" id="currency-balance-gold">0</span>
             </div>
         </div>
-        <!-- OCG / TCG 模式切换开关（TCG 默认隐藏，可在开发者工具中开启） -->
+<!-- OCG / TCG 模式切换开关（TCG 默认隐藏，可在设置中开启） -->
         <div class="mode-switch-container" id="mode-switch-container">
             <button id="btn-mode-ocg" class="mode-btn active" data-mode="ocg">OCG</button>
             <button id="btn-mode-tcg" class="mode-btn" data-mode="tcg" style="display:none;">TCG</button>
         </div>
         <nav class="top-nav">
             <button id="btn-inventory" class="nav-btn inventory-btn">🎒<span id="inventory-badge" class="inventory-badge" style="display:none;">0</span></button>
-            <button id="btn-dev-tools" class="nav-btn dev-btn">🔧</button>
+<button id="btn-dev-tools" class="nav-btn dev-btn">⚙️</button>
         </nav>
     </header>
 
@@ -95,6 +95,8 @@
 <button id="btn-result-back" class="result-header__back" title="返回上一层">←</button>
                 <h2 class="section-title">开包结果</h2>
             </div>
+            <!-- 价格统计（卡片价值 & 开包盈亏） -->
+            <div id="price-stats" class="price-stats" style="display:none;"></div>
             <!-- 稀有度统计 -->
             <div id="rarity-stats" class="rarity-stats"></div>
             <!-- +1辅助包展示区域（仅开盒时显示） -->
@@ -127,11 +129,11 @@
         </div>
     </div>
 
-    <!-- ====== 开发者工具面板 ====== -->
+<!-- ====== 设置面板 ====== -->
     <div id="devtools-modal" class="modal-overlay">
         <div class="modal-content devtools-modal-content">
             <div class="modal-header">
-                <h2>🔧 开发者工具</h2>
+<h2>⚙️ 设置</h2>
                 <button id="btn-close-devtools" class="modal-close">&times;</button>
             </div>
             <div class="modal-body devtools-body">
@@ -139,7 +141,7 @@
                 <div class="devtools-section-card">
                     <h3 class="devtools-section-title">🛠️ 快捷操作</h3>
                     <div class="devtools-actions-btns">
-<button id="btn-dev-add-gold" class="btn-devtools-action btn-dev-gold">🪙 添加 1000000 金币</button>
+<button id="btn-dev-add-gold" class="btn-devtools-action btn-dev-gold">🪙 添加 100万 金币</button>
                         <button id="btn-dev-reset-game" class="btn-devtools-action btn-dev-reset">🔄 重置游戏</button>
                     </div>
 <p class="devtools-note">💡 只重置游戏，不清除缓存。</p>
@@ -156,7 +158,7 @@
                     </div>
                 </div>
 
-                <!-- ▸ 隐藏板块：TCG 测试模式（需点击开发者工具标题5次解锁） -->
+<!-- ▸ 隐藏板块：TCG 测试模式（需点击设置标题5次解锁） -->
                 <div id="devtools-tcg-section" class="devtools-section-card devtools-admin-hidden" style="display:none;">
                     <h3 class="devtools-section-title">🌎 TCG 测试模式</h3>
                     <div class="devtools-actions-btns">
@@ -165,7 +167,7 @@
                     <p class="devtools-note devtools-tcg-warning">⚠️ TCG 开发未完成，仅为测试版本。开启后可在顶部切换到 TCG 模式，数据和功能可能不完整。</p>
                 </div>
 
-                <!-- ▸ 隐藏板块：CDN 卡图对比（需点击开发者工具标题5次解锁） -->
+<!-- ▸ 隐藏板块：CDN 卡图对比（需点击设置标题5次解锁） -->
                 <div id="devtools-cdn-section" class="devtools-section-card devtools-admin-hidden" style="display:none;">
                     <h3 class="devtools-section-title">🖼️ CDN 卡图对比</h3>
                     <!-- 当前模式信息（优先展示，让用户知道当前上下文） -->
@@ -195,7 +197,7 @@
                     <div id="devtools-batch-area" class="devtools-batch-area" style="display:none;"></div>
                 </div>
 
-                <!-- ▸ 隐藏板块：管理后台入口（需点击开发者工具标题5次解锁） -->
+<!-- ▸ 隐藏板块：管理后台入口（需点击设置标题5次解锁） -->
                 <div id="devtools-admin-section" class="devtools-section-card devtools-admin-hidden" style="display:none;">
                     <h3 class="devtools-section-title">📊 数据统计后台</h3>
                     <div class="devtools-actions-btns">

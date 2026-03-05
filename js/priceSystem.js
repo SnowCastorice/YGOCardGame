@@ -30,9 +30,8 @@ const PriceSystem = (function () {
     // ====== 价格文件映射 ======
     // packCode（小写）→ 价格文件路径
     const PRICE_FILES = {
-        'loch': 'data/ocg/prices/loch_prices.json'
-        // 后续新增卡包价格只需在这里添加一行，例如：
-        // 'blzd': 'data/ocg/prices/blzd_prices.json'
+        'loch': 'data/ocg/prices/loch_prices.json',
+        'blzd': 'data/ocg/prices/blzd_prices.json'
     };
 
     // ====== 初始化 ======

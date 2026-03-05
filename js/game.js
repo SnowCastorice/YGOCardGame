@@ -350,7 +350,7 @@ async function switchGameMode(mode) {
 
     // TCG 模式需要先在开发者工具中开启
     if (mode === 'tcg' && !tcgModeEnabled) {
-        alert('⚠️ TCG 模式尚未开启。\n\n请在「🔧 开发者工具」中开启 TCG 测试模式。');
+alert('⚠️ TCG 模式尚未开启。\n\n请在「⚙️ 设置」中开启 TCG 测试模式。');
         return;
     }
 
@@ -702,10 +702,12 @@ function renderPackList() {
         // OCG 卡包显示卡牌数量（优先使用 totalCards 字段，兼容旧的 cardIds 方式）
         const cardCountInfo = pack.totalCards ? ` | ${pack.totalCards} 种卡` : (pack.cardIds ? ` | ${pack.cardIds.length} 种卡` : '');
 
-        // 价格信息（锁定卡包不显示价格）
+        // 价格信息（锁定卡包不显示价格），优先从价格配置文件读取单包价格
         const currencyDef = CurrencySystem.getCurrencyDef(pack.currency || 'gold');
         const priceIcon = currencyDef ? currencyDef.icon : '🪙';
-        const priceValue = pack.price || 0;
+        const packCodeList = pack.packCode || pack.setCode || '';
+        const priceConfigList = typeof PriceSystem !== 'undefined' ? PriceSystem.getPackPrice(packCodeList) : null;
+        const priceValue = (priceConfigList && priceConfigList.pack) ? priceConfigList.pack : (pack.price || 0);
 
         // ——— 卡包封面图逻辑 ———
         // 优先级：packs.json 中的 coverImage > YGOProDeck set_image > 卡包首卡卡图 > emoji fallback
@@ -1156,24 +1158,23 @@ async function openPack() {
 
     // 1. 检查货币余额
     const currency = currentPack.currency || 'gold';
-    const price = currentPack.price || 0;
+    // 单包价格：优先从价格配置文件读取，回退到 packs.json 的 price 字段
+    const packCode = currentPack.packCode || currentPack.setCode || '';
+    const priceConfig = typeof PriceSystem !== 'undefined' ? PriceSystem.getPackPrice(packCode) : null;
+    const price = (priceConfig && priceConfig.pack) ? priceConfig.pack : (currentPack.price || 0);
 
     if (price > 0 && !CurrencySystem.canAfford(currency, price)) {
         const currDef = CurrencySystem.getCurrencyDef(currency);
-        alert(`${currDef.icon} ${currDef.name}不足！\n\n开包需要 ${price} ${currDef.icon}${currDef.name}，当前只有 ${CurrencySystem.getBalance(currency)} ${currDef.icon}。\n\n点击顶部货币栏可以进行兑换。`);
+        alert(`${currDef.icon} ${currDef.name}不足！\n\n开包需要 ${price} ${currDef.icon}${currDef.name}，当前只有 ${CurrencySystem.getBalance(currency)} ${currDef.icon}。\n\n可以在「⚙️ 设置」中手动添加金币。`);
         return;
     }
 
     // 2. 扣除货币
     if (price > 0) {
         CurrencySystem.spendBalance(currency, price);
+        // 记录开包花费（用于背包总盈亏计算）
+        InventorySystem.recordSpent(price);
     }
-
-    // 3. 播放开包动画
-    await playOpeningAnimation();
-
-    // 4. 抽取卡牌
-    const drawnCards = drawCards(currentPack, currentPackCards);
 
     // 5. 根据稀有度更新卡图URL后存入背包
     updateCardsImageUrl(drawnCards);
@@ -1208,33 +1209,48 @@ async function openMultiPacks(count, boxesCount) {
     boxesCount = boxesCount || 1;
 
     const currency = currentPack.currency || 'gold';
-    const price = currentPack.price || 0;
-    const totalPrice = price * count;
+    // 整盒/多盒价格：优先从价格配置文件读取整盒价格，回退到 单包价×包数
+    const packCodeMulti = currentPack.packCode || currentPack.setCode || '';
+    const priceConfigMulti = typeof PriceSystem !== 'undefined' ? PriceSystem.getPackPrice(packCodeMulti) : null;
+    const packPrice = (priceConfigMulti && priceConfigMulti.pack) ? priceConfigMulti.pack : (currentPack.price || 0);
+    const boxPrice = (priceConfigMulti && priceConfigMulti.box) ? priceConfigMulti.box : null;
+    const ppb = (currentPack && currentPack.packsPerBox) || 30;
+    // 计算总价：如果有整盒价格配置且是整盒倍数，按整盒价格计算；否则按单包价×数量
+    let totalPrice;
+    if (boxPrice && count >= ppb && count % ppb === 0) {
+        totalPrice = boxPrice * (count / ppb);
+    } else {
+        totalPrice = packPrice * count;
+    }
 
     // 1. 检查总费用
     if (totalPrice > 0 && !CurrencySystem.canAfford(currency, totalPrice)) {
         const currDef = CurrencySystem.getCurrencyDef(currency);
         const balance = CurrencySystem.getBalance(currency);
         // 计算当前余额最多能开几包
-        const affordCount = price > 0 ? Math.floor(balance / price) : count;
+        const affordCount = packPrice > 0 ? Math.floor(balance / packPrice) : count;
         if (affordCount <= 0) {
-            alert(`${currDef.icon} ${currDef.name}不足！\n\n开${count}包需要 ${totalPrice} ${currDef.icon}${currDef.name}，当前只有 ${balance} ${currDef.icon}。\n\n点击顶部货币栏可以进行兑换。`);
+            alert(`${currDef.icon} ${currDef.name}不足！\n\n开${count}包需要 ${totalPrice} ${currDef.icon}${currDef.name}，当前只有 ${balance} ${currDef.icon}。\n\n可以在「⚙️ 设置」中手动添加金币。`);
             return;
         }
         // 余额不足以开满，询问是否开能负担的数量
-        const confirmOpen = confirm(`${currDef.icon} ${currDef.name}不足以开${count}包（需要 ${totalPrice}，当前 ${balance}）。\n\n是否改为开 ${affordCount} 包？（花费 ${affordCount * price} ${currDef.icon}）`);
+        const confirmOpen = confirm(`${currDef.icon} ${currDef.name}不足以开${count}包（需要 ${totalPrice}，当前 ${balance}）。\n\n是否改为开 ${affordCount} 包？（花费 ${affordCount * packPrice} ${currDef.icon}）`);
         if (!confirmOpen) return;
         count = affordCount;
     }
 
-    // 2. 扣除总费用
-    const actualTotalPrice = price * count;
+    // 2. 扣除总费用（重新计算实际扣费，因为 count 可能已调整）
+    let actualTotalPrice;
+    if (boxPrice && count >= ppb && count % ppb === 0) {
+        actualTotalPrice = boxPrice * (count / ppb);
+    } else {
+        actualTotalPrice = packPrice * count;
+    }
     if (actualTotalPrice > 0) {
         CurrencySystem.spendBalance(currency, actualTotalPrice);
+        // 记录开包花费（用于背包总盈亏计算）
+        InventorySystem.recordSpent(actualTotalPrice);
     }
-
-    // 3. 播放开包动画
-    await playOpeningAnimation();
 
     // 4. 整盒抽卡：使用盒封入规则分配稀有度（OCG方案时）
     let allCards = [];
@@ -2485,6 +2501,61 @@ const rarityOrder = RARITY_CODES_DESC;
         }
     }
 
+    // ====== 价格统计：卡片价值 & 开包盈亏 ======
+    const priceStatsEl = document.getElementById('price-stats');
+    if (priceStatsEl && typeof PriceSystem !== 'undefined') {
+        // 计算卡片总价值（含辅助包卡片）
+        let totalCardValue = 0;
+        let hasPriceData = false;
+        for (const card of allStatsCards) {
+            const cardId = card.id;
+            const rarity = (card.rarityVersions || ['N'])[0];
+            const price = PriceSystem.getCardPrice(cardId, rarity);
+            if (price !== null) {
+                totalCardValue += price * (card.count || 1);
+                hasPriceData = true;
+            }
+        }
+
+        // 计算开包支出（不含 +1 附赠包的价格）
+        const packCode = currentPack && (currentPack.packCode || currentPack.setCode || '');
+        const packPriceInfo = PriceSystem.getPackPrice(packCode);
+        let totalCost = 0;
+        if (packPriceInfo) {
+            // 根据开包数量判断是否按整盒计算
+            const ppb = (currentPack && currentPack.packsPerBox) || 30;
+            if (packPriceInfo.box && packCount >= ppb) {
+                // 按整盒价格计算（包数 / 每盒包数 = 盒数）
+                const boxCount = Math.round(packCount / ppb);
+                totalCost = packPriceInfo.box * boxCount;
+            } else if (packPriceInfo.pack) {
+                // 按单包价格计算
+                totalCost = packPriceInfo.pack * packCount;
+            }
+        }
+
+        // 只在有价格数据时显示
+        if (hasPriceData && totalCost > 0) {
+            const profit = totalCardValue - totalCost;
+            const profitClass = profit >= 0 ? 'price-stats__profit' : 'price-stats__loss';
+            const profitSign = profit >= 0 ? '+' : '';
+            priceStatsEl.innerHTML =
+                '<span class="price-stats__item">' +
+                    '<span class="price-stats__label">卡片价值</span>' +
+                    '<span class="price-stats__value">🪙' + totalCardValue.toFixed(1) + '</span>' +
+                '</span>' +
+                '<span class="price-stats__divider"></span>' +
+                '<span class="price-stats__item">' +
+                    '<span class="price-stats__label">开包盈亏</span>' +
+                    '<span class="price-stats__value ' + profitClass + '">' + profitSign + '🪙' + profit.toFixed(1) + '</span>' +
+                '</span>';
+            priceStatsEl.style.display = '';
+        } else {
+            priceStatsEl.style.display = 'none';
+            priceStatsEl.innerHTML = '';
+        }
+    }
+
     switchSection('result-section');
 
     // 滚动到顶部，方便查看结果
@@ -2655,8 +2726,8 @@ function devAddGold() {
     try {
         CurrencySystem.addBalance('gold', 1000000);
         CurrencySystem.updateUI();
-        alert('✅ 已添加 1000000 🪙 金币！');
-        console.log('🛠️ [开发者工具] 添加 1000000 金币');
+alert('✅ 已添加 100万 🪙 金币！');
+console.log('🛠️ [设置] 添加 100万 金币');
     } catch (error) {
         console.error('❌ 添加金币失败:', error);
         alert('❌ 添加金币失败：' + error.message);
@@ -2677,7 +2748,7 @@ function devResetGame() {
         // 重置背包
         InventorySystem.clearAll();
         alert('✅ 游戏已重置！货币已恢复为初始值，背包已清空。');
-        console.log('🛠️ [开发者工具] 游戏已重置（含背包清空）');
+        console.log('🛠️ [设置] 游戏已重置（含背包清空）');
     } catch (error) {
         console.error('❌ 重置游戏失败:', error);
         alert('❌ 重置失败：' + error.message);
@@ -2710,7 +2781,11 @@ function updateOpenPackPriceInfo() {
     if (!currentPack) return;
 
     const currency = currentPack.currency || 'gold';
-    const price = currentPack.price || 0;
+    // 从价格配置文件获取单包/整盒价格，回退到 packs.json 的 price
+    const packCodeUI = currentPack.packCode || currentPack.setCode || '';
+    const priceConfigUI = typeof PriceSystem !== 'undefined' ? PriceSystem.getPackPrice(packCodeUI) : null;
+    const price = (priceConfigUI && priceConfigUI.pack) ? priceConfigUI.pack : (currentPack.price || 0);
+    const boxPriceUI = (priceConfigUI && priceConfigUI.box) ? priceConfigUI.box : null;
     const currDef = CurrencySystem.getCurrencyDef(currency);
     const balance = CurrencySystem.getBalance(currency);
     const canAfford = price <= 0 || CurrencySystem.canAfford(currency, price);
@@ -2743,9 +2818,9 @@ function updateOpenPackPriceInfo() {
         }
     }
 
-    // 更新「开整盒」按钮的可用状态（包数从卡包配置读取）
+    // 更新「开整盒」按钮的可用状态（优先使用价格配置的整盒价格）
     const boxCount = (currentPack && currentPack.packsPerBox) || 30;
-    const totalPriceBox = price * boxCount;
+    const totalPriceBox = boxPriceUI ? boxPriceUI : (price * boxCount);
     const canAffordBox = totalPriceBox <= 0 || CurrencySystem.canAfford(currency, totalPriceBox);
 
     const openBoxBtn = document.getElementById('btn-open-box');
@@ -2781,7 +2856,7 @@ function updateOpenPackPriceInfo() {
     const openAgain3BoxBtn = document.getElementById('btn-open-again-3box');
 
     if (boxesForBonus >= 2) {
-        const totalPrice3Box = price * boxCount * boxesForBonus;
+        const totalPrice3Box = boxPriceUI ? (boxPriceUI * boxesForBonus) : (price * boxCount * boxesForBonus);
         const canAfford3Box = totalPrice3Box <= 0 || CurrencySystem.canAfford(currency, totalPrice3Box);
 
         if (open3BoxBtn) {
@@ -3040,7 +3115,7 @@ function showDevTools() {
             }
             const statusText = tcgModeEnabled ? '已开启 TCG 测试模式' : '已关闭 TCG 测试模式';
             alert('✅ ' + statusText);
-            console.log('🛠️ [开发者工具] ' + statusText);
+            console.log('🛠️ [设置] ' + statusText);
         };
     }
 
