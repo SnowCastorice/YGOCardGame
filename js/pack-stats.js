@@ -6,6 +6,11 @@
  *   2. 全球统计：通过服务端 API 上报和查询全球开包数据
  *   3. UI 展示：在开包界面显示个人和全球开包数量
  * 
+ * 优化：
+ *   - 上报请求使用缓冲区 + 节流合并机制，减少 KV 写入次数
+ *   - 30秒内的多次开包数据会被合并为一次请求上报
+ *   - 页面关闭时通过 sendBeacon 发送最后一批缓冲数据
+ * 
  * 依赖：
  *   - Cloudflare Pages Function: /api/pack-stats
  *   - Cloudflare KV: PACK_STATS 命名空间
@@ -28,6 +33,9 @@ const PackStats = (function() {
 
   /** 全球统计缓存有效期（毫秒），避免频繁请求 */
   const CACHE_TTL = 60 * 1000; // 60秒
+
+  /** 上报缓冲区刷写间隔（毫秒）：攒够这个时间后统一上报一次 */
+  const REPORT_FLUSH_INTERVAL = 30 * 1000; // 30秒
 
   // ============================================
   // 本地数据管理
@@ -89,33 +97,104 @@ const PackStats = (function() {
   /** 全球统计缓存：{ packCode: { data, timestamp } } */
   const globalCache = {};
 
+  // ============================================
+  // 上报缓冲区（节流合并机制）
+  // ============================================
+
   /**
-   * 上报开包数据到服务端
-   * 静默失败，不影响主流程
+   * 上报缓冲区：{ packCode: { packs: number, boxes: number } }
+   * 将多次开包操作合并到缓冲区，定时批量上报
+   */
+  const reportBuffer = {};
+
+  /** 定时刷写的 timer ID */
+  let flushTimer = null;
+
+  /**
+   * 将开包数据写入缓冲区（不立即上报）
    * @param {string} packCode - 卡包代码
    * @param {'pack'|'box'} type - 开包类型
    * @param {number} [count=1] - 数量
    */
-  async function reportToServer(packCode, type, count) {
+  function addToBuffer(packCode, type, count) {
     count = count || 1;
+    if (!reportBuffer[packCode]) {
+      reportBuffer[packCode] = { packs: 0, boxes: 0 };
+    }
+    if (type === 'pack') {
+      reportBuffer[packCode].packs += count;
+    } else if (type === 'box') {
+      reportBuffer[packCode].boxes += count;
+    }
+
+    // 启动定时刷写（如果还没启动）
+    if (!flushTimer) {
+      flushTimer = setTimeout(function() {
+        flushBuffer();
+      }, REPORT_FLUSH_INTERVAL);
+    }
+  }
+
+  /**
+   * 刷写缓冲区：将所有缓冲的数据合并为一次批量请求发送
+   * @param {boolean} [useBeacon=false] - 是否使用 sendBeacon（页面关闭时）
+   */
+  async function flushBuffer(useBeacon) {
+    // 清除定时器
+    if (flushTimer) {
+      clearTimeout(flushTimer);
+      flushTimer = null;
+    }
+
+    // 收集缓冲区数据
+    const entries = [];
+    for (const packCode in reportBuffer) {
+      const buf = reportBuffer[packCode];
+      if (buf.packs > 0 || buf.boxes > 0) {
+        entries.push({
+          packCode: packCode,
+          packs: buf.packs,
+          boxes: buf.boxes
+        });
+      }
+    }
+
+    // 清空缓冲区
+    for (const key in reportBuffer) {
+      delete reportBuffer[key];
+    }
+
+    // 没有数据则跳过
+    if (entries.length === 0) return;
+
+    const payload = JSON.stringify({ batch: entries });
+
+    // 页面关闭时使用 sendBeacon（保证请求能发出去）
+    if (useBeacon && navigator.sendBeacon) {
+      const blob = new Blob([payload], { type: 'application/json' });
+      const sent = navigator.sendBeacon(API_URL, blob);
+      console.log('📊 开包统计 sendBeacon 上报:', sent ? '成功' : '失败', entries);
+      return;
+    }
+
+    // 正常情况使用 fetch
     try {
       const resp = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ packCode, type, count })
+        body: payload
       });
 
       if (resp.ok) {
         const result = await resp.json();
         // 用返回的最新全球数据更新缓存
-        if (result.packStats) {
-          globalCache[packCode] = {
-            data: {
-              totalPacks: result.packStats.totalPacks,
-              totalBoxes: result.packStats.totalBoxes
-            },
-            timestamp: Date.now()
-          };
+        if (result.updatedPacks) {
+          for (const packCode in result.updatedPacks) {
+            globalCache[packCode] = {
+              data: result.updatedPacks[packCode],
+              timestamp: Date.now()
+            };
+          }
         }
         if (result.globalStats) {
           globalCache['_all'] = {
@@ -126,15 +205,25 @@ const PackStats = (function() {
             timestamp: Date.now()
           };
         }
-        console.log('📊 开包统计上报成功:', packCode, type, count);
+        console.log('📊 开包统计批量上报成功:', entries);
         return result;
       }
     } catch (e) {
       // 静默失败：网络问题不影响开包体验
-      console.warn('📊 开包统计上报失败（不影响游戏）:', e.message);
+      console.warn('📊 开包统计批量上报失败（不影响游戏）:', e.message);
     }
     return null;
   }
+
+  // 页面关闭/切换时，用 sendBeacon 发送最后一批缓冲数据
+  window.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+      flushBuffer(true);
+    }
+  });
+  window.addEventListener('beforeunload', function() {
+    flushBuffer(true);
+  });
 
   /**
    * 从服务端查询指定卡包的全球统计
@@ -198,8 +287,8 @@ const PackStats = (function() {
     // 本地记录（同步，立即生效）
     addLocalCount(packCode, type, count);
 
-    // 远程上报（异步，不阻塞）
-    reportToServer(packCode, type, count);
+    // 远程上报：写入缓冲区，30秒后批量合并发送（减少 KV 写入次数）
+    addToBuffer(packCode, type, count);
 
     // 更新 UI 展示（传入每盒包数以正确折算）
     updateStatsDisplay(packCode, packsPerBox);

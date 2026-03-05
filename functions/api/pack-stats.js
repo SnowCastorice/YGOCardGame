@@ -6,9 +6,13 @@
  *   使用 Cloudflare KV 存储数据。
  * 
  * API 接口：
- *   POST /api/pack-stats           - 上报开包数据
+ *   POST /api/pack-stats           - 上报开包数据（支持批量合并上报，减少 KV 写入）
  *   GET  /api/pack-stats            - 查询指定卡包的全球开包统计
  *   GET  /api/pack-stats?admin=1    - 查询所有卡包的全局统计（管理后台用，无需鉴权）
+ * 
+ * POST 请求格式：
+ *   批量上报（推荐）: { batch: [{ packCode: "LOCH", packs: 5, boxes: 1 }, ...] }
+ *   单条上报（兼容）: { packCode: "LOCH", type: "pack"|"box", count: 1 }
  * 
  * KV 绑定名称：PACK_STATS（需要在 Cloudflare 控制台创建并绑定）
  * 
@@ -16,6 +20,11 @@
  *   Key: "stats:{packCode}"  Value: JSON { totalPacks, totalBoxes, lastUpdated }
  *   Key: "stats:_all"        Value: JSON { totalPacks, totalBoxes, lastUpdated }
  *   Key: "index:packs"       Value: JSON [ "LOCH", "BLZD", ... ] （所有有数据的卡包列表）
+ * 
+ * KV 操作优化：
+ *   - 批量上报时，同一卡包的数据先合并，全局统计只写入一次
+ *   - 卡包索引只在有新卡包时才写入
+ *   - 单次批量请求的 KV 写入次数 = 卡包种类数 + 1（全局） + 0或1（索引）
  * 
  * 部署方式：Cloudflare Pages Functions（随项目自动部署）
  * 需要先在 Cloudflare 控制台创建 KV 命名空间并绑定到 PACK_STATS
@@ -66,7 +75,12 @@ export async function onRequest(context) {
 /**
  * 处理开包上报请求
  * POST /api/pack-stats
- * Body: { packCode: "LOCH", type: "pack" | "box", count: 1 }
+ * 
+ * 支持两种格式：
+ *   1. 批量上报（推荐）: { batch: [{ packCode: "LOCH", packs: 5, boxes: 1 }, ...] }
+ *   2. 单条上报（兼容旧版）: { packCode: "LOCH", type: "pack" | "box", count: 1 }
+ * 
+ * 批量上报可将多次开包合并为一次请求，大幅减少 KV 写入次数
  */
 async function handleReport(context) {
   const request = context.request;
@@ -85,41 +99,89 @@ async function handleReport(context) {
     return jsonResponse({ error: '请求体必须是有效的 JSON' }, 400, origin);
   }
 
-  const { packCode, type, count } = body;
+  // 统一转换为批量格式
+  let entries;
+  if (body.batch && Array.isArray(body.batch)) {
+    // 新格式：批量上报
+    entries = body.batch.map(function(item) {
+      return {
+        packCode: item.packCode,
+        packs: item.packs || 0,
+        boxes: item.boxes || 0
+      };
+    });
+  } else if (body.packCode) {
+    // 旧格式：单条上报，转换为批量格式
+    const { packCode, type, count } = body;
+    if (!['pack', 'box'].includes(type)) {
+      return jsonResponse({ error: 'type 必须是 "pack" 或 "box"' }, 400, origin);
+    }
+    entries = [{
+      packCode: packCode,
+      packs: (type === 'pack') ? (count || 1) : 0,
+      boxes: (type === 'box') ? (count || 1) : 0
+    }];
+  } else {
+    return jsonResponse({ error: '缺少 batch 或 packCode 参数' }, 400, origin);
+  }
 
   // 参数校验
-  if (!packCode || typeof packCode !== 'string') {
-    return jsonResponse({ error: '缺少 packCode 参数' }, 400, origin);
+  for (const entry of entries) {
+    if (!entry.packCode || typeof entry.packCode !== 'string') {
+      return jsonResponse({ error: '每条记录必须包含有效的 packCode' }, 400, origin);
+    }
   }
-  if (!['pack', 'box'].includes(type)) {
-    return jsonResponse({ error: 'type 必须是 "pack" 或 "box"' }, 400, origin);
-  }
-  const packCount = (type === 'pack') ? (count || 1) : 0;
-  const boxCount = (type === 'box') ? (count || 1) : 0;
 
   try {
-    // 更新卡包维度的统计
-    const packKey = `stats:${packCode}`;
-    const packStats = await getStats(KV, packKey);
-    packStats.totalPacks += packCount;
-    packStats.totalBoxes += boxCount;
-    packStats.lastUpdated = new Date().toISOString();
-    await KV.put(packKey, JSON.stringify(packStats));
+    // 先合并同一卡包的数据（如果批量中有多个相同 packCode）
+    const merged = {};
+    for (const entry of entries) {
+      if (!merged[entry.packCode]) {
+        merged[entry.packCode] = { packs: 0, boxes: 0 };
+      }
+      merged[entry.packCode].packs += entry.packs;
+      merged[entry.packCode].boxes += entry.boxes;
+    }
 
-    // 更新全局总计
+    // 汇总全局增量
+    let totalPacksDelta = 0;
+    let totalBoxesDelta = 0;
+    const updatedPacks = {};
+
+    // 逐个更新卡包维度的统计
+    const packCodes = Object.keys(merged);
+    for (const packCode of packCodes) {
+      const delta = merged[packCode];
+      totalPacksDelta += delta.packs;
+      totalBoxesDelta += delta.boxes;
+
+      const packKey = `stats:${packCode}`;
+      const packStats = await getStats(KV, packKey);
+      packStats.totalPacks += delta.packs;
+      packStats.totalBoxes += delta.boxes;
+      packStats.lastUpdated = new Date().toISOString();
+      await KV.put(packKey, JSON.stringify(packStats));
+
+      updatedPacks[packCode] = {
+        totalPacks: packStats.totalPacks,
+        totalBoxes: packStats.totalBoxes
+      };
+    }
+
+    // 一次性更新全局总计（无论多少个卡包，只写一次）
     const allKey = 'stats:_all';
     const allStats = await getStats(KV, allKey);
-    allStats.totalPacks += packCount;
-    allStats.totalBoxes += boxCount;
+    allStats.totalPacks += totalPacksDelta;
+    allStats.totalBoxes += totalBoxesDelta;
     allStats.lastUpdated = new Date().toISOString();
     await KV.put(allKey, JSON.stringify(allStats));
 
-    // 维护卡包索引（确保这个卡包在索引列表中）
-    await addToPackIndex(KV, packCode);
+    // 维护卡包索引（批量检查，只在有新卡包时写入）
+    await addToPackIndexBatch(KV, packCodes);
 
     return jsonResponse({
       success: true,
-      packStats: { packCode, totalPacks: packStats.totalPacks, totalBoxes: packStats.totalBoxes },
+      updatedPacks: updatedPacks,
       globalStats: { totalPacks: allStats.totalPacks, totalBoxes: allStats.totalBoxes }
     }, 200, origin);
 
@@ -218,6 +280,21 @@ async function addToPackIndex(KV, packCode) {
   const index = await getPackIndex(KV);
   if (!index.includes(packCode)) {
     index.push(packCode);
+    await KV.put('index:packs', JSON.stringify(index));
+  }
+}
+
+/** 批量将卡包添加到索引列表（只读一次索引，最多写一次） */
+async function addToPackIndexBatch(KV, packCodes) {
+  const index = await getPackIndex(KV);
+  let changed = false;
+  for (const code of packCodes) {
+    if (!index.includes(code)) {
+      index.push(code);
+      changed = true;
+    }
+  }
+  if (changed) {
     await KV.put('index:packs', JSON.stringify(index));
   }
 }
