@@ -499,52 +499,76 @@
     "37818794": {
       "metaId": "6947062fcaeb20b7384c25d4",
       "name": "Red-Eyes Dark Dragoon",
-      "setNumber": "LOSP-JP001"
-    },
+      "setNumber": "LOSP-JP001",
+      "altMetaId": {
+        "PSER-OF": "6947062fcaeb20b7384c25d4"
+      }
     "32828466": {
       "metaId": "6947072c73f1136e4c0c27f6",
       "name": "Wake Up Your Elemental HERO",
-      "setNumber": "LOSP-JP002"
-    },
+      "setNumber": "LOSP-JP002",
+      "altMetaId": {
+        "PSER-OF": "6947072c73f1136e4c0c27f6"
+      }
+    }    },
     "35952884": {
       "metaId": "6947073d8f70e9b6225d24aa",
       "name": "Shooting Quasar Dragon",
-      "setNumber": "LOSP-JP003"
-    },
+      "setNumber": "LOSP-JP003",
+      "altMetaId": {
+        "PSER-OF": "6947073d8f70e9b6225d24aa"
+      }
     "95134948": {
       "metaId": "694981852206957906e8c09b",
       "name": "Number 99: Utopia Dragonar",
-      "setNumber": "LOSP-JP004"
-    },
+      "setNumber": "LOSP-JP004",
+      "altMetaId": {
+        "PSER-OF": "694981852206957906e8c09b"
+      }
+    }    },
     "6218704": {
       "metaId": "69498195ea609b2f5710487c",
       "name": "Odd-Eyes Arcray Dragon",
-      "setNumber": "LOSP-JP005"
-    },
+      "setNumber": "LOSP-JP005",
+      "altMetaId": {
+        "PSER-OF": "69498195ea609b2f5710487c"
+      }
     "21637210": {
       "metaId": "694981a44673698fff9b6bc1",
       "name": "Firewall Dragon Singularity",
-      "setNumber": "LOSP-JP006"
-    },
+      "setNumber": "LOSP-JP006",
+      "altMetaId": {
+        "PSER-OF": "694981a44673698fff9b6bc1"
+      }
+    }    },
     "35405755": {
       "metaId": "694706f0caeb20b7384c3576",
       "name": "Kurikara Divincarnate",
-      "setNumber": "LOSP-JP007"
-    },
+      "setNumber": "LOSP-JP007",
+      "altMetaId": {
+        "PSER-OF": "694706f0caeb20b7384c3576"
+      }
     "44146295": {
       "metaId": "694981ba4673698fff9b6d49",
       "name": "Mirrorjade the Iceblade Dragon",
-      "setNumber": "LOSP-JP008"
-    },
+      "setNumber": "LOSP-JP008",
+      "altMetaId": {
+        "PSER-OF": "694981ba4673698fff9b6d49"
+      }
+    }    },
     "48130397": {
       "metaId": "6947071b73f1136e4c0c26d3",
       "name": "Super Polymerization",
-      "setNumber": "LOSP-JP009"
-    },
+      "setNumber": "LOSP-JP009",
+      "altMetaId": {
+        "PSER-OF": "6947071b73f1136e4c0c26d3"
+      }
     "97045737": {
       "metaId": "6947063a649f7306c2078e47",
       "name": "Dominus Purge",
-      "setNumber": "LOSP-JP010"
-    }
-  }
+      "setNumber": "LOSP-JP010",
+      "altMetaId": {
+        "PSER-OF": "6947063a649f7306c2078e47"
+      }
+    }  }
 }

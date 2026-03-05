@@ -2246,14 +2246,14 @@
     }
   ],
   "supplementPack": {
-    "_说明": "LOSP辅助包卡片（LOSP-JP001~LOSP-JP010），购买3盒赠送1包，每包随机1张。全部为PSER稀有度。",
+"_说明": "LOSP辅助包卡片（LOSP-JP001~LOSP-JP010），购买3盒赠送1包，每包随机1张。全部为PSER-OF稀有度。",
     "totalCards": 10,
     "cards": [
       {
         "id": 37818794,
-        "setNumber": "LOSP-JP001",
+"setNumber": "LOSP-JP001",
         "rarityVersions": [
-          "PSER"
+          "PSER-OF"
         ],
         "name_hint": "超魔导龙骑士-真红眼龙骑士",
         "cardData": {
@@ -2276,9 +2276,9 @@
       },
       {
         "id": 32828466,
-        "setNumber": "LOSP-JP002",
+"setNumber": "LOSP-JP002",
         "rarityVersions": [
-          "PSER"
+          "PSER-OF"
         ],
         "name_hint": "唤醒你沉睡的元素英雄",
         "cardData": {
@@ -2301,9 +2301,9 @@
       },
       {
         "id": 35952884,
-        "setNumber": "LOSP-JP003",
+"setNumber": "LOSP-JP003",
         "rarityVersions": [
-          "PSER"
+          "PSER-OF"
         ],
         "name_hint": "流天类星龙",
         "cardData": {
@@ -2326,9 +2326,9 @@
       },
       {
         "id": 95134948,
-        "setNumber": "LOSP-JP004",
+"setNumber": "LOSP-JP004",
         "rarityVersions": [
-          "PSER"
+          "PSER-OF"
         ],
         "name_hint": "No.99 希望皇 霍普德拉戈纳",
         "cardData": {
@@ -2351,9 +2351,9 @@
       },
       {
         "id": 6218704,
-        "setNumber": "LOSP-JP005",
+"setNumber": "LOSP-JP005",
         "rarityVersions": [
-          "PSER"
+          "PSER-OF"
         ],
         "name_hint": "霸王天龙 异色眼霸弧光迹龙",
         "cardData": {
@@ -2376,9 +2376,9 @@
       },
       {
         "id": 21637210,
-        "setNumber": "LOSP-JP006",
+"setNumber": "LOSP-JP006",
         "rarityVersions": [
-          "PSER"
+          "PSER-OF"
         ],
         "name_hint": "防火龙·奇点",
         "cardData": {
@@ -2401,9 +2401,9 @@
       },
       {
         "id": 35405755,
-        "setNumber": "LOSP-JP007",
+"setNumber": "LOSP-JP007",
         "rarityVersions": [
-          "PSER"
+          "PSER-OF"
         ],
         "name_hint": "俱利伽罗天童",
         "cardData": {
@@ -2426,9 +2426,9 @@
       },
       {
         "id": 44146295,
-        "setNumber": "LOSP-JP008",
+"setNumber": "LOSP-JP008",
         "rarityVersions": [
-          "PSER"
+          "PSER-OF"
         ],
         "name_hint": "冰剑龙 幻冰龙",
         "cardData": {
@@ -2451,9 +2451,9 @@
       },
       {
         "id": 48130397,
-        "setNumber": "LOSP-JP009",
+"setNumber": "LOSP-JP009",
         "rarityVersions": [
-          "PSER"
+          "PSER-OF"
         ],
         "name_hint": "超融合",
         "cardData": {
@@ -2476,9 +2476,9 @@
       },
       {
         "id": 97045737,
-        "setNumber": "LOSP-JP010",
+"setNumber": "LOSP-JP010",
         "rarityVersions": [
-          "PSER"
+          "PSER-OF"
         ],
         "name_hint": "圣王的粉碎",
         "cardData": {
