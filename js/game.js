@@ -25,6 +25,7 @@ let currentSupplementCards = null;  // 当前卡包的辅助包卡池（仅开�
 let currentGameMode = 'ocg';  // 当前游戏模式：'ocg' 或 'tcg'，默认 OCG
 let tcgModeEnabled = false;    // TCG 测试模式是否已开启（通过开发者工具开启）
 let currentPackCategory = 'recent';  // 当前选中的卡包分类（recent/booster/structure/concept/special）
+let currentOpenMode = 'pack';  // 当前开包模式：'pack'|'box'|'3box'，用于快捷再开按钮
 
 // ====== 稀有度排序（由 rarities.json 动态生成，以下为兜底默认值） ======
 // 升序映射：{ code: weight }，weight 越大越稀有 —— 用于开包结果排序（N→最稀有）
@@ -501,6 +502,20 @@ function bindGameEvents() {
         const boxCount = (currentPack && currentPack.packsPerBox) || 30;
         const boxesForBonus = (currentPack && currentPack.boxesForBonus) || 3;
         openMultiPacks(boxCount * boxesForBonus, boxesForBonus);
+    });
+
+    // 快捷再开按钮（位于开包结果页顶部，根据当前模式动态执行对应操作）
+    bindEvent('btn-quick-reopen', 'click', function () {
+        if (currentOpenMode === '3box') {
+            const boxCount = (currentPack && currentPack.packsPerBox) || 30;
+            const boxesForBonus = (currentPack && currentPack.boxesForBonus) || 3;
+            openMultiPacks(boxCount * boxesForBonus, boxesForBonus);
+        } else if (currentOpenMode === 'box') {
+            const boxCount = (currentPack && currentPack.packsPerBox) || 30;
+            openMultiPacks(boxCount);
+        } else {
+            openPack();
+        }
     });
 
     // 返回选择卡包（开包界面的返回按钮）
@@ -1185,6 +1200,12 @@ function toggleResultButtons(mode) {
     const againBtn = document.getElementById('btn-open-again');
     const againBoxBtn = document.getElementById('btn-open-again-box');
     const again3BoxBtn = document.getElementById('btn-open-again-3box');
+    const quickReopen = document.getElementById('quick-reopen');
+    const quickBtn = document.getElementById('btn-quick-reopen');
+
+    // 记录当前开包模式，供快捷按钮使用
+    currentOpenMode = mode;
+
     if (mode === 'pack') {
         if (againBtn) againBtn.style.display = '';
         if (againBoxBtn) againBoxBtn.style.display = 'none';
@@ -1198,6 +1219,18 @@ function toggleResultButtons(mode) {
         if (againBtn) againBtn.style.display = 'none';
         if (againBoxBtn) againBoxBtn.style.display = '';
         if (again3BoxBtn) again3BoxBtn.style.display = 'none';
+    }
+
+    // 更新快捷再开按钮的样式和显示
+    if (quickReopen) quickReopen.style.display = '';
+    if (quickBtn) {
+        // 移除所有模式样式类
+        quickBtn.classList.remove('btn-quick-reopen--box', 'btn-quick-reopen--3box');
+        if (mode === '3box') {
+            quickBtn.classList.add('btn-quick-reopen--3box');
+        } else if (mode === 'box') {
+            quickBtn.classList.add('btn-quick-reopen--box');
+        }
     }
 }
 
@@ -2937,6 +2970,45 @@ function updateOpenPackPriceInfo() {
         // 没有 boxesForBonus 配置时隐藏3盒按钮
         if (open3BoxBtn) open3BoxBtn.style.display = 'none';
         if (openAgain3BoxBtn) openAgain3BoxBtn.style.display = 'none';
+    }
+
+    // ====== 更新快捷再开按钮的文案和可用状态 ======
+    const quickBtn = document.getElementById('btn-quick-reopen');
+    if (quickBtn) {
+        let quickText = '';
+        let quickInsufficient = false;
+        if (currentOpenMode === '3box' && boxesForBonus >= 2) {
+            const totalPrice3Box = boxPriceUI ? (boxPriceUI * boxesForBonus) : (price * boxCount * boxesForBonus);
+            const canAfford3Box = totalPrice3Box <= 0 || CurrencySystem.canAfford(currency, totalPrice3Box);
+            const totalPacks3Box = boxCount * boxesForBonus;
+            if (!canAfford3Box) {
+                quickText = `余额不足 (需要 ${totalPrice3Box} ${currDef.icon})`;
+                quickInsufficient = true;
+            } else {
+                quickText = price > 0 ? `再开${boxesForBonus}盒 (${currDef.icon} ${totalPrice3Box})` : `再开${boxesForBonus}盒`;
+            }
+        } else if (currentOpenMode === 'box') {
+            if (!canAffordBox) {
+                quickText = `余额不足 (需要 ${totalPriceBox} ${currDef.icon})`;
+                quickInsufficient = true;
+            } else {
+                quickText = price > 0 ? `再开1盒 (${currDef.icon} ${totalPriceBox})` : '再开1盒';
+            }
+        } else {
+            // pack 模式
+            if (!canAfford) {
+                quickText = `余额不足 (需要 ${price} ${currDef.icon})`;
+                quickInsufficient = true;
+            } else {
+                quickText = price > 0 ? `再开1包 (${currDef.icon} ${price})` : '再开1包';
+            }
+        }
+        quickBtn.textContent = quickText;
+        if (quickInsufficient) {
+            quickBtn.classList.add('insufficient');
+        } else {
+            quickBtn.classList.remove('insufficient');
+        }
     }
 }
 
