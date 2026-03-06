@@ -38,3 +38,6 @@ pack_references/
 
 # 本地Python工具脚本（OCR等）
 tools/*.py
+
+# Cloudflare 分析报告（本地参考资料）
+CloudflareReport/

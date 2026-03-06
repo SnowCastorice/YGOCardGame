@@ -782,7 +782,7 @@ function renderPackList() {
         // ——— 卡包封面图逻辑 ———
         // 优先级：packs.json 中的 coverImage > YGOProDeck set_image > 卡包首卡卡图 > emoji fallback
         const packCode = pack.packCode || pack.setCode || '';
-        const coverImageUrl = getPackCoverImageUrl(pack, packCode);
+        const coverImageUrl = getPackCoverImageUrl(pack, packCode, 'pack');
 
         // 卡包名称：OCG 优先中文名 > 日文名，TCG 使用英文名
         const packNameDisplay = (currentGameMode === 'ocg' && pack.packNameCN) ? pack.packNameCN
@@ -872,9 +872,30 @@ function renderPackList() {
 
 /**
  * 获取卡包封面图 URL
- * 优先级：coverImage > coverCardId 卡图 > YGOProDeck set_image > 空占位
+ * @param {Object} pack - 卡包数据对象
+ * @param {string} packCode - 卡包编码
+ * @param {string} type - 图片类型：'pack'（主界面卡包列表）或 'box'（开包详情界面）
+ * 优先级（OCG 且有本地封面图时）：本地封面图 > coverImage > coverCardId > YGOProDeck > 空
+ * 其他情况：coverImage > coverCardId 卡图 > YGOProDeck set_image > 空占位
  */
-function getPackCoverImageUrl(pack, packCode) {
+function getPackCoverImageUrl(pack, packCode, type) {
+    type = type || 'pack';
+
+    // 0. OCG 模式下，优先尝试本地封面图（data/ocg/covers/{packCode}-{type}.png）
+    //    如果本地图不存在（404），由 img onerror 自动 fallback 到原有外部 URL
+    if (currentGameMode === 'ocg' && packCode) {
+        return `data/ocg/covers/${packCode}-${type}.png`;
+    }
+
+    // 以下为原有逻辑，也作为 OCG 本地图加载失败时的 fallback 目标
+    return getPackCoverFallbackUrl(pack, packCode);
+}
+
+/**
+ * 获取卡包封面图的 fallback URL（原有外部图源逻辑）
+ * 从 getPackCoverImageUrl 中抽出，供 onerror fallback 使用
+ */
+function getPackCoverFallbackUrl(pack, packCode) {
     // 1. 如果 packs.json 中手动配置了 coverImage（如 Yugipedia 日文封面 URL），直接使用
     if (pack.coverImage) {
         return pack.coverImage;
@@ -907,8 +928,7 @@ function getPackCoverImageUrl(pack, packCode) {
 
 /**
  * 卡包封面图加载失败时的处理函数
- * 如果 pack 有异步预加载 Promise（OCG 卡包），等待其完成后用首卡卡图替代
- * 否则直接显示 emoji fallback
+ * 新逻辑：本地封面图（-pack/-box）失败 → 原有外部 URL → 首卡卡图 → emoji
  */
 async function handlePackCoverError(imgEl) {
     const pack = imgEl._packData;
@@ -917,21 +937,23 @@ async function handlePackCoverError(imgEl) {
 
     console.warn(`⚠️ 卡包封面图加载失败: ${pack ? pack.packId : '未知'}, URL: ${failedUrl}`);
 
-    // ——— OCG 本地封面图 fallback ———
-    // 如果当前失败的不是本地 covers 路径，且卡包有 packCode，尝试加载本地封面图
-    // 本地封面图路径：data/ocg/covers/{packCode}.png（或 .jpg/.webp）
-    if (currentGameMode === 'ocg' && pack && pack.packCode && !failedUrl.includes('data/ocg/covers/')) {
-        const localCoverUrl = `data/ocg/covers/${pack.packCode}.png`;
-        console.log(`🔄 尝试本地封面图: ${pack.packId}, URL: ${localCoverUrl}`);
-        imgEl.src = localCoverUrl;
-        // 本地封面图也失败时，继续走后续 fallback（首卡卡图 → emoji）
-        imgEl.onerror = function () {
-            handlePackCoverErrorFinal(imgEl);
-        };
-        return;
+    // ——— 第一层 fallback：本地封面图失败 → 尝试原有外部 URL ———
+    // 判断当前失败的是否是本地 covers 路径（包含 -pack.png 或 -box.png）
+    if (failedUrl.includes('data/ocg/covers/') && pack) {
+        const packCode = pack.packCode || pack.setCode || '';
+        const fallbackUrl = getPackCoverFallbackUrl(pack, packCode);
+        if (fallbackUrl) {
+            console.log(`🔄 本地封面图不存在，尝试外部 URL: ${pack.packId}, URL: ${fallbackUrl}`);
+            imgEl.src = fallbackUrl;
+            // 外部 URL 也失败时，走最终 fallback（首卡卡图 → emoji）
+            imgEl.onerror = function () {
+                handlePackCoverErrorFinal(imgEl);
+            };
+            return;
+        }
     }
 
-    // ——— 首卡卡图 / emoji fallback ———
+    // ——— 第二层 fallback：外部 URL 也失败 / 非本地图失败 → 首卡卡图 / emoji ———
     await handlePackCoverErrorFinal(imgEl);
 }
 
@@ -1081,10 +1103,12 @@ async function selectPack(pack) {
 
         // 设置卡包封面图（直接用 img.src，利用浏览器 HTTP 缓存秒显）
         const packCode = pack.packCode || pack.setCode || pack.packId;
-        const coverUrl = getPackCoverImageUrl(pack, packCode);
+        const coverUrl = getPackCoverImageUrl(pack, packCode, 'box');
         const coverImg = document.getElementById('current-pack-cover');
         const coverWrapper = coverImg ? coverImg.closest('.pack-cover-wrapper') : null;
         if (coverImg && coverUrl) {
+            // 绑定 _packData 供 onerror fallback 使用
+            coverImg._packData = pack;
             coverImg.classList.remove('is-loaded');
             coverImg.style.display = '';
             coverImg.alt = pack.packName;
@@ -1100,7 +1124,23 @@ async function selectPack(pack) {
                     coverImg.classList.add('is-loaded');
                     if (coverWrapper) coverWrapper.classList.remove('is-loading');
                 };
+                // 本地封面图加载失败时的 fallback 逻辑
                 coverImg.onerror = function() {
+                    const failedUrl = coverImg.src;
+                    // 如果是本地封面图失败，尝试外部 URL
+                    if (failedUrl.includes('data/ocg/covers/')) {
+                        const fallbackUrl = getPackCoverFallbackUrl(pack, packCode);
+                        if (fallbackUrl) {
+                            console.log(`🔄 详情页本地封面图不存在，尝试外部 URL: ${pack.packId}`);
+                            coverImg.src = fallbackUrl;
+                            coverImg.onerror = function() {
+                                // 外部 URL 也失败，隐藏图片
+                                coverImg.style.display = 'none';
+                                if (coverWrapper) coverWrapper.classList.remove('is-loading');
+                            };
+                            return;
+                        }
+                    }
                     coverImg.style.display = 'none';
                     if (coverWrapper) coverWrapper.classList.remove('is-loading');
                 };
@@ -1388,30 +1428,37 @@ async function openMultiPacks(count, boxesCount) {
         const bonusCount = hasBoxesForBonus ? 1 : boxesCount;
 
         for (let bi = 0; bi < bonusCount; bi++) {
-            const randomIndex = Math.floor(Math.random() * suppPool.length);
-            const bonusCard = { ...suppPool[randomIndex] };
-            // 标记为辅助包卡片，方便后续识别
-            bonusCard._isBonus = true;
-            
-            // 辅助包的PSER处理：
+            // 辅助包的PSER处理（修复：先判定PSER再选卡）：
             // - 同一盒中，原盒包和+1包合计只会出现一张PSER
             // - 一箱24盒配4个辅助包PSER（概率约16.7%）
             // - LOSP 全部都是 PSER，无需互斥处理
-            const versions = bonusCard.rarityVersions || [];
-            if (versions.length > 1) {
-                const bonusPSERChance = currentPack.bonusPSERChance || (4 / 24); // 约16.7%
-                if (boxHasPSER) {
-                    // 原盒已出PSER → 辅助包强制不出PSER，用第一个版本（基础稀有度）
-                    bonusCard.rarityVersions = [versions[0]];
-                } else if (Math.random() < bonusPSERChance && versions.indexOf('PSER') >= 0) {
-                    // 原盒没出PSER + 中了辅助包PSER概率 + 这张卡有PSER版本
-                    bonusCard.rarityVersions = ['PSER'];
-                } else {
-                    // 正常情况：用基础稀有度
+            const bonusPSERChance = currentPack.bonusPSERChance || (4 / 24); // 约16.7%
+            // 筛选出有PSER版本的卡（rarityVersions中包含'PSER'且有多个版本）
+            const pserCandidates = suppPool.filter(c => {
+                const v = c.rarityVersions || [];
+                return v.length > 1 && v.indexOf('PSER') >= 0;
+            });
+            
+            let bonusCard;
+            // 先判定是否出PSER：原盒未出PSER + 有PSER候选卡 + 命中概率
+            if (!boxHasPSER && pserCandidates.length > 0 && Math.random() < bonusPSERChance) {
+                // 命中PSER → 从有PSER版本的卡中随机选一张，强制使用PSER稀有度
+                const pserIndex = Math.floor(Math.random() * pserCandidates.length);
+                bonusCard = { ...pserCandidates[pserIndex] };
+                bonusCard.rarityVersions = ['PSER'];
+            } else {
+                // 未命中PSER → 从全部辅助包卡池随机选一张，使用基础稀有度
+                const randomIndex = Math.floor(Math.random() * suppPool.length);
+                bonusCard = { ...suppPool[randomIndex] };
+                const versions = bonusCard.rarityVersions || [];
+                if (versions.length > 1) {
+                    // 有多版本的卡在非PSER情况下使用基础稀有度
                     bonusCard.rarityVersions = [versions[0]];
                 }
             }
             
+            // 标记为辅助包卡片，方便后续识别
+            bonusCard._isBonus = true;
             bonusCards.push(bonusCard);
         }
     } else {

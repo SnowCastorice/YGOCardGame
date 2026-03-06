@@ -3,9 +3,35 @@
 > **每次新会话开始时，AI 助手必须先阅读本文件。**
 > **每次对话结束后，如有重要变更须同步更新本文件或对应子文档。**
 
-## 🔖 当前版本：v1.7.4（2026-03-06）
+## 🔖 当前版本：v1.7.5（2026-03-06）
 
-最新变更：修复 LOSP 卡片价格获取失败的问题。详见 [CHANGELOG.md](docs/CHANGELOG.md)。
+最新变更：修复辅助包 PSER 抽卡概率问题。详见 [CHANGELOG.md](docs/CHANGELOG.md)。
+
+### 🔧 近期维护（2026-03-06 深夜）— 辅助包 PSER 概率修复
+- ✅ 修复 BLZD 辅助包（+1特别包）中 PSER 稀有度真红莲新星龙几乎不可能出现的问题
+- ✅ 原因：旧逻辑先从 20 张卡中随机选 1 张，再判定 PSER。只有 JPS06 有 PSER 版本（1/20=5%），导致即使命中 PSER 概率，19/20 情况下选到的卡没有 PSER 版本而被浪费
+- ✅ 修复：改为先判定是否出 PSER，如果命中则从有 PSER 版本的卡中选择；否则正常随机选卡
+- ✅ PSER 概率从 ~0.63%（约 160 盒出 1 次）修正为 ~12.5%（约 8 盒出 1 次，一箱 24 盒约出 3 个）
+
+### 🔧 近期维护（2026-03-06 晚间 #2）— BLZD 卡图 CDN 切换 + 本地备份
+- ✅ BLZD 卡图从 YGOCDB CDN（被 Chrome ORB 安全策略拦截）切换到 S3 CDN（正常加载）
+- ✅ 新增 `data/ocg/blzd_image_map.json`：100 张卡的 password → YugiohMeta S3 CDN metaId 映射表（正包 80 + 辅助包 20）
+- ✅ 新增 `data/ocg/images/blzd/`：100 张卡的本地 webp 备份（_w200 + _w420，共 200 文件，7.0MB）
+- ✅ `packs.json` 中 BLZD 新增 `imageMapFile` 和 `localImagesDir` 配置
+- ✅ 新增工具脚本 `tools/build_blzd_image_map.py`：自动从 YugiohMeta + YGOCDB 生成映射表并下载卡图
+- ✅ 图源优先级：S3 CDN 主图源 → Cloudflare 本地 webp 备份 → YGOCDB CDN 回退
+- ✅ 辅助包（BLZD-JPS01~JPS20）20 张经典复刻卡的 metaId 通过 YugiohMeta API 搜索英文名获取
+
+### 🔧 近期维护（2026-03-06 晚间）— LCP 优化：本地封面图优先加载
+- ✅ OCG 卡包封面图改为本地优先加载（`data/ocg/covers/{packCode}-{type}.png`），消除日本服务器 5-7 秒延迟
+- ✅ 主界面卡包列表使用 `-pack` 后缀图片，开包详情界面使用 `-box` 后缀图片
+- ✅ 新增 `getPackCoverFallbackUrl()` 函数，从 `getPackCoverImageUrl()` 中抽出原有外部图源逻辑作为 fallback
+- ✅ `getPackCoverImageUrl()` 新增 `type` 参数（`'pack'` / `'box'`），OCG 模式下优先返回本地路径
+- ✅ `handlePackCoverError()` 改造：本地图 404 → 自动 fallback 到外部 URL → 首卡卡图 → emoji
+- ✅ 开包详情页 onerror 增加本地图 fallback 逻辑（本地 → 外部 URL → 隐藏图片）
+- ✅ 采用 onerror 机制（方案2），无需维护本地图片列表，添加新图片自动生效
+- ✅ 封面图命名格式：`{packCode}-pack.png`（主界面）、`{packCode}-box.png`（详情页）、`{packCode}-spack.png`（预留）
+- ✅ 已有本地封面图：LOCH（3张）、BLZD（3张）
 
 ### 🔧 近期维护（2026-03-06）
 - ✅ 修复 LOSP 卡片无法获取到市场价格的问题

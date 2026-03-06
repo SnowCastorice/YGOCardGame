@@ -120,6 +120,8 @@
       "cardsPerPack": 5,
       "totalCards": 80,
       "cardFile": "ocg_blzd.json",
+      "imageMapFile": "blzd_image_map.json",
+      "localImagesDir": "data/ocg/images/blzd",
       "packScheme": "ocg_default",
       "versionOdds": {
         "_说明": "多版本稀有度概率权重（用于单包抽卡时，同一张卡有多个稀有度版本的随机选择）",
