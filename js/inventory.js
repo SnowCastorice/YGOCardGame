@@ -539,6 +539,8 @@ const InventorySystem = (function () {
         const nameEl = viewer.querySelector('.viewer-card-name');
 
         if (img) {
+            // 先清空旧图，避免打开新卡片时闪现上一张图片
+            img.src = '';
             img.src = card.imageLargeUrl || card.imageUrl || '';
         }
         if (nameEl) {

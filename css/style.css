@@ -1810,13 +1810,15 @@ body {
     z-index: 9999;
     cursor: pointer;
     pointer-events: none;
-    transition: background 0.8s ease;
+    /* 关闭方向：较快的过渡 */
+    transition: background .35s ease;
 }
 
-/* 激活状态 */
+/* 激活状态：打开方向用较慢的过渡 */
 .card-image-viewer.active {
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, .85);
     pointer-events: auto;
+    transition: background .6s ease;
 }
 
 /* 放大的卡图 */
@@ -1825,17 +1827,20 @@ body {
     max-height: 75vh;
     object-fit: contain;
     border-radius: 8px;
-    box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
-    transform: scale(0.3);
+    box-shadow: 0 0 40px rgba(255, 215, 0, .3);
+    transform: scale(.5);
     opacity: 0;
-    transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), 
-                opacity 0.8s ease;
+    /* 关闭方向：快速收缩消失 */
+    transition: transform .3s ease-in,
+                opacity .3s ease-in;
 }
 
-/* 图片显示动画 */
+/* 图片显示动画：打开方向用弹性曲线 */
 .card-image-viewer.active .viewer-image {
     transform: scale(1);
     opacity: 1;
+    transition: transform .6s cubic-bezier(.34, 1.56, .64, 1),
+                opacity .5s ease;
 }
 
 /* 卡片名称（放大查看时显示） */
@@ -1847,14 +1852,17 @@ body {
     color: #fff;
     font-size: .85rem;
     text-align: center;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, .8);
     opacity: 0;
-    transition: opacity 0.8s ease 0.4s;
+    /* 关闭方向：快速消失，无延迟 */
+    transition: opacity .2s ease;
     line-height: 1.4;
 }
 
+/* 打开方向：延迟出现 */
 .card-image-viewer.active .viewer-card-name {
     opacity: 1;
+    transition: opacity .6s ease .3s;
 }
 
 /* 关闭提示文字 */
@@ -1865,11 +1873,14 @@ body {
     color: rgba(255, 255, 255, .5);
     font-size: .8rem;
     opacity: 0;
-    transition: opacity 0.8s ease 0.5s;
+    /* 关闭方向：快速消失，无延迟 */
+    transition: opacity .2s ease;
 }
 
+/* 打开方向：延迟出现 */
 .card-image-viewer.active .viewer-hint {
     opacity: 1;
+    transition: opacity .6s ease .4s;
 }
 
 /* 让开包结果中的卡图有可点击的视觉提示 */

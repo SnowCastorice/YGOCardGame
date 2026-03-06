@@ -412,52 +412,52 @@
     "37818794": {
       "setNumber": "LOSP-JP001",
       "name": "超魔导龙骑士-真红眼龙骑士",
-      "prices": { "PSER": 120 }
+      "prices": { "PSER-OF": 120 }
     },
     "32828466": {
       "setNumber": "LOSP-JP002",
       "name": "唤醒你沉睡的元素英雄",
-      "prices": { "PSER": 10 }
+      "prices": { "PSER-OF": 10 }
     },
     "35952884": {
       "setNumber": "LOSP-JP003",
       "name": "流天类星龙",
-      "prices": { "PSER": 85 }
+      "prices": { "PSER-OF": 85 }
     },
     "95134948": {
       "setNumber": "LOSP-JP004",
       "name": "No.99 希望皇 霍普德拉戈纳",
-      "prices": { "PSER": 25 }
+      "prices": { "PSER-OF": 25 }
     },
     "6218704": {
       "setNumber": "LOSP-JP005",
       "name": "霸王天龙 异色眼霸弧光迹龙",
-      "prices": { "PSER": 10 }
+      "prices": { "PSER-OF": 10 }
     },
     "21637210": {
       "setNumber": "LOSP-JP006",
       "name": "防火龙·奇点",
-      "prices": { "PSER": 14.99 }
+      "prices": { "PSER-OF": 14.99 }
     },
     "35405755": {
       "setNumber": "LOSP-JP007",
       "name": "俱利伽罗天童",
-      "prices": { "PSER": 139 }
+      "prices": { "PSER-OF": 139 }
     },
     "44146295": {
       "setNumber": "LOSP-JP008",
       "name": "冰剑龙 幻冰龙",
-      "prices": { "PSER": 100 }
+      "prices": { "PSER-OF": 100 }
     },
     "48130397": {
       "setNumber": "LOSP-JP009",
       "name": "超融合",
-      "prices": { "PSER": 107 }
+      "prices": { "PSER-OF": 107 }
     },
     "97045737": {
       "setNumber": "LOSP-JP010",
       "name": "圣王的粉碎",
-      "prices": { "PSER": 180 }
+      "prices": { "PSER-OF": 180 }
     }
   }
 }

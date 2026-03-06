@@ -570,6 +570,8 @@ function bindCardImageViewer() {
 
         if (!largeUrl) return;
 
+        // 先清空旧图，防止切换时闪现上一张图片
+        viewerImage.src = '';
         // 设置大图和名称
         viewerImage.src = largeUrl;
         viewerImage.alt = cardName;
@@ -608,6 +610,8 @@ function bindCardImageViewer() {
 
             if (!bonusLargeUrl) return;
 
+            // 先清空旧图，防止切换时闪现上一张图片
+            viewerImage.src = '';
             viewerImage.src = bonusLargeUrl;
             viewerImage.alt = cardName;
             // 大图加载失败时尝试 Cloudflare 本地备份
@@ -673,8 +677,10 @@ function openCardImageViewer(imgSrc, cardName, subText) {
 
     if (!imgSrc) return;
 
+    // 先清空旧图，防止切换时闪现上一张图片
+    viewerImage.src = '';
     viewerImage.src = imgSrc;
-    viewerImage.alt = cardName || '卡牌大图';
+viewerImage.alt = cardName || '';
 
     // 构建显示名称
     var displayName = cardName || '';
@@ -690,15 +696,16 @@ function openCardImageViewer(imgSrc, cardName, subText) {
 /** 关闭卡片图片查看器（带过渡动画） */
 function closeCardImageViewer() {
     const viewer = document.getElementById('card-image-viewer');
+    const img = viewer.querySelector('.viewer-image');
     viewer.classList.remove('active');
-
-    // 过渡动画结束后清除图片 src（释放内存）
+    // 等关闭动画播完后再清空图片（350ms 与 CSS 关闭过渡时间匹配）
+    // 避免动画途中图片突然消失导致不流畅
     setTimeout(function () {
-        const img = viewer.querySelector('.viewer-image');
+        // 仅在查看器仍处于关闭状态时才清空，防止快速重开时误清
         if (!viewer.classList.contains('active')) {
             img.src = '';
         }
-    }, 400);
+    }, 350);
 }
 
 // ============================================
@@ -4658,6 +4665,8 @@ const rarityWeight = RARITY_ORDER_ASC;
                     const img = viewer.querySelector('.viewer-image');
                     const nameEl = viewer.querySelector('.viewer-card-name');
                     if (img) {
+                        // 先清空旧图，防止切换时闪现上一张图片
+                        img.src = '';
                         img.src = imgUrl;
                         // 大图加载失败时尝试 Cloudflare 本地备份
                         img.onerror = imgFallbackUrl ? function() {
