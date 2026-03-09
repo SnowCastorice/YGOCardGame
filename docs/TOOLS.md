@@ -39,7 +39,7 @@
 | 命令 | 说明 |
 |------|------|
 | `python fetch_packs.py list ocg` | 列出 OCG 卡包列表（默认 20 个） |
-| `python fetch_packs.py list tcg` | 列出 TCG 卡包列表 |
+| `python fetch_packs.py list tcg` | 列出 TCG 卡包列表（TCG 模式已移除，保留命令兼容） |
 | `python fetch_packs.py fetch <ID>` | 获取指定卡包卡牌收录 |
 | `python fetch_packs.py fetch <ID> --write` | 获取并写入独立文件 + 更新 packs.json |
 | `python fetch_packs.py latest ocg` | 获取最新一期 OCG 补充包 |

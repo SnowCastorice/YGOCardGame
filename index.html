@@ -27,10 +27,9 @@
                 <span class="currency-value" id="currency-balance-gold">0</span>
             </div>
         </div>
-<!-- OCG / TCG 模式切换开关（TCG 默认隐藏，可在设置中开启） -->
+<!-- 游戏模式标识（当前仅 OCG，预留 TCG 扩展入口） -->
         <div class="mode-switch-container" id="mode-switch-container">
             <button id="btn-mode-ocg" class="mode-btn active" data-mode="ocg">OCG</button>
-            <button id="btn-mode-tcg" class="mode-btn" data-mode="tcg" style="display:none;">TCG</button>
         </div>
         <nav class="top-nav">
             <button id="btn-inventory" class="nav-btn inventory-btn">🎒<span id="inventory-badge" class="inventory-badge" style="display:none;">0</span></button>
@@ -162,14 +161,7 @@
                     </div>
                 </div>
 
-<!-- ▸ 隐藏板块：TCG 测试模式（需点击设置标题5次解锁） -->
-                <div id="devtools-tcg-section" class="devtools-section-card devtools-admin-hidden" style="display:none;">
-                    <h3 class="devtools-section-title">🌎 TCG 测试模式</h3>
-                    <div class="devtools-actions-btns">
-                        <button id="btn-dev-toggle-tcg" class="btn-devtools-action btn-dev-tcg">🔓 开启 TCG 模式</button>
-                    </div>
-                    <p class="devtools-note devtools-tcg-warning">⚠️ TCG 开发未完成，仅为测试版本。开启后可在顶部切换到 TCG 模式，数据和功能可能不完整。</p>
-                </div>
+
 
 <!-- ▸ 隐藏板块：CDN 卡图对比（需点击设置标题5次解锁） -->
                 <div id="devtools-cdn-section" class="devtools-section-card devtools-admin-hidden" style="display:none;">

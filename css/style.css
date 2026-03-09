@@ -180,7 +180,7 @@ body {
 }
 
 /* ============================================
-   OCG / TCG 模式切换开关
+   OCG 模式切换开关（预留扩展：未来可加入 TCG 等其他模式）
    ============================================ */
 .mode-switch-container {
     display: flex;
@@ -1402,13 +1402,6 @@ body {
     opacity: 0.8;
 }
 
-/* TCG 测试模式警告提示 */
-.devtools-tcg-warning {
-    color: #ff9800;
-    opacity: 1;
-    font-weight: 500;
-}
-
 /* 管理后台隐藏入口 */
 .devtools-admin-hidden {
     display: none;
@@ -1469,16 +1462,6 @@ body {
 .btn-dev-stats:hover,
 .btn-dev-stats:active {
     background: linear-gradient(135deg, #ab47bc, #9c27b0);
-}
-
-/* TCG 测试模式按钮 */
-.btn-dev-tcg {
-    background: linear-gradient(135deg, #2196f3, #1976d2);
-}
-
-.btn-dev-tcg:hover,
-.btn-dev-tcg:active {
-    background: linear-gradient(135deg, #42a5f5, #2196f3);
 }
 
 /* 卡图对比：输入区和操作按钮拆分为两行 */

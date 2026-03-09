@@ -12,13 +12,13 @@
  *      - cardData 由 build_pack_data.py 脚本从 cards.json（YGOCDB 全量数据）提取注入
  *      - 网页运行时直接读取本地 JSON，零 API 调用！
  * 
- *   2. API 回退（兼容未构建的卡包，或 TCG 模式）
+ *   2. API 回退（兼容未构建的卡包）
  *      - YGOProDeck API (db.ygoprodeck.com) — 获取外文卡牌数据
  *      - YGOCDB API (ygocdb.com) — 获取中文卡牌名称
  * 
  * 卡牌展示方式（面向中国区用户）：
  *   - 主名称：中文名（来自 cardData / YGOCDB）
- *   - 副名称：外文名（OCG=日文 / TCG=英文）
+ *   - 副名称：外文名（OCG=日文）
  * 
  * 缓存方式（仅 API 回退模式使用）：
  *   1. IndexedDB — 缓存通过 API 获取的卡牌数据
@@ -42,12 +42,9 @@ const API_CONFIG = {
         IMAGE_URL: 'https://cdn.233.momobako.com/ygopro/pics'
     },
 
-    // === YugiohMeta 卡图源（TCG 英文卡图，S3 CDN，无 WAF 拦截） ===
+    // === YugiohMeta S3 CDN 卡图源（OCG 卡包图片映射使用） ===
     YUGIOHMETA: {
         CDN_BASE: 'https://s3.duellinksmeta.com/cards',
-        // 映射表路径（预构建的 password → _id 映射）
-        MAP_URL: 'data/tcg/yugiohmeta_map.json',
-        // 默认图片尺寸后缀
         SIZE_SMALL: '_w200',   // 小图 ~17KB
         SIZE_LARGE: '_w420'    // 大图 ~59KB
     },
@@ -100,8 +97,7 @@ const API_CONFIG = {
 
     // 各模式的默认语言
     DEFAULT_LANG: {
-        ocg: 'ja',   // OCG 默认日文
-        tcg: 'en'    // TCG 默认英文
+        ocg: 'ja'    // OCG 默认日文
     },
 
     // 是否为中国区用户补充中文名（通过 YGOCDB 获取）
@@ -132,76 +128,6 @@ const API_CONFIG = {
     // OCG 批量查询每批最大 ID 数（YGOProDeck 支持逗号分隔多个 ID）
     BATCH_SIZE: 20
 };
-
-// ====== YugiohMeta 映射表管理 ======
-
-/** 
- * YugiohMeta 卡图映射表缓存
- * 加载后存储在内存中，避免重复请求
- */
-let _yugiohmetaMap = null;
-let _yugiohmetaMapLoading = false;
-
-/**
- * 加载 YugiohMeta 卡图映射表
- * 映射表是通过 fetch_yugiohmeta.py 脚本预构建的 JSON 文件
- * 包含 password → S3 CDN _id 的映射
- * 
- * @returns {object|null} 映射表数据，加载失败返回 null
- */
-async function loadYugiohMetaMap() {
-    // 已加载过，直接返回
-    if (_yugiohmetaMap) return _yugiohmetaMap;
-    
-    // 防止并发重复加载
-    if (_yugiohmetaMapLoading) {
-        // 等待其他加载完成
-        while (_yugiohmetaMapLoading) {
-            await delay(50);
-        }
-        return _yugiohmetaMap;
-    }
-    
-    _yugiohmetaMapLoading = true;
-    
-    try {
-        const response = await fetch(API_CONFIG.YUGIOHMETA.MAP_URL);
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-        _yugiohmetaMap = await response.json();
-        console.log(`🗺️ YugiohMeta 映射表已加载，共 ${Object.keys(_yugiohmetaMap.cards || {}).length} 张卡的映射`);
-        return _yugiohmetaMap;
-    } catch (error) {
-        console.warn('⚠️ YugiohMeta 映射表加载失败，将使用 YGOProDeck CDN 作为 TCG 卡图源:', error.message);
-        _yugiohmetaMap = null;
-        return null;
-    } finally {
-        _yugiohmetaMapLoading = false;
-    }
-}
-
-/**
- * 从 YugiohMeta 映射表中查询卡图 URL
- * 
- * @param {number|string} password - 卡牌密码
- * @returns {object|null} { imageUrl, imageLargeUrl } 或 null（未找到映射）
- */
-function getYugiohMetaImageUrl(password) {
-    if (!_yugiohmetaMap || !_yugiohmetaMap.cards) return null;
-    
-    const cardMap = _yugiohmetaMap.cards[String(password)];
-    if (!cardMap || !cardMap.id) return null;
-    
-    const cdnBase = API_CONFIG.YUGIOHMETA.CDN_BASE;
-    const sizeSmall = API_CONFIG.YUGIOHMETA.SIZE_SMALL;
-    const sizeLarge = API_CONFIG.YUGIOHMETA.SIZE_LARGE;
-    
-    return {
-        imageUrl: `${cdnBase}/${cardMap.id}${sizeSmall}.webp`,
-        imageLargeUrl: `${cdnBase}/${cardMap.id}${sizeLarge}.webp`
-    };
-}
 
 // ====== IndexedDB 数据库管理 ======
 
@@ -433,15 +359,12 @@ function setOCGLanguage(langCode) {
 
 /**
  * 获取当前语言配置对象
- * @param {string} mode - 'ocg' 或 'tcg'
+ * @param {string} mode - 游戏模式（当前仅支持 'ocg'）
  * @returns {object} 语言配置
  */
 function getLanguageConfig(mode) {
-    if (mode === 'ocg') {
-        const langCode = getOCGLanguage();
-        return API_CONFIG.LANGUAGES[langCode] || API_CONFIG.LANGUAGES['ja'];
-    }
-    return API_CONFIG.LANGUAGES['en'];
+    const langCode = getOCGLanguage();
+    return API_CONFIG.LANGUAGES[langCode] || API_CONFIG.LANGUAGES['ja'];
 }
 
 /**
@@ -621,14 +544,14 @@ async function apiRequestYGOProDeck(endpoint, language) {
  * 将 YGOProDeck 返回的卡牌数据转换为统一格式
  * 
  * @param {object} card - YGOProDeck 返回的卡牌对象
- * @param {string} rarityCode - 稀有度编码（从 cards.json 预定义，OCG 模式专用）
- * @param {string} setCode - 卡包编码（TCG 模式用于匹配稀有度）
- * @param {string} mode - 模式标识（'ocg' 或 'tcg'），用于选择卡图源
+ * @param {string} rarityCode - 稀有度编码（从 cards.json 预定义）
+ * @param {string} setCode - 卡包编码（用于匹配稀有度）
+ * @param {string} mode - 模式标识（当前仅支持 'ocg'）
  * @param {Array} rarityVersions - 多版本稀有度列表（如 ["SR", "SER", "PSER"]）
  * @returns {object} 统一格式的卡牌对象
  */
 function convertYGOProDeckCard(card, rarityCode, setCode, mode, rarityVersions) {
-    // 如果没有预定义稀有度，从 card_sets 中获取（TCG 模式）
+    // 如果没有预定义稀有度，从 card_sets 中获取
     let rarity = 'Common';
     let code = rarityCode || 'N';
 
@@ -653,34 +576,13 @@ function convertYGOProDeckCard(card, rarityCode, setCode, mode, rarityVersions) 
         rarity = rarityNames[code] || 'Common';
     }
 
-    // 根据模式选择卡图源：
-    // OCG → YGOCDB CDN（日文版卡图）
-    // TCG → 优先 YugiohMeta S3 CDN（英文卡图 WebP），fallback 到 YGOProDeck CDN
-    let imageUrl, imageLargeUrl;
-    if (mode === 'ocg') {
-        // OCG 使用日文版卡图（YGOCDB CDN / YGOPro 数据库图片）
-        imageUrl = `${API_CONFIG.YGOCDB.IMAGE_URL}/${card.id}.jpg`;
-        imageLargeUrl = `${API_CONFIG.YGOCDB.IMAGE_URL}/${card.id}.jpg`;
-    } else {
-        // TCG：优先使用 YugiohMeta S3 CDN 卡图（预构建映射表）
-        const metaUrls = getYugiohMetaImageUrl(card.id);
-        if (metaUrls) {
-            imageUrl = metaUrls.imageUrl;
-            imageLargeUrl = metaUrls.imageLargeUrl;
-        } else {
-            // Fallback: YGOProDeck CDN（映射表中没有该卡）
-            imageUrl = card.card_images && card.card_images[0]
-                ? card.card_images[0].image_url_small
-                : `${API_CONFIG.YGOPRODECK.IMAGE_SMALL_URL}/${card.id}.jpg`;
-            imageLargeUrl = card.card_images && card.card_images[0]
-                ? card.card_images[0].image_url
-                : `${API_CONFIG.YGOPRODECK.IMAGE_LARGE_URL}/${card.id}.jpg`;
-        }
-    }
+    // OCG 使用日文版卡图（YGOCDB CDN / YGOPro 数据库图片）
+    let imageUrl = `${API_CONFIG.YGOCDB.IMAGE_URL}/${card.id}.jpg`;
+    let imageLargeUrl = `${API_CONFIG.YGOCDB.IMAGE_URL}/${card.id}.jpg`;
 
     return {
         id: card.id,
-        name: card.name,            // 外文名（OCG=日文 / TCG=英文）
+        name: card.name,            // 外文名（OCG=日文）
         nameCN: '',                  // 中文名（后续通过 YGOCDB 补充）
         nameOriginal: card.name,     // 保存原始外文名（供双语展示用）
         type: card.type,
@@ -1229,147 +1131,16 @@ async function enrichCardsWithCNNames(cards, onProgress) {
     return cards;
 }
 
-// ====== TCG 卡包获取（YGOProDeck，英文） ======
-
 /**
- * 【TCG 专用】获取某个卡包的所有卡牌数据（从 YGOProDeck，英文）
+ * 【统一入口】获取卡包卡牌数据
  * 
- * @param {string} setCode - 卡包编码（如 "Legend of Blue Eyes White Dragon"）
- * @returns {object} 包含 cards 数组的卡包数据
- */
-async function getTCGCardSetData(setCode) {
-    const cacheKey = `cardSet_tcg_${setCode}`;
-
-    // 1. 检查缓存
-    const cacheValid = await isCacheValid(cacheKey, API_CONFIG.CACHE_EXPIRY.CARD_DATA);
-
-    if (cacheValid) {
-        const cached = await dbGet('cardSets', setCode);
-        if (cached && cached.cards && cached.cards.length > 0) {
-            // 检查缓存中的卡牌是否已有中文名（旧版本缓存可能没有）
-            const needsCNEnrich = API_CONFIG.ENABLE_CN_NAME && cached.cards.some(function (c) { return !c.nameCN; });
-            if (needsCNEnrich) {
-                console.log(`🇨🇳 TCG 缓存中的卡牌缺少中文名，正在补充...`);
-                await enrichCardsWithCNNames(cached.cards, function (loaded, total) {
-                    updateLoadingTextIfAvailable(`正在补充中文名... (${loaded}/${total})`);
-                });
-                // 更新缓存
-                await dbPut('cardSets', cached);
-            }
-            // 尝试用 YugiohMeta 映射表替换缓存中的旧版卡图 URL
-            await loadYugiohMetaMap();
-            if (_yugiohmetaMap) {
-                let upgraded = 0;
-                cached.cards.forEach(function (card) {
-                    const metaUrls = getYugiohMetaImageUrl(card.id);
-                    if (metaUrls && !card.imageUrl.includes('s3.duellinksmeta.com')) {
-                        card.imageUrl = metaUrls.imageUrl;
-                        card.imageLargeUrl = metaUrls.imageLargeUrl;
-                        upgraded++;
-                    }
-                });
-                if (upgraded > 0) {
-                    console.log(`🔄 已将 ${upgraded} 张卡的图源升级为 YugiohMeta S3 CDN`);
-                    await dbPut('cardSets', cached);
-                }
-            }
-
-            // 补充卡包内编号（旧版本缓存可能没有 setNumber 字段）
-            const needsSetNumber = cached.cards.some(function (c) { return !c.setNumber; });
-            if (needsSetNumber) {
-                // 旧缓存缺少编号信息，跳过缓存，走后面的 API 重新获取逻辑
-                console.log(`🔢 TCG 缓存中的卡牌缺少编号，将重新从 API 加载...`);
-            } else {
-                console.log(`📦 从缓存加载 TCG 卡包 [${setCode}]，共 ${cached.cards.length} 张卡`);
-                return cached;
-            }
-        }
-    }
-    // 2. 从 YGOProDeck API 获取（TCG 默认英文，不传 language 参数）
-    console.log(`🌐 从 YGOProDeck 加载 TCG 卡包 [${setCode}]...`);
-
-    // 预加载 YugiohMeta 映射表（后续 convertYGOProDeckCard 中使用）
-    await loadYugiohMetaMap();
-
-    try {
-        const apiData = await apiRequestYGOProDeck(
-            `cardinfo.php?cardset=${encodeURIComponent(setCode)}`,
-            null  // TCG 用英文（默认语言）
-        );
-
-        if (!apiData || !apiData.data) {
-            throw new Error(`卡包 [${setCode}] 未找到数据`);
-        }
-
-        // 使用统一转换函数
-        const cards = apiData.data.map(function (card) {
-            return convertYGOProDeckCard(card, null, setCode, 'tcg');
-        });
-
-        // 补充中文名（从 YGOCDB 获取，面向中国区用户）
-        if (API_CONFIG.ENABLE_CN_NAME) {
-            await enrichCardsWithCNNames(cards, function (loaded, total) {
-                updateLoadingTextIfAvailable(`正在补充中文名... (${loaded}/${total})`);
-            });
-        }
-
-        // 存入缓存
-        const setData = {
-            setCode: setCode,
-            cards: cards,
-            totalCards: cards.length,
-            fetchedAt: Date.now(),
-            dataSource: 'ygoprodeck'
-        };
-
-        await dbPut('cardSets', setData);
-        await updateCacheTimestamp(cacheKey);
-
-        console.log(`✅ TCG 卡包 [${setCode}] 加载完成，共 ${cards.length} 张卡（来自 YGOProDeck），已缓存`);
-        return setData;
-
-    } catch (error) {
-        // 尝试过期缓存
-        const staleCache = await dbGet('cardSets', setCode);
-        if (staleCache) {
-            console.warn(`⚠️ API 请求失败，使用过期缓存 [${setCode}]`);
-            return staleCache;
-        }
-
-        // 尝试离线备用数据
-        if (window.FALLBACK_CARD_DATA && window.FALLBACK_CARD_DATA[setCode]) {
-            console.warn(`⚠️ API 请求失败，使用离线备用数据 [${setCode}]`);
-            const fallbackData = window.FALLBACK_CARD_DATA[setCode];
-            const setData = {
-                setCode: setCode,
-                cards: fallbackData.cards,
-                totalCards: fallbackData.cards.length,
-                fetchedAt: Date.now(),
-                isOfflineData: true
-            };
-            await dbPut('cardSets', setData);
-            await updateCacheTimestamp(cacheKey);
-            return setData;
-        }
-
-        throw error;
-    }
-}
-
-/**
- * 【统一入口】根据模式获取卡包卡牌数据
- * 
- * @param {string} mode - 'ocg' 或 'tcg'
+ * @param {string} mode - 游戏模式（当前仅支持 'ocg'）
  * @param {object} packConfig - 卡包配置对象
- * @param {function} onProgress - 加载进度回调（OCG模式下有用）
+ * @param {function} onProgress - 加载进度回调
  * @returns {object} 卡包数据
  */
 async function getCardSetData(mode, packConfig, onProgress) {
-    if (mode === 'ocg') {
-        return await getOCGCardSetData(packConfig, onProgress);
-    } else {
-        return await getTCGCardSetData(packConfig.setCode);
-    }
+    return await getOCGCardSetData(packConfig, onProgress);
 }
 
 /**
@@ -1536,7 +1307,6 @@ async function getCacheStatus() {
             { key: 'ygo_inventory_data', label: '🎒 背包数据' },
             { key: 'ygo_currency_data', label: '🪙 货币数据' },
             { key: 'ygo_game_mode', label: '🎮 游戏模式' },
-            { key: 'ygo_tcg_enabled', label: '🔧 TCG 开关' },
             { key: 'ygo_ocg_language', label: '🌐 OCG 语言' }
         ];
 
@@ -1601,7 +1371,6 @@ function clearLocalStorageItem(key) {
 async function refreshCardSetCache(setCode) {
     await dbDelete('cardSets', setCode);
     await dbDelete('cacheMeta', `cardSet_ocg_${setCode}`);
-    await dbDelete('cacheMeta', `cardSet_tcg_${setCode}`);
 }
 
 // ====== 导出供 game.js 使用的接口 ======

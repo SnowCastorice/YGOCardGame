@@ -1,6 +1,6 @@
 # 📊 数据源架构
 
-> 从 DEVELOPMENT.md 拆分，详述 OCG/TCG 数据获取方案、服务端代理和文件结构。
+> 从 DEVELOPMENT.md 拆分，详述 OCG 数据获取方案、服务端代理和文件结构。
 
 ## OCG 模式（v1.4.0+ 本地数据优先）
 
@@ -28,17 +28,6 @@ buildOCGCardsFromLocalData()（纯本地转换）
     ↓
 直接开包！卡图从 CDN 加载
 ```
-
-## TCG 模式（暂停开发）
-
-> ⚠️ TCG 开发已暂停，入口默认隐藏。
-
-| 维度 | 来源 | 说明 |
-|------|------|------|
-| **卡包列表** | YGOCDB (`ygocdb.com/packs`) | 在线获取 |
-| **卡牌收录** | YGOProDeck API (`?cardset=xxx`) | 自动返回全部卡牌 + 稀有度 |
-| **卡图** | YugiohMeta S3 CDN + YGOProDeck CDN | 英文版卡图 |
-| **稀有度** | YGOProDeck API | `card_sets.set_rarity` 自动映射 |
 
 ## 外部 API 限流规范
 
@@ -72,7 +61,7 @@ buildOCGCardsFromLocalData()（纯本地转换）
 | 1 | `packs.json` 中的 `coverImage` 字段（手动配置） |
 | 2 | `packs.json` 中的 `coverCardId` → 对应卡图 |
 | 3 | 本地封面 `data/ocg/covers/{packCode}.png` |
-| 4 | YGOProDeck set_image（TCG 卡包） |
+| 4 | ~~已移除~~ |
 | 5 | 异步加载 cardFile → 首张卡的 CDN 卡图 |
 | 6 | emoji 🎴（兜底） |
 
@@ -85,8 +74,7 @@ buildOCGCardsFromLocalData()（纯本地转换）
 | `js/pack-stats.js` | 开包统计模块（本地 + 全球） |
 | `data/ocg/packs.json` | OCG 卡包元信息 |
 | `data/ocg/cards/*.json` | OCG 各卡包独立卡牌列表 |
-| `data/tcg/packs.json` | TCG 卡包配置表 |
-| `data/tcg/yugiohmeta_map.json` | TCG 卡图映射表 |
+
 | `data/changelog.json` | 更新日志（网页内展示） |
 | `data/fallback_cards.js` | 离线兜底卡牌数据 |
 | `data/common/cards.json` | YGOCDB 全量数据库（12MB，13900+ 张卡），通过 `update_cards_db.py` 自动更新 |

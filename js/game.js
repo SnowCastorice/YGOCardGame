@@ -4,26 +4,23 @@
  * 
  * 【文件说明】
  * 这是游戏的"大脑"，负责：
- * 1. 读取卡包配置表（data/ocg/packs.json + data/tcg/packs.json）— OCG / TCG 独立管理
+ * 1. 读取卡包配置表（data/ocg/packs.json）
  * 2. 通过 API 模块获取卡牌数据（自动缓存到玩家设备）
  * 3. 读取更新日志（changelog.json）
  * 4. 实现开包抽卡逻辑（按稀有度权重随机抽取）
  * 5. 控制界面切换和动画播放
- * 6. 管理 OCG/TCG 模式切换
- * 7. 集成货币系统（开包消耗货币、货币兑换）
- * 8. 集成背包系统（开包卡片自动入库、查看收藏）
+ * 6. 集成货币系统（开包消耗货币、货币兑换）
+ * 7. 集成背包系统（开包卡片自动入库、查看收藏）
  * ============================================
  */
 
 // ====== 全局数据存储 ======
 let ocgPackConfig = null;    // OCG 卡包配置数据（来自 data/ocg/packs.json）
-let tcgPackConfig = null;    // TCG 卡包配置数据（来自 data/tcg/packs.json）
 let changelogData = null;    // 更新日志数据
 let currentPack = null;      // 当前选中的卡包配置
 let currentPackCards = null;  // 当前选中卡包的卡牌数据（来自 API 缓存）
 let currentSupplementCards = null;  // 当前卡包的辅助包卡池（仅开盒时使用）
-let currentGameMode = 'ocg';  // 当前游戏模式：'ocg' 或 'tcg'，默认 OCG
-let tcgModeEnabled = false;    // TCG 测试模式是否已开启（通过开发者工具开启）
+let currentGameMode = 'ocg';  // 当前游戏模式（预留：未来可扩展 'tcg'）
 let currentPackCategory = 'recent';  // 当前选中的卡包分类（recent/booster/structure/concept/special）
 let currentOpenMode = 'pack';  // 当前开包模式：'pack'|'box'|'3box'，用于快捷再开按钮
 
@@ -77,24 +74,14 @@ document.addEventListener('DOMContentLoaded', async function () {
     // 先绑定导航栏按钮事件（缓存、日志、模式切换、货币兑换），确保即使加载失败也能使用
     bindNavEvents();
 
-    // 从本地存储读取上次的游戏模式
-    // TCG 模式需要先在开发者工具中开启才能使用
-    const savedMode = localStorage.getItem('ygo_game_mode');
-    const savedTcgEnabled = localStorage.getItem('ygo_tcg_enabled') === 'true';
-    tcgModeEnabled = savedTcgEnabled;
-    if (savedMode === 'tcg' && savedTcgEnabled) {
-        currentGameMode = 'tcg';
-    } else {
-        currentGameMode = 'ocg';
-    }
-    // 更新切换按钮的激活状态
-    updateModeButtons();
+    // 当前仅支持 OCG 模式（预留：未来可扩展 TCG 模式）
+    currentGameMode = 'ocg';
 
     try {
         showLoadingState('正在加载游戏配置...');
         console.log('📡 开始 fetch 配置文件...');
 
-        // 加载 OCG 配置、更新日志和稀有度定义（TCG 配置延迟加载，仅在开启 TCG 测试模式时才加载）
+        // 加载 OCG 配置、更新日志和稀有度定义
         const [ocgResponse, changelogResponse, raritiesResponse] = await Promise.all([
             fetch('data/ocg/packs.json'),
             fetch('data/changelog.json'),
@@ -122,19 +109,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         // 从 rarities.json 动态注入稀有度 CSS 变量和颜色类
         applyRarityColors(raritiesData);
         console.log(`📦 OCG 卡包数量: ${ocgPackConfig.packs.length}`);
-
-        // 如果 TCG 测试模式已开启，加载 TCG 配置
-        if (tcgModeEnabled) {
-            try {
-                const tcgResponse = await fetch('data/tcg/packs.json');
-                if (tcgResponse.ok) {
-                    tcgPackConfig = await tcgResponse.json();
-                    console.log(`📦 TCG 卡包数量: ${tcgPackConfig.packs.length}`);
-                }
-            } catch (e) {
-                console.warn('⚠️ TCG 配置加载失败（测试模式）:', e.message);
-            }
-        }
 
         // 初始化各个模块
         bindCategoryTabs();
@@ -362,9 +336,8 @@ function bindNavEvents() {
     bindEvent('footer-version', 'click', showChangelog);
     bindEvent('btn-close-changelog', 'click', hideChangelog);
 
-    // OCG / TCG 模式切换按钮
+    // OCG 模式按钮（预留：未来可扩展 TCG 模式切换）
     bindEvent('btn-mode-ocg', 'click', function () { switchGameMode('ocg'); });
-    bindEvent('btn-mode-tcg', 'click', function () { switchGameMode('tcg'); });
 
     // 背包
     bindEvent('btn-inventory', 'click', showInventory);
@@ -397,27 +370,10 @@ function bindNavEvents() {
 async function switchGameMode(mode) {
     if (mode === currentGameMode) return; // 同一模式不重复切换
 
-    // TCG 模式需要先在开发者工具中开启
-    if (mode === 'tcg' && !tcgModeEnabled) {
-alert('⚠️ TCG 模式尚未开启。\n\n请在「⚙️ 设置」中开启 TCG 测试模式。');
+    // 预留：未来扩展 TCG 模式时在此添加加载逻辑
+    if (mode !== 'ocg') {
+        console.warn('⚠️ 当前仅支持 OCG 模式');
         return;
-    }
-
-    // 如果切换到 TCG 但尚未加载配置，先加载
-    if (mode === 'tcg' && !tcgPackConfig) {
-        showLoadingState('正在加载 TCG 卡包配置...');
-        try {
-            const tcgResponse = await fetch('data/tcg/packs.json');
-            if (tcgResponse.ok) {
-                tcgPackConfig = await tcgResponse.json();
-                console.log(`📦 TCG 卡包数量: ${tcgPackConfig.packs.length}`);
-            }
-            hideLoadingState();
-        } catch (e) {
-            hideLoadingState();
-            alert('❌ 加载 TCG 配置失败: ' + e.message);
-            return;
-        }
     }
 
     currentGameMode = mode;
@@ -446,15 +402,8 @@ alert('⚠️ TCG 模式尚未开启。\n\n请在「⚙️ 设置」中开启 TC
  */
 function updateModeButtons() {
     const ocgBtn = document.getElementById('btn-mode-ocg');
-    const tcgBtn = document.getElementById('btn-mode-tcg');
-
     if (ocgBtn) {
         ocgBtn.classList.toggle('active', currentGameMode === 'ocg');
-    }
-    if (tcgBtn) {
-        // TCG 按钮仅在测试模式开启时可见
-        tcgBtn.style.display = tcgModeEnabled ? '' : 'none';
-        tcgBtn.classList.toggle('active', currentGameMode === 'tcg');
     }
 }
 
@@ -463,11 +412,8 @@ function updateModeButtons() {
  * @returns {object} 当前模式的配置（packs数组 + defaultRarityRates）
  */
 function getCurrentModeConfig() {
-    if (currentGameMode === 'ocg') {
-        return ocgPackConfig || null;
-    } else {
-        return tcgPackConfig || null;
-    }
+    // 预留：未来扩展 TCG 模式时在此添加分支
+    return ocgPackConfig || null;
 }
 
 // ====== 绑定游戏区域按钮事件 ======
@@ -3248,9 +3194,8 @@ function showDevTools() {
             if (devToolsTitleClickCount >= DEV_TOOLS_UNLOCK_CLICKS) {
                 devToolsTitleClickCount = 0;
                 clearTimeout(devToolsTitleClickTimer);
-                // 同时控制三个隐藏板块：TCG 测试模式、CDN 卡图对比、管理后台
+                // 同时控制两个隐藏板块：CDN 卡图对比、管理后台
                 const hiddenSections = [
-                    document.getElementById('devtools-tcg-section'),
                     document.getElementById('devtools-cdn-section'),
                     document.getElementById('devtools-admin-section')
                 ].filter(Boolean);
@@ -3268,7 +3213,7 @@ function showDevTools() {
                     }
                 });
                 if (isCurrentlyHidden) {
-                    console.log('🔓 隐藏功能已解锁（TCG 测试模式、CDN 卡图对比、管理后台）');
+                    console.log('🔓 隐藏功能已解锁（CDN 卡图对比、管理后台）');
                     showDevtoolsToast('🔓 隐藏功能已解锁');
                 } else {
                     console.log('🔒 隐藏功能已关闭');
@@ -3276,27 +3221,6 @@ function showDevTools() {
                 }
             }
         });
-    }
-
-    // 绑定 TCG 测试模式开关按钮
-    const tcgToggleBtn = document.getElementById('btn-dev-toggle-tcg');
-    if (tcgToggleBtn) {
-        // 更新按钮状态文本
-        tcgToggleBtn.textContent = tcgModeEnabled ? '🔒 关闭 TCG 模式' : '🔓 开启 TCG 模式';
-        tcgToggleBtn.onclick = function () {
-            tcgModeEnabled = !tcgModeEnabled;
-            localStorage.setItem('ygo_tcg_enabled', tcgModeEnabled ? 'true' : 'false');
-            tcgToggleBtn.textContent = tcgModeEnabled ? '🔒 关闭 TCG 模式' : '🔓 开启 TCG 模式';
-            // 更新 TCG 按钮可见性
-            updateModeButtons();
-            // 如果当前在 TCG 模式但关闭了开关，自动切换回 OCG
-            if (!tcgModeEnabled && currentGameMode === 'tcg') {
-                switchGameMode('ocg');
-            }
-            const statusText = tcgModeEnabled ? '已开启 TCG 测试模式' : '已关闭 TCG 测试模式';
-            alert('✅ ' + statusText);
-            console.log('🛠️ [设置] ' + statusText);
-        };
     }
 
     // 绑定按钮事件（仅首次）
@@ -3357,22 +3281,25 @@ async function loadCDNComparison(cardId, options) {
     }
 
     // 检查是否有需要映射表的源（Cloudflare 本地卡图和 S3 CDN 都需要 metaId）
-    // 同时加载 TCG 映射表 + LOCH 映射表，合并后传给 loadSingleCDN
+    // 并行加载 BLZD + LOCH 映射表，合并后传给 loadSingleCDN
     let metaMapData = null;
     const hasMetaSource = CDN_SOURCES.some(function (s) { return s.needsMetaMap; });
     if (hasMetaSource) {
-        // 并行加载两个映射表
-        const [tcgMap, lochMap] = await Promise.all([
-            loadYugiohMetaMap(),
+        // 并行加载两个 OCG 映射表
+        const [blzdMap, lochMap] = await Promise.all([
+            fetch('data/ocg/blzd_image_map.json').then(r => r.ok ? r.json() : null).catch(() => null),
             fetch('data/ocg/loch_image_map.json').then(r => r.ok ? r.json() : null).catch(() => null)
         ]);
         // 合并为统一格式：cards[password] = { id: metaId }
         metaMapData = { cards: {} };
-        // 先合入 TCG 映射表（字段名已是 id）
-        if (tcgMap && tcgMap.cards) {
-            Object.assign(metaMapData.cards, tcgMap.cards);
+        // 合入 BLZD 映射表（字段名是 metaId，需要转为 id）
+        if (blzdMap && blzdMap.cards) {
+            Object.keys(blzdMap.cards).forEach(function (pw) {
+                const entry = blzdMap.cards[pw];
+                metaMapData.cards[pw] = { id: entry.metaId, name: entry.name };
+            });
         }
-        // 再合入 LOCH 映射表（字段名是 metaId，需要转为 id）
+        // 合入 LOCH 映射表（字段名是 metaId，需要转为 id）
         if (lochMap && lochMap.cards) {
             Object.keys(lochMap.cards).forEach(function (pw) {
                 const entry = lochMap.cards[pw];
@@ -3381,7 +3308,7 @@ async function loadCDNComparison(cardId, options) {
         }
         const totalCards = Object.keys(metaMapData.cards).length;
         if (totalCards > 0) {
-            console.log(`🗺️ 映射表已就绪，共 ${totalCards} 张卡片（TCG: ${tcgMap ? Object.keys(tcgMap.cards || {}).length : 0}, LOCH: ${lochMap ? Object.keys(lochMap.cards || {}).length : 0}）`);
+            console.log(`🗺️ 映射表已就绪，共 ${totalCards} 张卡片（BLZD: ${blzdMap ? Object.keys(blzdMap.cards || {}).length : 0}, LOCH: ${lochMap ? Object.keys(lochMap.cards || {}).length : 0}）`);
         } else {
             console.warn('⚠️ 所有映射表均加载失败，需要映射表的 CDN 源将跳过');
             metaMapData = null;
@@ -3460,7 +3387,7 @@ function loadSingleCDN(source, cardId, metaMapData, noCache) {
                 fileSize: null,
                 width: null,
                 height: null,
-                errorMsg: 'YugiohMeta 映射表加载失败，请检查 data/tcg/yugiohmeta_map.json 是否存在'
+                errorMsg: '卡图映射表加载失败，请检查 data/ocg/ 下的映射表文件是否存在'
             });
         }
         const cardMap = metaMapData.cards[String(cardId)];
