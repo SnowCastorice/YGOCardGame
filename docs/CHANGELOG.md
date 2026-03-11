@@ -2,6 +2,115 @@
 
 > 从 DEVELOPMENT.md 拆分，记录各版本的变更和待处理事项。
 
+## v1.7.6（2026-03-11）— NR 价格修复 + 工作流文档全面更新
+
+### NR 价格修复 + 工作流文档全面更新（3月11日）
+- **修复 N/NR 价格互补**：`blzd_prices.json` 中 3 张卡（JP028/JP070/JP080）补充缺失的 N 或 NR 价格
+- **`merge_prices.py` 增加 N/NR 自动互补逻辑**：当卡片同时定义了 N 和 NR 稀有度时，集换社只收录一种的情况自动互补另一种
+- **`docs/TOOLS.md` 全面重写 OCR 工作流文档**：
+  - 从旧版 4 步流程更新为实际的 6 步流程（行裁切→行OCR→单卡裁切→单卡OCR→解析→合并）
+  - 新增 `card_cutter.py` 和 `batch_ocr_cards.py` 独立工具说明
+  - 新增解析核心逻辑流程图（卡名匹配 5 级策略、编号补充流程）
+  - 新增已知问题与排错经验（编号截断、NR 稀有度、GMR-OF 双版本、价格 `--`）
+  - 更新文件索引：按工具脚本/辅助工具/数据文件/中间文件分类，标注产生步骤
+
+## v1.7.5（2026-03-09~10）— OCR 工具链 v3/v4 优化 + 价格更新 + TCG 代码清理
+
+### 项目目录整理（3月10日晚）
+- **`cards.json` 移入 `tools/db/`**：12MB 的 YGOCDB 全量数据库从 `data/common/` 移到 `tools/db/`，明确区分网页运行时数据（`data/`）和离线工具数据（`tools/db/`）
+- **根目录 Python 脚本移入 `tools/`**：`update_cards_db.py`、`build_pack_data.py`、`fetch_packs.py`、`fetch_yugiohmeta.py` 四个脚本从根目录移到 `tools/` 目录，项目根目录不再有散落的 py 文件
+- **`.gitignore` 更新**：`tools/db/` 整体忽略（cards.json 等大文件不提交到 Git），修正注释
+- **所有脚本路径常量统一重构**：使用 `SCRIPT_DIR`（tools/）+ `PROJECT_ROOT`（项目根）的标准模式，移动后不影响功能
+- **`TOOLS.md` 补充卡牌数据库更新工作流**：增加完整工作流图（Mermaid）和命令说明
+- 更新 README.md、ARCHITECTURE.md、TOOLS.md 中的路径描述
+
+### 变更记录规则简化（3月10日晚）
+- **移除 DEVELOPMENT.md「近期维护」机制**：所有变更统一只记录到 CHANGELOG.md，不再在 DEVELOPMENT.md 中维护「近期维护」区块
+- **Hooks 从 5 项精简为 3 项**：移除 Hook 2（DEVELOPMENT.md 同步）和 Hook 3（近期维护清理），消除双文件同步导致的遗漏风险（此前已发生三次遗漏）
+- 更新执行流程图和常见遗漏提醒
+
+### 会话结束 Hooks 机制（3月10日晚）
+- **新增 `DEVELOPMENT.md` 会话结束 Hooks 章节**：定义 5→3 项必检 hooks（CHANGELOG 同步、changelog.json 同步、版本号三处一致检查）
+- 每项 hook 配有触发条件，非相关变更可跳过，避免不必要的操作
+- 包含执行流程图和常见遗漏提醒，确保新 AI 会话也能正确执行
+
+### 裁切工作流文档化（3月10日晚）
+- **完善 `docs/TOOLS.md`**：为 `card_rect_cutter.py` 添加完整工作流文档
+  - 核心原理流程图（Mermaid）、关键像素数据表、双路径检测策略说明
+  - 使用命令、输入/输出说明、调试技巧、核心常量参考
+- 在 TOOLS.md「相关文件」表格中补充 `card_rect_cutter.py` 条目
+- 确保未来 AI 助手能完整理解并正确使用裁切工具
+
+### 卡图矩形裁切工具 v2（3月10日晚）— `card_rect_cutter.py`
+- **新建 `tools/card_rect_cutter.py`**：基于卡图矩形轮廓定位的行裁切工具
+- **双路径检测策略**：快速路径（面积+四边形近似）→ 回退路径（boundingRect 尺寸过滤），确保各种截图均能检测到卡图
+- **固定行间距推算**：通过第一行精确定位后，利用稳定的 374~375px 行间距推算后续行位置
+- **空白行自动跳过**：暗色像素占比 <2% 的推断行自动跳过，不输出空白裁切图
+- **关键参数**：卡图矩形 ~154×224px，面积 25k~38k，宽高比 0.65~0.72，裁切偏移 card_bottom +10~+125（总高 115px）
+- **特殊适配**：末尾不足一行（如 LOSP 仅 10 张卡片）的情况自动处理
+- 12 张截图裁切输出 61 张有效裁切图，OCR 通过率 100%
+
+### OCR 工具链 v4（3月10日下午）— 卡名匹配+裁切参数+PaddleOCR v3 适配
+- **卡名匹配体系重构**：加载 `cards.json` 的 `sc_name` 字段（集换社实际使用的译名），匹配优先级改为 `sc_name > nwbbs_n > cn_name`
+- 新增 `_load_cards_db()` 和 `_resolve_display_name()` 函数，通过 password 关联 `ocg_*.json` 和 `cards.json`
+- 所有译名体系（sc_name、nwbbs_n、cn_name、name_hint）均加入关键词，提高容错率
+- **裁切参数v2**：ROW_TOP_OFFSET 110→140，ROW_BOTTOM_OFFSET 90→120（总高度200→260px），避免截断卡名和价格
+- 同步调整 `parse_ocr_prices.py` 中 y 坐标分层范围（偏移+30px）
+- **PaddleOCR v3 适配**：修复 `show_log`/`use_angle_cls` 参数废弃问题，兼容 `OCRResult` 新返回格式（`rec_texts`/`rec_scores`/`rec_boxes`）
+- 修复 `ocr_row_cutter.py` LOSP截图在无整图OCR数据时无法裁切的问题（改用固定间距推算）
+- 修复超出12张截图映射时，通过文件名关键词自动推断卡包
+- 清理 `test_output/` 临时文件，移动构建脚本到 `tools/` 目录
+- 手动修正 LOCH-JP041/JP042/JP028 等价格数据
+- 重新执行完整 OCR 工作流（cut→ocr→parse→merge），PaddleOCR v3 识别84行耗时27秒
+
+### OCR 工作流整合（3月10日）
+- 新建 `tools/ocr_workflow.py`：一键 OCR 价格更新工作流入口脚本，串联 裁切→OCR→解析→合并 全流程
+- 支持日期参数（如 `20260309`）和 `--step`/`--from` 分步执行
+- 自动检测截图分辨率，不正确时提醒用户调整到 2064×2752 ppi264
+- 用法：`tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309`
+
+### 清理 TCG 代码 + 价格更新 + OCR工具v3优化（3月9日）
+- 清理所有 TCG 相关代码（HTML/CSS/JS），保留今后扩展 TCG 开卡模式的架构设计
+- 删除 `data/tcg/` 目录
+- 恢复 `API_CONFIG.YUGIOHMETA` CDN 配置（OCG 卡包图源依赖该配置）
+- 修复 `loadYugiohMetaMap()` 被删除但仍被调用的遗留问题
+- 使用 PaddleOCR 从集换社 App 截图更新 LOCH/BLZD/LOSP 卡片市场价格
+- LOCH 80张 + LOSP 10张 + BLZD 98张卡价格更新
+- 卡包/卡盒价格更新：LOCH 盒=455/包=22，BLZD 盒=310/包=10
+- 新增"未收录"价格识别（集换社显示 `--` 的情况），保留旧价格
+- **OCR工具v3优化**：卡名+稀有度匹配机制、"最近完整编号"分组策略、OCR识别价格表CSV中间文件、中文卡名连接词分隔符
+
+### 辅助包 PSER 概率修复（3月6日深夜）
+- 修复 BLZD 辅助包中 PSER 稀有度真红莲新星龙几乎不可能出现的问题
+- 原因：旧逻辑先选卡再判定 PSER，只有 JPS06 有 PSER 版本（1/20=5%），命中 PSER 概率后 19/20 被浪费
+- 修复：改为先判定是否出 PSER，如果命中则从有 PSER 版本的卡中选择
+- PSER 概率从 ~0.63%（约160盒出1次）修正为 ~12.5%（约8盒出1次）
+
+### BLZD 卡图 CDN 切换 + 本地备份（3月6日晚间）
+- BLZD 卡图从 YGOCDB CDN（被 Chrome ORB 拦截）切换到 S3 CDN
+- 新增 `data/ocg/blzd_image_map.json`：100张卡映射表（正包80+辅助包20）
+- 新增 `data/ocg/images/blzd/`：100张卡本地 webp 备份（共200文件，7.0MB）
+- 图源优先级：S3 CDN → Cloudflare 本地 webp → YGOCDB CDN 回退
+
+### LCP 优化：本地封面图优先加载（3月6日晚间）
+- OCG 卡包封面图改为本地优先加载（`data/ocg/covers/{packCode}-{type}.png`），消除日本服务器延迟
+- 新增 `getPackCoverFallbackUrl()` + `getPackCoverImageUrl()` type 参数
+- 采用 onerror 机制，无需维护本地图片列表
+
+### 其他修复（3月4日~6日）
+- 修复 LOSP 卡片价格键名（PSER → PSER-OF）
+- 开包结果页新增快捷「再开」按钮（适配 pack/box/3box 三种模式）
+- 初始金币 10万 → 100万，金币不足提示引导去「设置」添加
+- 大数字缩写展示（≥1万→x.xx万，≥1亿→x.xx亿）
+- 「开发者工具」重命名为「设置」，图标⚙️
+- 背包新增「总盈亏」展示（总市场价值 - 累计开包花费）
+- KV 写入深度优化（缓冲区+节流合并60s，每日上报上限50次，内存缓存30s）
+- 新增市场价格系统（`js/priceSystem.js`），从 `data/ocg/prices/` 加载集换社市场价格
+- 修复背包同一张卡不同稀有度混显问题，改为按「cardId + rarity」展开
+- BLZD 价格配置 + 卡包价格从价格配置文件优先读取
+- LOCH/LOSP 卡图 CDN 切换为 S3 优先 + Cloudflare 本地备份
+- PaddleOCR MCP Server 配置（GPU 加速，STDIO 模式）
+
 ## v1.7.4（2026-03-06）— LOSP 卡片价格修复
 - **修复 LOSP 卡片价格获取失败**：`loch_prices.json` 中 10 张 LOSP 卡片的价格键名从 `PSER` 修正为 `PSER-OF`，与卡片数据中的稀有度保持一致
 - **涉及修改文件**：`data/ocg/prices/loch_prices.json`

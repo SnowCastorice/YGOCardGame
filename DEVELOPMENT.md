@@ -3,103 +3,17 @@
 > **每次新会话开始时，AI 助手必须先阅读本文件。**
 > **每次对话结束后，如有重要变更须同步更新本文件或对应子文档。**
 
-## 🔖 当前版本：v1.7.5（2026-03-06）
+## 🔖 当前版本：v1.7.6（2026-03-11）
 
-最新变更：修复辅助包 PSER 抽卡概率问题。详见 [CHANGELOG.md](docs/CHANGELOG.md)。
+最新变更：NR 价格修复 + 工作流文档全面更新。详见 [CHANGELOG.md](docs/CHANGELOG.md)。
 
-### 🔧 近期维护（2026-03-06 深夜）— 辅助包 PSER 概率修复
-- ✅ 修复 BLZD 辅助包（+1特别包）中 PSER 稀有度真红莲新星龙几乎不可能出现的问题
-- ✅ 原因：旧逻辑先从 20 张卡中随机选 1 张，再判定 PSER。只有 JPS06 有 PSER 版本（1/20=5%），导致即使命中 PSER 概率，19/20 情况下选到的卡没有 PSER 版本而被浪费
-- ✅ 修复：改为先判定是否出 PSER，如果命中则从有 PSER 版本的卡中选择；否则正常随机选卡
-- ✅ PSER 概率从 ~0.63%（约 160 盒出 1 次）修正为 ~12.5%（约 8 盒出 1 次，一箱 24 盒约出 3 个）
-
-### 🔧 近期维护（2026-03-06 晚间 #2）— BLZD 卡图 CDN 切换 + 本地备份
-- ✅ BLZD 卡图从 YGOCDB CDN（被 Chrome ORB 安全策略拦截）切换到 S3 CDN（正常加载）
-- ✅ 新增 `data/ocg/blzd_image_map.json`：100 张卡的 password → YugiohMeta S3 CDN metaId 映射表（正包 80 + 辅助包 20）
-- ✅ 新增 `data/ocg/images/blzd/`：100 张卡的本地 webp 备份（_w200 + _w420，共 200 文件，7.0MB）
-- ✅ `packs.json` 中 BLZD 新增 `imageMapFile` 和 `localImagesDir` 配置
-- ✅ 新增工具脚本 `tools/build_blzd_image_map.py`：自动从 YugiohMeta + YGOCDB 生成映射表并下载卡图
-- ✅ 图源优先级：S3 CDN 主图源 → Cloudflare 本地 webp 备份 → YGOCDB CDN 回退
-- ✅ 辅助包（BLZD-JPS01~JPS20）20 张经典复刻卡的 metaId 通过 YugiohMeta API 搜索英文名获取
-
-### 🔧 近期维护（2026-03-06 晚间）— LCP 优化：本地封面图优先加载
-- ✅ OCG 卡包封面图改为本地优先加载（`data/ocg/covers/{packCode}-{type}.png`），消除日本服务器 5-7 秒延迟
-- ✅ 主界面卡包列表使用 `-pack` 后缀图片，开包详情界面使用 `-box` 后缀图片
-- ✅ 新增 `getPackCoverFallbackUrl()` 函数，从 `getPackCoverImageUrl()` 中抽出原有外部图源逻辑作为 fallback
-- ✅ `getPackCoverImageUrl()` 新增 `type` 参数（`'pack'` / `'box'`），OCG 模式下优先返回本地路径
-- ✅ `handlePackCoverError()` 改造：本地图 404 → 自动 fallback 到外部 URL → 首卡卡图 → emoji
-- ✅ 开包详情页 onerror 增加本地图 fallback 逻辑（本地 → 外部 URL → 隐藏图片）
-- ✅ 采用 onerror 机制（方案2），无需维护本地图片列表，添加新图片自动生效
-- ✅ 封面图命名格式：`{packCode}-pack.png`（主界面）、`{packCode}-box.png`（详情页）、`{packCode}-spack.png`（预留）
-- ✅ 已有本地封面图：LOCH（3张）、BLZD（3张）
-
-### 🔧 近期维护（2026-03-06）
-- ✅ 修复 LOSP 卡片无法获取到市场价格的问题
-- ✅ 修正 loch_prices.json 中 10 张 LOSP 卡片的价格键名，从 PSER 改为 PSER-OF，与卡片数据中的稀有度保持一致
-
-### 🔧 近期维护（2026-03-05 晚间 #2）
-- ✅ 开包结果页新增快捷「再开」按钮，位于稀有度统计/特别包区域下方、卡片列表上方
-- ✅ 按钮自动适配当前开包模式（pack/box/3box），无需滚动到底部即可连续开包
-- ✅ 按钮样式与底部按钮风格统一：单包金色、整盒紫金渐变、3盒蓝金渐变
-- ✅ 余额不足时快捷按钮自动置灰并显示余额不足提示
-- ✅ 新增全局变量 `currentOpenMode` 追踪当前开包模式
-- ✅ 底部按钮保留不变，快捷按钮为额外的操作入口
-
-### 🔧 近期维护（2026-03-05 晚间）- ✅ 新玩家初始金币从 10万 调整为 100万（已有存档用户不受影响）
-- ✅ 金币不足提示文案优化：引导玩家去「⚙️ 设置」中手动添加金币（替代原"点击顶部货币栏兑换"文案）
-- ✅ 大数字缩写展示：金币余额、背包总价值/总盈亏/卡片价格等，≥1万显示为"x.xx万"，≥1亿显示为"x.xx亿"，节省空间
-- ✅ 「开发者工具」重命名为「设置」，图标从🔧改为⚙️；添加金币按钮数字支持缩写展示（100万）
-- ✅ 背包系统新增「总盈亏」展示：总盈亏 = 背包总市场价值 - 累计开包花费
-- ✅ 新增 localStorage Key：`ygo_inventory_spent`（累计开包花费，历史记录不受价格调整影响）
-- ✅ 盈利显示绿色（+号），亏损显示红色（-号）
-- ✅ 开包时自动记录花费金额，重置游戏时清零
-- ✅ 优化 Cloudflare KV 写入频率：开包统计上报改为缓冲区 + 节流合并（30秒合并一次），预计减少 70-80% KV 写入
-- ✅ 服务端 API 支持批量上报格式，全局统计只写入一次，卡包索引只在新增时写入
-- ✅ 页面关闭时通过 sendBeacon 发送最后一批缓冲数据，确保数据不丢失
-- ✅ KV 写入限流保护（方案A+C）：上报失败时数据持久化到 localStorage，后续自动补发；服务端追踪每日写入次数，接近限额（900/1000）时返回降级信号，前端暂停远程上报，次日自动恢复
-- ✅ 新增 localStorage Key：`ygo_pending_reports`（待补发数据）、`ygo_report_throttled`（节流状态）
-- ✅ 服务端新增 KV Key：`meta:daily_writes`（每日写入计数，UTC 跨天自动重置）
-- ✅ KV 冗余清理：手动删除 `stats:TEST`（测试数据）、清理 `index:packs` 中的 TEST
-- ✅ KV 写入进一步优化：POST 上报不再写入 `stats:_all`（全局统计改为各卡包实时累加计算）、不再检查/更新 `index:packs`（索引已固化），每次上报 KV 写入从 3读+3写 降为 1读+1写（单卡包场景），写入量减少约 66%
-- ✅ **KV 免费额度深度优化**（触达 1000 次/天写入限额后的紧急优化）：
-  - ✅ 服务端：`meta:daily_writes` 改用 Worker 内存变量追踪 + 每 50 次采样持久化（写入量减少 ~50%）
-  - ✅ 服务端：GET 查询添加 30 秒内存缓存，绝大多数请求零 KV 读取（读取量减少 ~80%）
-  - ✅ 服务端：恢复 `stats:_all` 懒更新策略，普通 GET 查询从 1+N 次 KV 读取降为 0-1 次
-  - ✅ 前端：GET 缓存从 60 秒延长到 5 分钟，上报合并间隔从 30 秒延长到 60 秒
-  - ✅ 前端：新增单用户每日上报上限（50 次），防止少量用户大量开包刷爆服务端额度
-  - ✅ 新增 localStorage Key：`ygo_daily_report_count`（用户每日上报计数，UTC 跨天重置）
-  - 📊 预计优化效果：单日 KV 写入从 1000+ 降至 200-400 次，远离免费限额
-- ✅ 新增市场价格系统（`js/priceSystem.js`）：独立的价格查询模块，从 `data/ocg/prices/` 加载集换社市场价格
-- ✅ 新增 LOCH+LOSP 价格数据（`data/ocg/prices/loch_prices.json`）：90张卡各稀有度版本真实市场价（OCR 识别）
-- ✅ 背包系统接入真实价格：优先显示市场价格（🪙金币），无市场数据时回退到固定金币价格
-- ✅ 价格数据与卡片数据分离（方案A），便于独立更新和扩展
-
-### 🔧 近期维护（2026-03-05 晚间）
-- ✅ 修复背包中同一张卡的不同稀有度版本无法区分显示的问题（GMR-OF、PSER-OF、UR-OF、CR 等全部混显为同一条记录）
-- ✅ 背包卡片渲染改为按「cardId + rarity」展开，同一张卡的不同稀有度版本分开显示
-- ✅ 修复背包排序（稀有度排序、价格排序）使用错误稀有度值的问题
-- ✅ 新增 `getExpandedCards()` 函数，将 `rarityVersionsOwned` 展开为独立条目
-- ✅ 所有 12 种稀有度的边框样式、角标颜色和发光效果现已正确显示
-
-### 🔧 近期维护（2026-03-05 下午）
-- ✅ 新增 BLZD 价格配置文件（`data/ocg/prices/blzd_prices.json`）：整盒 300🪙，单包 10🪙
-- ✅ 卡包金币价格改为从价格配置文件优先读取（`PriceSystem.getPackPrice`），无配置时回退到 `packs.json` 的 `price` 字段
-- ✅ 整盒价格不再用「单包价 × 包数」计算，而是直接从价格配置文件的 `box` 字段读取
-- ✅ LOCH 价格：1包=22🪙，1盒=385🪙（配置），3盒=1155🪙
-- ✅ BLZD 价格：1包=10🪙，1盒=300🪙（配置）
-- ✅ 修改涉及：开包扣费、按钮价格显示、卡包列表价格、盈亏计算，全部统一使用 PriceSystem
-
-### 🔧 近期维护（2026-03-04）
-- ✅ LOCH/LOSP 卡图 CDN 切换为 S3 优先 + Cloudflare 本地备份（已验证通过）
-- 🔴 YGOProDeck 图源限流（Cloudflare Turnstile 人机验证拦截，挂起中）
-- 🗑️ KONAMI 卡图代理问题已从待处理列表移除（无法解决）
-- 🟡 新增待处理事项：优化网页 UI（大方向，待细化）
-- 🟢 OCR 价格提取工具（`tools/ocr_price.py`）— 基于 PaddleOCR 3.x，可从集换社价格截图中提取卡名、编号、稀有度、价格
+> **📌 规则：DEVELOPMENT.md 不记录近期更新，所有变更统一记录到 [CHANGELOG.md](docs/CHANGELOG.md)。**
 
 ### 🐍 Python OCR 工具环境
 - **虚拟环境**：`tools/venv/`（Python 3.11 + PaddlePaddle-GPU 3.0.0 CUDA 12.6 + PaddleOCR 3.4.0）
 - **GPU 加速**：RTX 4060 (8GB VRAM)，每段识别 ~1 秒（CPU 约 8-10 秒/段，提速约 8x）
-- **用法**：`tools/venv/Scripts/python.exe tools/ocr_price.py <截图路径> --output <输出JSON>`
+- **一键工作流**：`tools/venv/Scripts/python.exe tools/ocr_workflow.py <日期>`（推荐）
+- **单独调用**：`tools/venv/Scripts/python.exe tools/ocr_price.py <截图路径> --output <输出JSON>`
 - **注意**：PaddleOCR 不支持 Python 3.14，必须使用 3.11 虚拟环境运行
 
 ### 🔌 PaddleOCR MCP Server（2026-03-04 新增）
@@ -188,3 +102,35 @@
 4. **数据字段匹配** — JS 读取的字段与数据源一致
 5. **事件委托正确** — `e.target.closest()` 选择器能匹配目标
 6. **移动端兼容** — 触摸事件、弹窗关闭等功能正常
+
+---
+
+## 🪝 会话结束 Hooks（必须执行）
+
+> **每次对话结束前，AI 助手必须逐项检查以下 hooks，满足触发条件的必须执行。**
+> **跳过任何一项都可能导致文档不同步或版本号混乱，这是严重的遗漏。**
+
+| # | Hook 名称 | 检查内容 | 触发条件 |
+|---|----------|---------|----------|
+| 1 | **CHANGELOG 同步** | 本次会话的所有代码/文档变更已记录到 `docs/CHANGELOG.md` 对应版本中 | 任何代码或文档被修改 |
+| 2 | **changelog.json 同步** | `data/changelog.json` 已同步更新（若版本号变更） | 版本号发生变化 |
+| 3 | **版本号三处一致** | `APP_VERSION`（index.html）、`changelog.json`、`CHANGELOG.md` 三处版本号一致 | 版本号发生变化 |
+### 执行流程
+
+```
+会话即将结束
+  │
+  ├─ 本次是否有代码/文档变更？
+  │   ├─ 是 → 执行 Hook 1（CHANGELOG 同步）
+  │   └─ 否 → 跳过
+  │
+  └─ 本次是否有版本号变更？
+      ├─ 是 → 执行 Hook 2（changelog.json 同步）
+      ├─ 是 → 执行 Hook 3（版本号三处一致检查）
+      └─ 否 → 跳过
+```
+
+### ⚠️ 常见遗漏提醒
+- **最容易遗漏的是 Hook 1**：修改了代码却忘记更新 CHANGELOG，曾发生过三次遗漏
+- DEVELOPMENT.md 不记录近期更新，所有变更**只需记录到 CHANGELOG.md**，避免双文件同步导致的遗漏
+- 如果本次会话只是回答问题、没有修改任何文件，则所有 hooks 均可跳过

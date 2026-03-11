@@ -52,9 +52,16 @@ YGOCardGame/
 │   │   ├── packs.json        ← OCG 卡包配置
 │   │   ├── cards/*.json      ← 各卡包的卡牌数据（含完整详情）
 │   │   └── covers/           ← 卡包封面图
-│   ├── common/cards.json     ← YGOCDB 全量卡牌数据库
+│   ├── common/rarities.json  ← 全局稀有度定义
 │   ├── changelog.json        ← 更新日志
 │   └── fallback_cards.js     ← 离线备用数据
+├── tools/
+│   ├── db/cards.json         ← YGOCDB 全量卡牌数据库（12MB，不提交到 Git）
+│   ├── update_cards_db.py    ← 卡牌数据库更新脚本
+│   ├── build_pack_data.py    ← 卡包数据构建脚本
+│   ├── fetch_packs.py        ← 卡包数据抓取工具
+│   ├── ocr_workflow.py       ← OCR 价格更新工作流
+│   └── ...                   ← 其他工具脚本
 ├── functions/api/             ← Cloudflare Pages Functions
 ├── DEVELOPMENT.md            ← AI 协作开发指南（详细开发文档）
 └── README.md                 ← 本文件
@@ -70,9 +77,9 @@ YGOCardGame/
 
 | 脚本 | 用途 |
 |------|------|
-| `python build_pack_data.py` | 构建 OCG 卡包本地数据（注入卡牌详情） |
-| `python fetch_packs.py list ocg` | 从 YGOCDB 抓取卡包列表 |
-| `python fetch_packs.py fetch <ID> --write` | 抓取指定卡包并写入本地文件 |
+| `python tools/build_pack_data.py` | 构建 OCG 卡包本地数据（注入卡牌详情） |
+| `python tools/fetch_packs.py list ocg` | 从 YGOCDB 抓取卡包列表 |
+| `python tools/fetch_packs.py fetch <ID> --write` | 抓取指定卡包并写入本地文件 |
 
 ---
 

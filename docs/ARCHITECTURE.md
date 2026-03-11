@@ -10,7 +10,7 @@
 |------|------|------|
 | **卡包列表** | `data/ocg/packs.json` | 卡包元信息索引（轻量级） |
 | **卡牌收录** | `data/ocg/cards/*.json` | 每个卡包独立文件，含 cardIds + cardData |
-| **卡牌详情** | `cardData` 节点（本地） | 由 `build_pack_data.py` 从 `cards.json` 提取注入 |
+| **卡牌详情** | `cardData` 节点（本地） | 由 `build_pack_data.py` 从 `tools/db/cards.json` 提取注入 |
 | **中文名** | `cardData.cn_name`（本地） | 不再调用 YGOCDB API |
 | **卡图** | YGOCDB CDN (`cdn.233.momobako.com`) | 日文版卡图（默认图源），新卡包可通过 `imageMapFile` 切换到 S3 CDN |
 | **本地卡图** | `data/ocg/images/{packCode}/`（可选） | 通过 `localImagesDir` 配置，优先从本地加载卡图，避免依赖国外 CDN（v1.5.33+） |
@@ -77,7 +77,7 @@ buildOCGCardsFromLocalData()（纯本地转换）
 
 | `data/changelog.json` | 更新日志（网页内展示） |
 | `data/fallback_cards.js` | 离线兜底卡牌数据 |
-| `data/common/cards.json` | YGOCDB 全量数据库（12MB，13900+ 张卡），通过 `update_cards_db.py` 自动更新 |
+| `tools/db/cards.json` | YGOCDB 全量数据库（12MB，13900+ 张卡），通过 `update_cards_db.py` 自动更新（不提交到 Git） |
 | `data/common/rarities.json` | 全局稀有度定义文件，管理所有稀有度元数据（名称/描述/颜色/分类等） |
 
 ### OCG 卡包数据目录结构
