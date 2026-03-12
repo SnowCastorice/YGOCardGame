@@ -3,7 +3,7 @@
 > 复刻游戏王实体卡包的开包体验！选择经典卡包，撕开包装，看看你能抽到什么稀有卡牌！
 
 [![Deploy Status](https://img.shields.io/badge/deploy-Cloudflare%20Pages-orange?logo=cloudflare)](https://ygocardgame.pages.dev/)
-[![Version](https://img.shields.io/badge/version-v1.4.6-blue)](#)
+[![Version](https://img.shields.io/badge/version-v1.7.6-blue)](#)
 [![License](https://img.shields.io/badge/license-非商业用途-green)](#版权声明)
 
 👉 **[点击这里在线体验！](https://ygocardgame.pages.dev/)**
@@ -12,14 +12,20 @@
 
 ## ✨ 功能特性
 
-- 🎴 **真实卡包开封** — OCG 经典卡包，还原实体开包体验（每包 5 张）
-- 🎯 **完整稀有度体系** — 支持 N / NR / R / SR / UR / SER / UTR / PSER 八种稀有度
-- �️ **高清卡图** — 卡图来自 YGOCDB CDN，日文版高清卡图
-- � **货币系统** — 金币 / 钻石双货币，开包消耗，可互相兑换
-- 🎒 **背包收集** — 自动记录所有开到的卡片，支持多种排序和统计
-- � **卡包预览** — 开包前可预览卡包内所有卡片及收集进度
-- 📴 **离线可用** — OCG 模式采用本地数据，零 API 调用，加载几乎瞬时
-- � **移动端专属** — 为手机用户设计，桌面端居中展示
+### 🎴 核心玩法
+- **真实卡包开封** — OCG 经典卡包，还原实体开包体验（开包概率，+1包体验）
+
+### 🎯 稀有度系统
+- **LOCH 破框卡** — 浮雕破框、棱镜秘钻破框、特级大师破框三种超稀有版本
+
+###  经济系统
+- **市场价格** — 基于「集换社」真实市场价格的卡片价值系统
+- **盈亏统计** — 背包显示总市场价值与累计开包花费的盈亏对比
+
+### 📦 收藏与管理
+- **背包系统** — 自动记录所有开到的卡片，支持多种排序和统计
+- **图鉴系统** — 卡包预览 + 收集进度追踪
+- **开包统计** — 显示个人开包数 / 全球开包数
 
 ---
 
@@ -31,8 +37,8 @@
 |------|------|
 | HTML + CSS + JavaScript | 页面结构、样式、游戏逻辑 |
 | IndexedDB | 卡牌数据本地缓存 |
-| YGOCDB CDN | 日文版卡图来源 |
 | Cloudflare Pages | 静态部署 + 无服务器函数 |
+| Cloudflare KV | 全局开包统计存储 |
 
 ---
 
@@ -40,31 +46,16 @@
 
 ```
 YGOCardGame/
-├── index.html                ← 游戏入口
-├── css/style.css             ← 全部样式
-├── js/
-│   ├── api.js                ← API 调用 + 缓存管理
-│   ├── game.js               ← 游戏核心逻辑
-│   ├── currency.js           ← 货币系统
-│   └── inventory.js          ← 背包系统
+├── index.html                    ← 游戏入口
+├── css/style.css                 ← 全部样式
+├── js/                           ← 核心逻辑（游戏、背包、货币、价格等）
 ├── data/
-│   ├── ocg/
-│   │   ├── packs.json        ← OCG 卡包配置
-│   │   ├── cards/*.json      ← 各卡包的卡牌数据（含完整详情）
-│   │   └── covers/           ← 卡包封面图
-│   ├── common/rarities.json  ← 全局稀有度定义
-│   ├── changelog.json        ← 更新日志
-│   └── fallback_cards.js     ← 离线备用数据
-├── tools/
-│   ├── db/cards.json         ← YGOCDB 全量卡牌数据库（12MB，不提交到 Git）
-│   ├── update_cards_db.py    ← 卡牌数据库更新脚本
-│   ├── build_pack_data.py    ← 卡包数据构建脚本
-│   ├── fetch_packs.py        ← 卡包数据抓取工具
-│   ├── ocr_workflow.py       ← OCR 价格更新工作流
-│   └── ...                   ← 其他工具脚本
-├── functions/api/             ← Cloudflare Pages Functions
-├── DEVELOPMENT.md            ← AI 协作开发指南（详细开发文档）
-└── README.md                 ← 本文件
+│   ├── ocg/                      ← OCG 数据（卡包配置、卡牌数据、市场价格、封面图）
+│   └── common/                   ← 公共数据（稀有度定义、离线备用）
+├── tools/                        ← 开发工具（OCR 价格更新、卡包数据构建等）
+├── functions/api/                ← Cloudflare Pages Functions
+├── admin/                        ← 管理后台
+└── docs/                         ← 项目文档
 ```
 
 ---
@@ -73,13 +64,30 @@ YGOCardGame/
 
 本项目使用 AI 辅助开发，详细的开发规范、数据架构、工具脚本说明等信息，请参阅 **[DEVELOPMENT.md](./DEVELOPMENT.md)**。
 
-### 常用工具脚本
+### OCR 价格更新
 
-| 脚本 | 用途 |
+- **一键工作流**：`tools/venv/Scripts/python.exe tools/ocr_workflow.py <日期>`
+- **自动流程**：截图裁切 → OCR 识别 → 解析价格 → 人工确认 → 合并 JSON
+
+详见：[docs/TOOLS.md](docs/TOOLS.md)
+
+---
+
+## 📖 文档索引
+
+| 文档 | 说明 |
 |------|------|
-| `python tools/build_pack_data.py` | 构建 OCG 卡包本地数据（注入卡牌详情） |
-| `python tools/fetch_packs.py list ocg` | 从 YGOCDB 抓取卡包列表 |
-| `python tools/fetch_packs.py fetch <ID> --write` | 抓取指定卡包并写入本地文件 |
+| [docs/CHANGELOG.md](docs/CHANGELOG.md) | 近期变更记录 |
+| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | AI 协作开发指南 |
+| [docs/TOOLS.md](docs/TOOLS.md) | 工具脚本使用说明 |
+
+---
+
+## 🌐 项目信息
+
+- **GitHub**：https://github.com/SnowCastorice/YGOCardGame
+- **线上地址**：https://ygocardgame.pages.dev/
+- **部署**：Cloudflare Pages
 
 ---
 

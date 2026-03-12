@@ -237,7 +237,8 @@ tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step ocr_rows   #
 tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step card_cut   # 步骤3: 单卡裁切
 tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step ocr_cards  # 步骤4: 单卡OCR
 tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step parse      # 步骤5: 解析价格
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step merge      # 步骤6: 合并到JSON
+tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step review     # 步骤6: 人工确认
+tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step merge      # 步骤7: 合并到JSON
 
 # 从某一步开始执行到最后（跳过已完成的步骤）
 tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --from card_cut   # 从单卡裁切开始
@@ -297,9 +298,13 @@ flowchart TD
     C --> D["3. 单卡裁切 (card_cut)<br>card_cutter.py 十等分"]
     D --> E["4. 单卡OCR (ocr_cards)<br>PaddleOCR PP-OCRv5"]
     E --> F["5. 解析价格 (parse)<br>extract_prices.py v7"]
-    F --> G["6. 合并到JSON (merge)<br>merge_prices.py"]
-    G --> H["7. 人工校验<br>price_comparison.csv"]
-    H --> I["8. 推送部署"]
+    F --> G["6. 人工确认 (review)<br>异常条目确认"]
+    G --> G1{"用户确认"}
+    G1 -->|通过| H["7. 合并到JSON (merge)<br>merge_prices.py"]
+    G1 -->|拒绝| G2["调整价格后重新确认"]
+    G2 --> G
+    H --> I["8. 人工校验<br>price_comparison.csv"]
+    I --> J["9. 推送部署"]
 ```
 
 ### 数据流图
@@ -321,13 +326,18 @@ flowchart LR
         PP["结构化价格<br>parsed_prices_v6.json"]
     end
     subgraph 步骤6
+        RI["待确认清单<br>review_items.json"]
+        CI["已确认清单<br>confirmed_items.json"]
+    end
+    subgraph 步骤7
         LP["loch_prices.json"]
         BP["blzd_prices.json"]
         CSV["price_comparison.csv"]
     end
-    S --> R --> RO --> CP --> CO --> PP --> LP
-    PP --> BP
-    PP --> CSV
+    S --> R --> RO --> CP --> CO --> PP --> RI
+    RI --> CI --> LP
+    CI --> BP
+    CI --> CSV
 ```
 
 ### 第 0 步：截图准备
@@ -456,7 +466,95 @@ flowchart TD
 | 稀有度遮挡 | UI 元素遮挡稀有度标签 | 价格反推稀有度 + 硬修复兜底 |
 | GMR-OF 双版本 | 同编号两条 GMR-OF | 左侧=亚洲版，右侧=日本版，取亚洲版 |
 
-### 第 6 步：合并到价格 JSON（merge）
+### 第 6 步：人工确认（review）
+
+#### ⚠️ 必须执行：在更新价格前进行人工确认
+
+在执行合并到JSON之前，必须先让用户确认本次变更中需要人工审核的异常条目。这一步确保只有经过用户确认的价格才会被写入最终的JSON文件。
+
+##### 需要确认的场景
+
+以下异常情况会触发人工确认：
+
+| 检测规则 | 描述 | 风险级别 |
+|---------|------|---------|
+| GMR-OF < ¥1000 | GMR 不应如此便宜 | 🔴 高 |
+| 基础稀有度(UR/SR/R/N) > ¥100 | 低级稀有度不应太贵 | 🔴 高 |
+| SER ≈ PSER-OF | 同行串扰（相邻卡片价格相互影响） | 🟡 中 |
+| SER ≥ PSER | 低级比高级贵（疑似错位） | 🟡 中 |
+| 价格变化 > 5x | 剧烈波动，可能识别错误 | 🟡 中 |
+| BLZD N/R > ¥5 | BLZD 低级稀有度异常 | 🟡 中 |
+| BLZD SR > ¥50 | BLZD 中级稀有度异常 | 🟡 中 |
+| PSER < ¥1 | 可能是 N/R 串扰 | 🟢 低 |
+
+##### 确认方式
+
+**方式 1：交互式确认（推荐）**
+```bash
+tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step review
+```
+
+- 脚本逐条展示需要确认的条目
+- 用户输入 `y`（确认）、`n`（跳过）、`a`（全部确认）
+- 生成 `test_output/confirmed_items.json`（已确认清单）
+
+**方式 2：手动编辑确认文件**
+```bash
+# 生成待确认清单
+tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step review --preview
+
+# 编辑 test_output/review_items.json，标记确认状态
+# 手动修改后继续合并步骤
+```
+
+##### 确认清单格式
+
+待确认清单 `test_output/review_items.json`：
+```json
+{
+  "LOCH-JP067": {
+    "sc_name": "宵星之机界骑士",
+    "rarity": "UR",
+    "old_price": 15,
+    "new_price": 1500,
+    "change_type": "剧烈波动 (>5x)",
+    "reason": "价格从 15 变化到 1500，增长 100 倍",
+    "confirmed": false
+  },
+  "BLZD-JP028": {
+    "sc_name": "无限泡影",
+    "rarity": "NR",
+    "old_price": 3,
+    "new_price": 10,
+    "change_type": "BLZD低级稀有度异常",
+    "reason": "NR 稀有度价格 > ¥5",
+    "confirmed": false
+  }
+}
+```
+
+已确认清单 `test_output/confirmed_items.json`：
+- 格式相同，但 `confirmed` 字段根据用户决定设置
+- 合并步骤只更新 `confirmed: true` 的条目
+
+##### 常见决策建议
+
+| 情况 | 建议 |
+|------|------|
+| GMR-OF < ¥1000 | ❌ 跳过（可能是识别错误） |
+| SER ≈ PSER | ❌ 跳过（同行串扰） |
+| 价格变化 > 5x | ⚠️ 检查是否是真实涨价（如禁卡解禁） |
+| 基础稀有度 > ¥100 | ❌ 跳过（可能是串扰或识别错误） |
+| BLZD 异常 | ⚠️ BLZD 价格普遍较高，根据实际情况判断 |
+
+##### 输出文件
+
+| 文件 | 说明 |
+|------|------|
+| `test_output/review_items.json` | 待确认清单（需人工审核的条目） |
+| `test_output/confirmed_items.json` | 已确认清单（用户确认后生成） |
+
+### 第 7 步：合并到价格 JSON（merge）
 
 ```bash
 tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step merge
@@ -464,7 +562,17 @@ tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step merge
 
 调用 `merge_prices.py`，将解析结果智能合并到最终价格文件。
 
-#### 异常检测规则
+> ⚠️ **前提条件**：必须先完成第6步人工确认，生成 `test_output/confirmed_items.json`
+
+#### 合并逻辑
+
+1. 读取 `test_output/confirmed_items.json`（已确认清单）
+2. 只更新 `confirmed: true` 的条目
+3. 保留旧价格（未确认或 `confirmed: false` 的条目）
+
+#### 合并时附加的校验规则
+
+在合并阶段还会应用以下严格校验（直接保留旧值，不产生确认提示）：
 
 | 检测规则 | 描述 | 处理方式 |
 |---------|------|---------|
@@ -493,24 +601,23 @@ N 和 NR 是互斥的非官方稀有度定义。不同信息源（NWBBS vs 集�
 | `test_output/price_comparison.csv` | 价格对照表（CSV，Excel 可打开） |
 | `test_output/ocr_recognized_prices.csv` | OCR 原始识别价格表 |
 
-### 第 7 步：人工校验
+### 第 8 步：人工校验
 
 对照表 `test_output/price_comparison.csv` 包含每条价格的详细信息：
 - ✅ 正常更新
-- ⚠️ 保留旧值（疑似串扰/异常）
+- ⚠️ 保留旧值（合并阶段的严格校验）
 - —（OCR 未识别）
 
 **重点检查项**：
-1. ⚠️ 标记的数据是否正确被拦截
-2. SER 和 PSER 价格相同的情况（通常是串扰）
-3. 价格变化超过 5 倍的数据
-4. LOSP 辅助包价格是否需要更新
-5. 卡包/卡盒价格是否有变动
-6. GMR-OF 双版本是否正确采用亚洲版价格
-7. `--`（未收录）标记的数据是否保留了合理的旧价格
-8. NR 卡片价格是否正确（N/NR 互补是否生效）
+1. 确认所有异常条目已通过第6步人工确认
+2. 检查合并阶段的严格校验是否正确拦截了问题数据
+3. LOSP 辅助包价格是否需要更新
+4. 卡包/卡盒价格是否有变动
+5. GMR-OF 双版本是否正确采用亚洲版价格
+6. `--`（未收录）标记的数据是否保留了合理的旧价格
+7. NR 卡片价格是否正确（N/NR 互补是否生效）
 
-### 第 8 步：推送部署
+### 第 9 步：推送部署
 
 确认数据无误后：
 
@@ -538,10 +645,12 @@ tools/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step card_cut
 tools/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step ocr_cards
 # 5. 解析价格
 tools/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step parse
-# 6. 合并到价格文件
+# 6. 人工确认（必须）
+tools/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step review
+# 7. 合并到价格文件
 tools/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step merge
-# 7. 检查 test_output/price_comparison.csv
-# 8. 提交推送
+# 8. 检查 test_output/price_comparison.csv
+# 9. 提交推送
 git add data/ocg/prices/ && git commit -m "更新卡片市场价格" && git push
 
 # ===== 独立脚本（不通过 workflow 调用）=====
@@ -580,7 +689,8 @@ NR 是非官方定义的稀有度（封入率更低的 N 卡）。集换社和 N
 | `tools/card_cutter.py` | 单卡十等分裁切 | 步骤 3 |
 | `tools/batch_ocr_cards.py` | 单卡 OCR 批量识别 | 步骤 4 |
 | `tools/extract_prices.py` | OCR 结果解析（v7 合并卡名匹配版） | 步骤 5 |
-| `tools/merge_prices.py` | 价格智能合并 + CSV 对照表 | 步骤 6 |
+| `tools/review_prices.py` | 价格异常人工确认 | 步骤 6 |
+| `tools/merge_prices.py` | 价格智能合并 + CSV 对照表 | 步骤 7 |
 
 #### 辅助工具
 
@@ -618,8 +728,10 @@ NR 是非官方定义的稀有度（封入率更低的 N 卡）。集换社和 N
 | `card_ocr_results.json` | 单卡 OCR 识别结果（**核心数据**） | 步骤 4 |
 | `parsed_prices_v6.json` | 解析后的结构化价格数据 | 步骤 5 |
 | `price_extract_summary.txt` | 价格提取汇总报告 | 步骤 5 |
-| `price_comparison.csv` | 价格对照表（CSV，Excel 可打开） | 步骤 6 |
-| `ocr_recognized_prices.csv` | OCR 原始识别价格表 | 步骤 6 |
+| `review_items.json` | 待确认清单（需人工审核的异常条目） | 步骤 6 |
+| `confirmed_items.json` | 已确认清单（用户确认后的条目） | 步骤 6 |
+| `price_comparison.csv` | 价格对照表（CSV，Excel 可打开） | 步骤 7 |
+| `ocr_recognized_prices.csv` | OCR 原始识别价格表 | 步骤 7 |
 
 #### 截图存档
 
