@@ -223,7 +223,7 @@ CROP_OFFSET_BOTTOM = 125       # 裁切下沿偏移
 
 ## `ocr_workflow.py` — OCR 价格更新一键工作流 ⭐
 
-整合 集换社截图裁切 → 行级OCR → 单卡裁切 → 单卡OCR → 结构化解析 → 合并到价格JSON 的完整 6 步流程。
+整合 截图重命名 → 行裁切 → 单卡裁切 → 单卡OCR → 结构化解析 → 合并到价格JSON 的完整 6 步流程。
 
 ### 🚀 快速开始（推荐）
 
@@ -232,13 +232,12 @@ CROP_OFFSET_BOTTOM = 125       # 裁切下沿偏移
 tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309
 
 # 分步执行
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step cut        # 步骤1: 行裁切
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step ocr_rows   # 步骤2: 行级OCR
+tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step rename     # 步骤1: 截图重命名
+tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step cut        # 步骤2: 行裁切
 tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step card_cut   # 步骤3: 单卡裁切
 tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step ocr_cards  # 步骤4: 单卡OCR
 tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step parse      # 步骤5: 解析价格
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step review     # 步骤6: 人工确认
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step merge      # 步骤7: 合并到JSON
+tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step merge      # 步骤6: 合并到JSON
 
 # 从某一步开始执行到最后（跳过已完成的步骤）
 tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --from card_cut   # 从单卡裁切开始
@@ -272,6 +271,8 @@ tools/venv/Scripts/python.exe tools/card_cutter.py
 
 ## `batch_ocr_cards.py` — 单卡批量 OCR 工具
 
+> ℹ️ 该功能已内嵌到 `ocr_workflow.py` 的 `step_ocr_cards()` 中，无需独立调用。
+
 使用 PaddleOCR PP-OCRv5 Server 高精度模型，批量识别所有单卡裁切图。
 
 - 支持断点续传（已处理的文件自动跳过）
@@ -293,18 +294,14 @@ tools/venv/Scripts/python.exe tools/batch_ocr_cards.py
 
 ```mermaid
 flowchart TD
-    A["0. 截图准备<br>集换社App长截图"] --> B["1. 行裁切 (cut)<br>ocr_row_cutter.py"]
-    B --> C["2. 行级OCR (ocr_rows)<br>PaddleOCR PP-OCRv5"]
-    C --> D["3. 单卡裁切 (card_cut)<br>card_cutter.py 十等分"]
+    A["0. 截图准备<br>集换社App长截图"] --> A1["1. 截图重命名 (rename)<br>OCR识别卡包前缀"]
+    A1 --> B["2. 行裁切 (cut)<br>card_rect_cutter.py<br>OpenCV矩形定位 115px"]
+    B --> D["3. 单卡裁切 (card_cut)<br>card_cutter.py 十等分"]
     D --> E["4. 单卡OCR (ocr_cards)<br>PaddleOCR PP-OCRv5"]
     E --> F["5. 解析价格 (parse)<br>extract_prices.py v7"]
-    F --> G["6. 人工确认 (review)<br>异常条目确认"]
-    G --> G1{"用户确认"}
-    G1 -->|通过| H["7. 合并到JSON (merge)<br>merge_prices.py"]
-    G1 -->|拒绝| G2["调整价格后重新确认"]
-    G2 --> G
-    H --> I["8. 人工校验<br>price_comparison.csv"]
-    I --> J["9. 推送部署"]
+    F --> H["6. 合并到JSON (merge)<br>merge_prices.py"]
+    H --> I["7. 人工校验<br>price_comparison.csv"]
+    I --> J["8. 推送部署"]
 ```
 
 ### 数据流图
@@ -315,8 +312,8 @@ flowchart LR
         S["集换社截图<br>tools/OCRPics/日期/"]
     end
     subgraph 步骤1-2
+        RN["重命名截图<br>PACK+序号.png"]
         R["行裁切图 row_pics/<br>2064×115px/行"]
-        RO["行OCR结果<br>row_ocr_results.json"]
     end
     subgraph 步骤3-4
         CP["单卡图 card_pics/<br>~206×115px/卡"]
@@ -326,18 +323,13 @@ flowchart LR
         PP["结构化价格<br>parsed_prices_v6.json"]
     end
     subgraph 步骤6
-        RI["待确认清单<br>review_items.json"]
-        CI["已确认清单<br>confirmed_items.json"]
-    end
-    subgraph 步骤7
         LP["loch_prices.json"]
         BP["blzd_prices.json"]
         CSV["price_comparison.csv"]
     end
-    S --> R --> RO --> CP --> CO --> PP --> RI
-    RI --> CI --> LP
-    CI --> BP
-    CI --> CSV
+    S --> RN --> R --> CP --> CO --> PP --> LP
+    PP --> BP
+    PP --> CSV
 ```
 
 ### 第 0 步：截图准备
@@ -363,30 +355,28 @@ flowchart LR
 
 文件名的前缀（`LOCH`/`BLZD`/`LOSP`）用于自动判断卡包归属，**必须以卡包名开头**。
 
-### 第 1 步：行裁切（cut）
+### 第 1 步：截图重命名（rename）
+
+```bash
+tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step rename
+```
+
+对所有未命名的截图（MuMu默认命名等）做一次OCR识别卡包前缀，然后按卡包分组编号重命名为 `{PACK}{序号}.png`（如 `LOCH01.png`、`BLZD03.png`）。已经以卡包名开头的截图跳过OCR。
+
+- **输入**：`tools/OCRPics/YYYYMMDD/*.png`
+- **输出**：原地重命名截图文件
+
+### 第 2 步：行裁切（cut）
 
 ```bash
 tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step cut
 ```
 
-调用 `ocr_row_cutter.py`，基于 OpenCV 卡图矩形定位，将长截图精确裁切为每行的文字信息条。
+调用 `card_rect_cutter.py`，基于 OpenCV Canny边缘检测 + 卡图矩形定位，将长截图精确裁切为每行的文字信息条。卡包前缀直接从文件名提取（需先运行 rename 步骤）。
 
 - **输入**：`tools/OCRPics/YYYYMMDD/*.png`
 - **输出**：`test_output/row_pics/*.png`（每张 2064×115px）+ `test_output/crop_info.json`
 - **调试**：`test_output/row_pics/debug_*.png`（标注卡图矩形和裁切线）
-
-### 第 2 步：行级 OCR（ocr_rows）
-
-```bash
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step ocr_rows
-```
-
-使用 PaddleOCR PP-OCRv5 Server 高精度模型识别每行图片。行级 OCR 的主要目的是**定位价格 `¥` 标签的 x 坐标**，为单卡裁切提供锚点。
-
-- **输入**：`test_output/row_pics/*.png`
-- **输出**：`test_output/row_ocr_results.json`
-- **速度**：~0.58s/行（GPU）
-- 支持断点续传
 
 ### 第 3 步：单卡裁切（card_cut）
 
@@ -466,113 +456,18 @@ flowchart TD
 | 稀有度遮挡 | UI 元素遮挡稀有度标签 | 价格反推稀有度 + 硬修复兜底 |
 | GMR-OF 双版本 | 同编号两条 GMR-OF | 左侧=亚洲版，右侧=日本版，取亚洲版 |
 
-### 第 6 步：人工确认（review）
-
-#### ⚠️ 必须执行：在更新价格前进行人工确认
-
-在执行合并到JSON之前，必须先让用户确认本次变更中需要人工审核的异常条目。这一步确保只有经过用户确认的价格才会被写入最终的JSON文件。
-
-##### 需要确认的场景
-
-以下异常情况会触发人工确认：
-
-| 检测规则 | 描述 | 风险级别 |
-|---------|------|---------|
-| GMR-OF < ¥1000 | GMR 不应如此便宜 | 🔴 高 |
-| 基础稀有度(UR/SR/R/N) > ¥100 | 低级稀有度不应太贵 | 🔴 高 |
-| SER ≈ PSER-OF | 同行串扰（相邻卡片价格相互影响） | 🟡 中 |
-| SER ≥ PSER | 低级比高级贵（疑似错位） | 🟡 中 |
-| 价格变化 > 5x | 剧烈波动，可能识别错误 | 🟡 中 |
-| BLZD N/R > ¥5 | BLZD 低级稀有度异常 | 🟡 中 |
-| BLZD SR > ¥50 | BLZD 中级稀有度异常 | 🟡 中 |
-| PSER < ¥1 | 可能是 N/R 串扰 | 🟢 低 |
-
-##### 确认方式
-
-**方式 1：交互式确认（推荐）**
-```bash
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step review
-```
-
-- 脚本逐条展示需要确认的条目
-- 用户输入 `y`（确认）、`n`（跳过）、`a`（全部确认）
-- 生成 `test_output/confirmed_items.json`（已确认清单）
-
-**方式 2：手动编辑确认文件**
-```bash
-# 生成待确认清单
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step review --preview
-
-# 编辑 test_output/review_items.json，标记确认状态
-# 手动修改后继续合并步骤
-```
-
-##### 确认清单格式
-
-待确认清单 `test_output/review_items.json`：
-```json
-{
-  "LOCH-JP067": {
-    "sc_name": "宵星之机界骑士",
-    "rarity": "UR",
-    "old_price": 15,
-    "new_price": 1500,
-    "change_type": "剧烈波动 (>5x)",
-    "reason": "价格从 15 变化到 1500，增长 100 倍",
-    "confirmed": false
-  },
-  "BLZD-JP028": {
-    "sc_name": "无限泡影",
-    "rarity": "NR",
-    "old_price": 3,
-    "new_price": 10,
-    "change_type": "BLZD低级稀有度异常",
-    "reason": "NR 稀有度价格 > ¥5",
-    "confirmed": false
-  }
-}
-```
-
-已确认清单 `test_output/confirmed_items.json`：
-- 格式相同，但 `confirmed` 字段根据用户决定设置
-- 合并步骤只更新 `confirmed: true` 的条目
-
-##### 常见决策建议
-
-| 情况 | 建议 |
-|------|------|
-| GMR-OF < ¥1000 | ❌ 跳过（可能是识别错误） |
-| SER ≈ PSER | ❌ 跳过（同行串扰） |
-| 价格变化 > 5x | ⚠️ 检查是否是真实涨价（如禁卡解禁） |
-| 基础稀有度 > ¥100 | ❌ 跳过（可能是串扰或识别错误） |
-| BLZD 异常 | ⚠️ BLZD 价格普遍较高，根据实际情况判断 |
-
-##### 输出文件
-
-| 文件 | 说明 |
-|------|------|
-| `test_output/review_items.json` | 待确认清单（需人工审核的条目） |
-| `test_output/confirmed_items.json` | 已确认清单（用户确认后生成） |
-
-### 第 7 步：合并到价格 JSON（merge）
-
+### 第 6 步：合并到价格 JSON（merge）
 ```bash
 tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step merge
 ```
 
 调用 `merge_prices.py`，将解析结果智能合并到最终价格文件。
 
-> ⚠️ **前提条件**：必须先完成第6步人工确认，生成 `test_output/confirmed_items.json`
-
-#### 合并逻辑
-
-1. 读取 `test_output/confirmed_items.json`（已确认清单）
-2. 只更新 `confirmed: true` 的条目
-3. 保留旧价格（未确认或 `confirmed: false` 的条目）
+> ⚠️ **前提条件**：必须先完成第5步解析价格
 
 #### 合并时附加的校验规则
 
-在合并阶段还会应用以下严格校验（直接保留旧值，不产生确认提示）：
+在合并阶段会应用以下严格校验（直接保留旧值）：
 
 | 检测规则 | 描述 | 处理方式 |
 |---------|------|---------|
@@ -601,7 +496,7 @@ N 和 NR 是互斥的非官方稀有度定义。不同信息源（NWBBS vs 集�
 | `test_output/price_comparison.csv` | 价格对照表（CSV，Excel 可打开） |
 | `test_output/ocr_recognized_prices.csv` | OCR 原始识别价格表 |
 
-### 第 8 步：人工校验
+### 第 7 步：人工校验
 
 对照表 `test_output/price_comparison.csv` 包含每条价格的详细信息：
 - ✅ 正常更新
@@ -617,7 +512,7 @@ N 和 NR 是互斥的非官方稀有度定义。不同信息源（NWBBS vs 集�
 6. `--`（未收录）标记的数据是否保留了合理的旧价格
 7. NR 卡片价格是否正确（N/NR 互补是否生效）
 
-### 第 9 步：推送部署
+### 第 8 步：推送部署
 
 确认数据无误后：
 
@@ -635,29 +530,27 @@ tools/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD
 
 # ===== 手动分步执行 =====
 # 0. 截图放入 tools/OCRPics/YYYYMMDD/
-# 1. 行裁切
+# 1. 截图重命名（OCR识别卡包前缀）
+tools/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step rename
+# 2. 行裁切
 tools/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step cut
-# 2. 行级OCR
-tools/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step ocr_rows
 # 3. 单卡裁切
 tools/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step card_cut
 # 4. 单卡OCR
 tools/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step ocr_cards
 # 5. 解析价格
 tools/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step parse
-# 6. 人工确认（必须）
-tools/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step review
-# 7. 合并到价格文件
+# 6. 合并到价格文件
 tools/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step merge
-# 8. 检查 test_output/price_comparison.csv
-# 9. 提交推送
+# 7. 检查 test_output/price_comparison.csv
+# 8. 提交推送
 git add data/ocg/prices/ && git commit -m "更新卡片市场价格" && git push
 
 # ===== 独立脚本（不通过 workflow 调用）=====
-tools/venv/Scripts/python.exe tools/card_cutter.py            # 单卡裁切
-tools/venv/Scripts/python.exe tools/batch_ocr_cards.py         # 单卡OCR
-tools/venv/Scripts/python.exe tools/extract_prices.py          # 解析价格
-tools/venv/Scripts/python.exe tools/merge_prices.py            # 合并价格
+tools/venv/Scripts/python.exe tools/card_rect_cutter.py 20260312  # 行裁切（测试）
+tools/venv/Scripts/python.exe tools/card_cutter.py                 # 单卡裁切
+tools/venv/Scripts/python.exe tools/extract_prices.py              # 解析价格
+tools/venv/Scripts/python.exe tools/merge_prices.py                # 合并价格
 ```
 
 ### ⚠️ 已知问题与排错经验
@@ -681,17 +574,12 @@ NR 是非官方定义的稀有度（封入率更低的 N 卡）。集换社和 N
 #### 工具脚本
 
 | 文件 | 说明 | 工作流步骤 |
-|------|------|-----------|
-| `tools/ocr_workflow.py` | ⭐ 一键工作流入口（推荐） | 全部 |
-| `tools/ocr_row_cutter.py` | 行裁切（含分辨率检查） | 步骤 1 |
-| `tools/card_rect_cutter.py` | 基于卡图矩形的行裁切（旧版，独立使用） | 步骤 1 备选 |
-| `tools/batch_ocr_rows.py` | 行级 OCR 批量识别 | 步骤 2 |
+|------|------|----------|
+| `tools/ocr_workflow.py` | ⭐ 一键工作流入口（v5 精简版） | 全部 |
+| `tools/card_rect_cutter.py` | 基于OpenCV卡图矩形定位的行裁切（115px精确裁切） | 步骤 2 |
 | `tools/card_cutter.py` | 单卡十等分裁切 | 步骤 3 |
-| `tools/batch_ocr_cards.py` | 单卡 OCR 批量识别 | 步骤 4 |
 | `tools/extract_prices.py` | OCR 结果解析（v7 合并卡名匹配版） | 步骤 5 |
-| `tools/review_prices.py` | 价格异常人工确认 | 步骤 6 |
-| `tools/merge_prices.py` | 价格智能合并 + CSV 对照表 | 步骤 7 |
-
+| `tools/merge_prices.py` | 价格智能合并 + CSV 对照表 | 步骤 6 |
 #### 辅助工具
 
 | 文件 | 说明 |
@@ -700,9 +588,10 @@ NR 是非官方定义的稀有度（封入率更低的 N 卡）。集换社和 N
 | `tools/build_pack_data.py` | OCG 卡包数据构建 |
 | `tools/fetch_packs.py` | 卡包数据抓取 |
 | `tools/fetch_yugiohmeta.py` | YugiohMeta 卡图映射表构建 |
-| `tools/save_row_ocr.py` | 保存单行 OCR 结果（MCP 模式用） |
-| `tools/gen_ocr_summary.py` | 生成 OCR 汇总报告 |
-| `tools/ocr_price.py` | PaddleOCR 独立脚本（旧版，可选） |
+| `tools/download_loch_images.py` | LOCH 卡图本地化下载 |
+| `tools/build_loch_map.py` | LOCH 卡图映射表构建 |
+| `tools/build_loch_rarity_map.py` | LOCH 稀有度映射表构建 |
+| `tools/build_blzd_image_map.py` | BLZD 卡图映射表构建 |
 
 #### 数据文件
 
@@ -719,19 +608,16 @@ NR 是非官方定义的稀有度（封入率更低的 N 卡）。集换社和 N
 
 | 文件 | 说明 | 产生步骤 |
 |------|------|---------|
-| `row_pics/*.png` | 行裁切图（2064×115px/行） | 步骤 1 |
-| `row_pics/debug_*.png` | 行裁切调试图（标注矩形+裁切线） | 步骤 1 |
-| `crop_info.json` | 行裁切位置信息 | 步骤 1 |
-| `row_ocr_results.json` | 行级 OCR 识别结果 | 步骤 2 |
+| `row_pics/*.png` | 行裁切图（2064×115px/行） | 步骤 2 |
+| `row_pics/debug_*.png` | 行裁切调试图（标注矩形+裁切线） | 步骤 2 |
+| `crop_info.json` | 行裁切位置信息 | 步骤 2 |
 | `card_pics/*.png` | 单卡裁切图（~206×115px/卡） | 步骤 3 |
 | `card_cut_info.json` | 单卡裁切位置信息 | 步骤 3 |
 | `card_ocr_results.json` | 单卡 OCR 识别结果（**核心数据**） | 步骤 4 |
 | `parsed_prices_v6.json` | 解析后的结构化价格数据 | 步骤 5 |
 | `price_extract_summary.txt` | 价格提取汇总报告 | 步骤 5 |
-| `review_items.json` | 待确认清单（需人工审核的异常条目） | 步骤 6 |
-| `confirmed_items.json` | 已确认清单（用户确认后的条目） | 步骤 6 |
-| `price_comparison.csv` | 价格对照表（CSV，Excel 可打开） | 步骤 7 |
-| `ocr_recognized_prices.csv` | OCR 原始识别价格表 | 步骤 7 |
+| `price_comparison.csv` | 价格对照表（CSV，Excel 可打开） | 步骤 6 |
+| `ocr_recognized_prices.csv` | OCR 原始识别价格表 | 步骤 6 |
 
 #### 截图存档
 
