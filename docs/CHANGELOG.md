@@ -2,6 +2,20 @@
 
 > 从 DEVELOPMENT.md 拆分，记录各版本的变更和待处理事项。
 
+## 工具链更新（2026-03-16）— merge_prices.py v6 升级：人工覆盖机制
+
+### 问题排查：JSON 逗号丢失根因
+- **根因定位**：之前 `loch_prices.json` 中出现的逗号丢失（导致盒价 434→330），**不是** `merge_prices.py` 导致的（`json.dump` 不会产生语法错误），而是上一轮使用编辑工具手动修改 JSON 文件时，替换操作意外吞掉了对象间的 `,` 分隔符
+- **根本解决方案**：新增 `price_overrides.json` 人工覆盖机制，彻底杜绝手动编辑 JSON 价格文件的需求
+
+### merge_prices.py v5 → v6 改进
+- **新增 `price_overrides.json` 人工覆盖机制**：
+  - 当 merge 因异常规则拦截了某个价格（如变化>10x），但经人工确认该价格正确时，在 `price_overrides.json` 中添加覆盖条目
+  - 下次 merge 自动采用覆盖价格，无需手动编辑 JSON 价格文件
+  - 覆盖条目是一次性的：成功消费后自动清理，避免过期覆盖影响后续更新
+  - 覆盖操作在 CSV 对照表中有完整记录（标注"✅ 人工确认覆盖"）
+- **覆盖范围覆盖所有异常规则**：LOCH（串扰检测6条规则）+ BLZD（N/R>5, SR>50, PSER<1, 变化>10x）
+
 ## 工具链更新（2026-03-13）— merge_prices.py v5 升级
 
 ### merge_prices.py v4 → v5 四项改进
