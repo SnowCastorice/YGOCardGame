@@ -623,7 +623,8 @@ async function getOCGCardSetData(packConfig, onProgress) {
     }
 
     // === 优先检查是否有本地数据（cardData 节点） ===
-    const hasLocalData = cardIds.length > 0 && cardIds[0].cardData;
+    // 只要有任意一张卡拥有 cardData，就走本地数据模式（有数据的直接读取，没有的生成占位信息）
+    const hasLocalData = cardIds.length > 0 && cardIds.some(card => card.cardData);
 
     if (hasLocalData) {
         // 🎉 本地数据模式：零 API 调用，直接构建卡牌信息
@@ -697,12 +698,12 @@ function getCardImageUrl(cardId, imageMap, size, rarityCode) {
         const sizeSuffix = size === 'large'
             ? API_CONFIG.YUGIOHMETA.SIZE_LARGE   // _w420
             : API_CONFIG.YUGIOHMETA.SIZE_SMALL;  // _w200
-        // 主图源：S3 CDN；备份：Cloudflare 本地图片（如果配置了 localImagesDir）
+        // 主图源：Cloudflare 本地图片（优先）；备份：S3 CDN（本地缺失时回退）
         const s3Url = `${API_CONFIG.YUGIOHMETA.CDN_BASE}/${metaId}${sizeSuffix}.webp`;
         const localUrl = imageMap._localDir
             ? `${imageMap._localDir}/${metaId}${sizeSuffix}.webp`
             : null;
-        return { url: s3Url, fallbackUrl: localUrl };
+        return { url: localUrl || s3Url, fallbackUrl: localUrl ? s3Url : null };
     }
     // 回退到默认 YGOCDB CDN（百鸽日文卡图）
     return { url: `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardId}.jpg`, fallbackUrl: null };
