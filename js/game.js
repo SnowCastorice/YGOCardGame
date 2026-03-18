@@ -828,7 +828,7 @@ function getPackCoverImageUrl(pack, packCode, type) {
     type = type || 'pack';
 
     // 0. OCG 模式下，优先尝试本地封面图（data/ocg/covers/{packCode}-{type}.png）
-    //    如果本地图不存在（404），由 img onerror 自动 fallback 到原有外部 URL
+    //    如果 .png 不存在（404），onerror 会自动尝试 .jpg，再失败才 fallback 到外部 URL
     if (currentGameMode === 'ocg' && packCode) {
         return `data/ocg/covers/${packCode}-${type}.png`;
     }
@@ -883,15 +883,37 @@ async function handlePackCoverError(imgEl) {
 
     console.warn(`⚠️ 卡包封面图加载失败: ${pack ? pack.packId : '未知'}, URL: ${failedUrl}`);
 
-    // ——— 第一层 fallback：本地封面图失败 → 尝试原有外部 URL ———
-    // 判断当前失败的是否是本地 covers 路径（包含 -pack.png 或 -box.png）
+    // ——— 第一层 fallback：本地封面图失败 → 先尝试另一种格式（png↔jpg），再尝试外部 URL ———
+    // 判断当前失败的是否是本地 covers 路径
     if (failedUrl.includes('data/ocg/covers/') && pack) {
         const packCode = pack.packCode || pack.setCode || '';
+
+        // 如果当前是 .png 失败，先尝试 .jpg 格式
+        if (failedUrl.endsWith('.png')) {
+            const jpgUrl = failedUrl.replace(/\.png$/, '.jpg');
+            console.log(`🔄 本地封面图 .png 不存在，尝试 .jpg: ${pack.packId}`);
+            imgEl.src = jpgUrl;
+            // .jpg 也失败时，走外部 URL fallback
+            imgEl.onerror = function () {
+                const fallbackUrl = getPackCoverFallbackUrl(pack, packCode);
+                if (fallbackUrl) {
+                    console.log(`🔄 本地封面图均不存在，尝试外部 URL: ${pack.packId}, URL: ${fallbackUrl}`);
+                    imgEl.src = fallbackUrl;
+                    imgEl.onerror = function () {
+                        handlePackCoverErrorFinal(imgEl);
+                    };
+                } else {
+                    handlePackCoverErrorFinal(imgEl);
+                }
+            };
+            return;
+        }
+
+        // 如果当前是 .jpg 失败（或其他本地格式），直接走外部 URL
         const fallbackUrl = getPackCoverFallbackUrl(pack, packCode);
         if (fallbackUrl) {
             console.log(`🔄 本地封面图不存在，尝试外部 URL: ${pack.packId}, URL: ${fallbackUrl}`);
             imgEl.src = fallbackUrl;
-            // 外部 URL 也失败时，走最终 fallback（首卡卡图 → emoji）
             imgEl.onerror = function () {
                 handlePackCoverErrorFinal(imgEl);
             };
@@ -1070,17 +1092,39 @@ async function selectPack(pack) {
                     coverImg.classList.add('is-loaded');
                     if (coverWrapper) coverWrapper.classList.remove('is-loading');
                 };
-                // 本地封面图加载失败时的 fallback 逻辑
+                // 本地封面图加载失败时的 fallback 逻辑（支持 png → jpg → 外部 URL）
                 coverImg.onerror = function() {
                     const failedUrl = coverImg.src;
-                    // 如果是本地封面图失败，尝试外部 URL
+                    // 如果是本地封面图失败
                     if (failedUrl.includes('data/ocg/covers/')) {
+                        // 如果当前是 .png 失败，先尝试 .jpg 格式
+                        if (failedUrl.endsWith('.png')) {
+                            const jpgUrl = failedUrl.replace(/\.png$/, '.jpg');
+                            console.log(`🔄 详情页本地封面图 .png 不存在，尝试 .jpg: ${pack.packId}`);
+                            coverImg.src = jpgUrl;
+                            coverImg.onerror = function() {
+                                // .jpg 也失败，走外部 URL
+                                const fallbackUrl = getPackCoverFallbackUrl(pack, packCode);
+                                if (fallbackUrl) {
+                                    console.log(`🔄 详情页本地封面图均不存在，尝试外部 URL: ${pack.packId}`);
+                                    coverImg.src = fallbackUrl;
+                                    coverImg.onerror = function() {
+                                        coverImg.style.display = 'none';
+                                        if (coverWrapper) coverWrapper.classList.remove('is-loading');
+                                    };
+                                } else {
+                                    coverImg.style.display = 'none';
+                                    if (coverWrapper) coverWrapper.classList.remove('is-loading');
+                                }
+                            };
+                            return;
+                        }
+                        // 如果是 .jpg 或其他格式失败，直接走外部 URL
                         const fallbackUrl = getPackCoverFallbackUrl(pack, packCode);
                         if (fallbackUrl) {
                             console.log(`🔄 详情页本地封面图不存在，尝试外部 URL: ${pack.packId}`);
                             coverImg.src = fallbackUrl;
                             coverImg.onerror = function() {
-                                // 外部 URL 也失败，隐藏图片
                                 coverImg.style.display = 'none';
                                 if (coverWrapper) coverWrapper.classList.remove('is-loading');
                             };

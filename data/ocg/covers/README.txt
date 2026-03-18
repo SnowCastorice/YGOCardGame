@@ -5,7 +5,7 @@ OCG 卡包本地封面图目录
 程序会优先从此目录加载封面图，加载失败时自动 fallback 到外部 URL。
 
 文件命名规则：
-  {卡包编码}-{类型}.png
+  {卡包编码}-{类型}.{png|jpg}
 
   类型说明：
     -pack   → 主界面卡包列表使用的封面图（通常是卡包正面）
@@ -18,12 +18,16 @@ OCG 卡包本地封面图目录
   LOCH-spack.jpg   → LEGACY OF CHAOS 预留图（不自动加载）
   BLZD-pack.png    → BLAZING DOMINION 主界面封面图
   BLZD-box.png     → BLAZING DOMINION 详情页封面图
+  LOCR-pack.jpg    → LEGACY OF CARD REVOLUTION 主界面封面图
+  LOCR-box.png     → LEGACY OF CARD REVOLUTION 详情页封面图
+  LOCR-spack.jpg   → LEGACY OF CARD REVOLUTION 预留图（不自动加载）
 
-支持格式：PNG（推荐）
+支持格式：PNG（推荐）、JPG
+  程序会按 png → jpg 顺序自动尝试，无需手动指定后缀。
 
 封面图加载 fallback 链：
   主界面（type=pack）：
-    1. 本地封面图 data/ocg/covers/{packCode}-pack.png
+    1. 本地封面图 data/ocg/covers/{packCode}-pack.png（不存在则尝试 .jpg）
     2. packs.json 中的 coverImage 字段（如 Yugipedia 日文封面 URL）
     3. coverCardId 对应的卡图
     4. YGOProDeck set_image
@@ -31,7 +35,7 @@ OCG 卡包本地封面图目录
     6. emoji 🎴 兜底
 
   详情页（type=box）：
-    1. 本地封面图 data/ocg/covers/{packCode}-box.png
+    1. 本地封面图 data/ocg/covers/{packCode}-box.png（不存在则尝试 .jpg）
     2. packs.json 中的 coverImage 字段
     3. coverCardId 对应的卡图
     4. YGOProDeck set_image
