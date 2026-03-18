@@ -7,9 +7,65 @@
     "releaseDate": "发售日期",
     "cardCount": "收录卡牌数量"
   },
-  "_更新时间": "2026-02-18 20:02:40",
+  "_更新时间": "2026-03-18 12:26:37",
   "_更新方式": "运行 python fetch_packs.py gen-list",
   "packs": [
+    {
+      "packCode": "AW02",
+      "packName": "ARTWORK SERIES ミニ掛軸 三幻神",
+      "releaseDate": "2026-03-14",
+      "cardCount": 3,
+      "ygocdbId": "1000009567000"
+    },
+    {
+      "packCode": "AW02",
+      "packName": "ARTWORK SERIES 掛軸 オシリスの天空竜",
+      "releaseDate": "2026-03-14",
+      "cardCount": 1,
+      "ygocdbId": "1000009568000"
+    },
+    {
+      "packCode": "AW02",
+      "packName": "ARTWORK SERIES 掛軸 オベリスクの巨神兵",
+      "releaseDate": "2026-03-14",
+      "cardCount": 1,
+      "ygocdbId": "1000009569000"
+    },
+    {
+      "packCode": "AW02",
+      "packName": "ARTWORK SERIES 掛軸 ラーの翼神竜",
+      "releaseDate": "2026-03-14",
+      "cardCount": 1,
+      "ygocdbId": "1000009570000"
+    },
+    {
+      "packCode": "2026",
+      "packName": "日本選手権2026 第一期ショップ予選 上位賞",
+      "releaseDate": "2026-03-01",
+      "cardCount": 1,
+      "ygocdbId": "2000001616000"
+    },
+    {
+      "packCode": "LOSP",
+      "packName": "LIMIT OVER SPECIAL PACK Vol.1",
+      "releaseDate": "2026-02-28",
+      "cardCount": 10,
+      "ygocdbId": "1000009565000"
+    },
+    {
+      "packCode": "LOCH",
+      "packName": "LIMIT OVER COLLECTION －THE HEROES－",
+      "releaseDate": "2026-02-28",
+      "cardCount": 80,
+      "ygocdbId": "1000009563000"
+    },
+    {
+      "packCode": "VJMP",
+      "packName": "Vジャンプ 2026年 4月号 付録カード",
+      "releaseDate": "2026-02-20",
+      "cardCount": 1,
+      "ygocdbId": "1000009572000"
+    },
     {
       "packCode": "CH02",
       "packName": "THE CHRONICLES DECK 精霊術の使い手",

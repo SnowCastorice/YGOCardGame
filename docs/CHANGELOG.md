@@ -2,6 +2,13 @@
 
 > 从 DEVELOPMENT.md 拆分，记录各版本的变更和待处理事项。
 
+## v1.7.7（2026-03-18）— 新增 LOCR 价格配置 + 卡包列表更新
+- **新增 LOCR 独立价格文件**：`data/ocg/prices/locr_prices.json`，单包 35🪙、整盒 488🪙，卡片市场价格待集换社数据补充
+- **价格系统注册 LOCR**：`priceSystem.js` 的 `PRICE_FILES` 新增 `locr` 映射，游戏启动时自动加载 LOCR 价格
+- **LOCR 回退价格更新**：`packs.json` 中 LOCR 单包价格从 22 更新为 35
+- **卡包列表更新**：通过 `fetch_packs.py gen-list` 更新 OCG/TCG 卡包列表至最新数据
+- **涉及修改文件**：`locr_prices.json`（新增）、`priceSystem.js`、`packs.json`、`pack_list.json`
+
 ## 工具链更新（2026-03-16）— merge_prices.py v6 升级：人工覆盖机制
 
 ### 问题排查：JSON 逗号丢失根因

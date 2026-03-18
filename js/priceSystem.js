@@ -31,7 +31,8 @@ const PriceSystem = (function () {
     // packCode（小写）→ 价格文件路径
     const PRICE_FILES = {
         'loch': 'data/ocg/prices/loch_prices.json',
-        'blzd': 'data/ocg/prices/blzd_prices.json'
+        'blzd': 'data/ocg/prices/blzd_prices.json',
+        'locr': 'data/ocg/prices/locr_prices.json'
     };
 
     // ====== 初始化 ======
