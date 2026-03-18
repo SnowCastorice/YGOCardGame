@@ -92,8 +92,8 @@ data/ocg/
 │   └── loch/            ← LOCH 卡图（196 个 webp 文件，约 7.3MB）
 └── cards/               ← 独立卡牌列表文件
     ├── ocg_blzd.json
-    ├── ocg_ch02.json
-    └── ocg_25db.json
+    ├── ocg_loch.json
+    └── ocg_locr.json
 ```
 
 ### KONAMI 官方商品参考数据
