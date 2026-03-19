@@ -38,6 +38,7 @@ import json
 import os
 import sys
 import time
+import unicodedata
 
 
 # ====== 路径配置 ======
@@ -52,9 +53,11 @@ OCG_CARDS_DIR = os.path.join(DATA_DIR, 'ocg', 'cards')
 def load_cards_db():
     """
     加载 cards.json 全量卡牌数据库
-    返回两个映射：
+    返回三个映射：
       - by_id: { 卡牌密码(int) → 卡牌数据(dict) }
       - by_cid: { cid(int) → 卡牌数据(dict) }
+      - by_name: { NFKC标准化卡名(str) → 卡牌数据(dict) }
+        （优先使用 nwbbs_n 字段匹配，同时支持 cn_name、jp_name）
     """
     print(f'📂 正在加载 cards.json ...')
     start = time.time()
@@ -64,6 +67,7 @@ def load_cards_db():
 
     by_id = {}   # 卡牌密码 → 数据
     by_cid = {}  # cid → 数据
+    by_name = {} # NFKC标准化卡名 → 数据
 
     for cid_str, card in raw.items():
         card_id = card.get('id')
@@ -73,9 +77,18 @@ def load_cards_db():
         if cid:
             by_cid[int(cid)] = card
 
+        # 构建名称索引（用于 name_hint 回查）
+        for name_field in ('nwbbs_n', 'cn_name', 'jp_name'):
+            name_val = card.get(name_field, '')
+            if name_val:
+                normalized = unicodedata.normalize('NFKC', name_val)
+                # 如果名称尚未索引，或已有索引但当前卡有更好的 id（非临时密码），则更新
+                if normalized not in by_name or (by_name[normalized].get('id', 0) >= 100000000 and card.get('id', 0) < 100000000):
+                    by_name[normalized] = card
+
     elapsed = time.time() - start
     print(f'✅ cards.json 加载完成：{len(by_id)} 张卡（耗时 {elapsed:.1f}s）')
-    return by_id, by_cid
+    return by_id, by_cid, by_name
 
 
 def extract_card_details(card_db_entry):
@@ -104,13 +117,14 @@ def extract_card_details(card_db_entry):
     }
 
 
-def build_pack(pack_file, by_id, dry_run=False):
+def build_pack(pack_file, by_id, by_name=None, dry_run=False):
     """
     为单个卡包文件注入卡牌详情数据
 
     参数:
       pack_file: 卡包文件路径（如 data/ocg/cards/ocg_blzd.json）
       by_id: 卡牌密码 → 卡牌数据的映射
+      by_name: NFKC标准化卡名 → 卡牌数据的映射（用于 id=0 时的名称回查）
       dry_run: 只检查不写入
 
     返回:
@@ -127,10 +141,23 @@ def build_pack(pack_file, by_id, dry_run=False):
     found = 0
     missing = 0
     missing_ids = []
+    auto_filled = 0  # 自动填充密码计数
 
     # 为每张卡注入详情
     for card_def in card_ids:
         card_id = card_def.get('id')
+
+        # 方案A：当 id=0 或缺失时，通过 name_hint 自动回查 cards.json 填充密码
+        if (not card_id or card_id == 0) and by_name:
+            name_hint = card_def.get('name_hint', '')
+            if name_hint:
+                normalized_hint = unicodedata.normalize('NFKC', name_hint)
+                matched = by_name.get(normalized_hint)
+                if matched and matched.get('id'):
+                    card_def['id'] = matched['id']
+                    card_id = matched['id']
+                    auto_filled += 1
+
         if not card_id:
             continue
 
@@ -149,6 +176,18 @@ def build_pack(pack_file, by_id, dry_run=False):
     supp_cards = supp.get('cards', [])
     for card_def in supp_cards:
         card_id = card_def.get('id')
+
+        # 方案A：辅助包同样支持 name_hint 自动回查
+        if (not card_id or card_id == 0) and by_name:
+            name_hint = card_def.get('name_hint', '')
+            if name_hint:
+                normalized_hint = unicodedata.normalize('NFKC', name_hint)
+                matched = by_name.get(normalized_hint)
+                if matched and matched.get('id'):
+                    card_def['id'] = matched['id']
+                    card_id = matched['id']
+                    auto_filled += 1
+
         if not card_id:
             continue
 
@@ -160,6 +199,9 @@ def build_pack(pack_file, by_id, dry_run=False):
         else:
             missing += 1
             missing_ids.append(card_id)
+
+    if auto_filled > 0:
+        print(f'   🔄 自动填充密码: {auto_filled} 张（通过 name_hint 匹配 cards.json）')
 
     if not dry_run:
         # 写回文件
@@ -174,7 +216,7 @@ def cmd_build(target_pack=None):
     构建卡包数据（主命令）
     """
     # 加载全量卡牌数据库
-    by_id, by_cid = load_cards_db()
+    by_id, by_cid, by_name = load_cards_db()
 
     # 加载 OCG 卡包配置
     with open(OCG_PACKS_PATH, 'r', encoding='utf-8') as f:
@@ -208,7 +250,7 @@ def cmd_build(target_pack=None):
         print(f'\n📦 处理卡包: {pack["packName"]} ({pack["packId"]})')
         print(f'   文件: {card_file}')
 
-        found, missing, missing_ids = build_pack(file_path, by_id)
+        found, missing, missing_ids = build_pack(file_path, by_id, by_name)
 
         total_found += found
         total_missing += missing
@@ -237,7 +279,7 @@ def cmd_check(target_pack=None):
     """
     检查哪些卡在 cards.json 中找不到（不修改文件）
     """
-    by_id, _ = load_cards_db()
+    by_id, _, by_name = load_cards_db()
 
     with open(OCG_PACKS_PATH, 'r', encoding='utf-8') as f:
         packs_config = json.load(f)
@@ -256,7 +298,7 @@ def cmd_check(target_pack=None):
             continue
 
         print(f'\n📦 检查卡包: {pack["packName"]}')
-        found, missing, missing_ids = build_pack(file_path, by_id, dry_run=True)
+        found, missing, missing_ids = build_pack(file_path, by_id, by_name, dry_run=True)
         print(f'   找到: {found}, 缺失: {missing}')
         for mid in missing_ids:
             print(f'   ❌ 缺失 ID: {mid}')

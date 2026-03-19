@@ -7,7 +7,7 @@
   "totalCards": 80,
   "cardIds": [
     {
-      "id": 100256001,
+      "id": 88570003,
       "setNumber": "LOCH-JP001",
       "rarityVersions": [
         "UR",
@@ -36,7 +36,7 @@
       }
     },
     {
-      "id": 100256002,
+      "id": 14965712,
       "setNumber": "LOCH-JP002",
       "rarityVersions": [
         "UR",
@@ -65,7 +65,7 @@
       }
     },
     {
-      "id": 100256003,
+      "id": 41350417,
       "setNumber": "LOCH-JP003",
       "rarityVersions": [
         "UR",
@@ -94,7 +94,7 @@
       }
     },
     {
-      "id": 100256004,
+      "id": 87758525,
       "setNumber": "LOCH-JP004",
       "rarityVersions": [
         "UR",
@@ -123,7 +123,7 @@
       }
     },
     {
-      "id": 100256005,
+      "id": 13243124,
       "setNumber": "LOCH-JP005",
       "rarityVersions": [
         "UR",
@@ -152,7 +152,7 @@
       }
     },
     {
-      "id": 100256006,
+      "id": 40237839,
       "setNumber": "LOCH-JP006",
       "rarityVersions": [
         "UR",
@@ -181,7 +181,7 @@
       }
     },
     {
-      "id": 100256007,
+      "id": 76636978,
       "setNumber": "LOCH-JP007",
       "rarityVersions": [
         "UR",
@@ -210,7 +210,7 @@
       }
     },
     {
-      "id": 100256008,
+      "id": 13021682,
       "setNumber": "LOCH-JP008",
       "rarityVersions": [
         "UR",
@@ -239,7 +239,7 @@
       }
     },
     {
-      "id": 100256009,
+      "id": 49415281,
       "setNumber": "LOCH-JP009",
       "rarityVersions": [
         "UR",
@@ -268,7 +268,7 @@
       }
     },
     {
-      "id": 100256010,
+      "id": 76504386,
       "setNumber": "LOCH-JP010",
       "rarityVersions": [
         "UR",
@@ -297,7 +297,7 @@
       }
     },
     {
-      "id": 100256011,
+      "id": 12908094,
       "setNumber": "LOCH-JP011",
       "rarityVersions": [
         "UR",
@@ -326,7 +326,7 @@
       }
     },
     {
-      "id": 100256012,
+      "id": 48393693,
       "setNumber": "LOCH-JP012",
       "rarityVersions": [
         "UR",
@@ -355,7 +355,7 @@
       }
     },
     {
-      "id": 100256013,
+      "id": 75787708,
       "setNumber": "LOCH-JP013",
       "rarityVersions": [
         "UR",
@@ -384,7 +384,7 @@
       }
     },
     {
-      "id": 100256014,
+      "id": 1186447,
       "setNumber": "LOCH-JP014",
       "rarityVersions": [
         "UR",
@@ -413,7 +413,7 @@
       }
     },
     {
-      "id": 100256015,
+      "id": 48171151,
       "setNumber": "LOCH-JP015",
       "rarityVersions": [
         "UR",
@@ -442,7 +442,7 @@
       }
     },
     {
-      "id": 100256016,
+      "id": 74665150,
       "setNumber": "LOCH-JP016",
       "rarityVersions": [
         "UR",
@@ -471,7 +471,7 @@
       }
     },
     {
-      "id": 100256017,
+      "id": 64865,
       "setNumber": "LOCH-JP017",
       "rarityVersions": [
         "UR",
@@ -500,7 +500,7 @@
       }
     },
     {
-      "id": 100256018,
+      "id": 37458564,
       "setNumber": "LOCH-JP018",
       "rarityVersions": [
         "UR",
@@ -529,7 +529,7 @@
       }
     },
     {
-      "id": 100256019,
+      "id": 73443672,
       "setNumber": "LOCH-JP019",
       "rarityVersions": [
         "UR",
@@ -556,7 +556,7 @@
       }
     },
     {
-      "id": 100256020,
+      "id": 847217,
       "setNumber": "LOCH-JP020",
       "rarityVersions": [
         "UR",
@@ -583,7 +583,7 @@
       }
     },
     {
-      "id": 100256021,
+      "id": 32236916,
       "setNumber": "LOCH-JP021",
       "rarityVersions": [
         "UR",
@@ -610,7 +610,7 @@
       }
     },
     {
-      "id": 100256022,
+      "id": 68721020,
       "setNumber": "LOCH-JP022",
       "rarityVersions": [
         "UR",
@@ -637,7 +637,7 @@
       }
     },
     {
-      "id": 100256023,
+      "id": 5125629,
       "setNumber": "LOCH-JP023",
       "rarityVersions": [
         "UR",
@@ -664,7 +664,7 @@
       }
     },
     {
-      "id": 100256024,
+      "id": 31114334,
       "setNumber": "LOCH-JP024",
       "rarityVersions": [
         "UR",
@@ -691,7 +691,7 @@
       }
     },
     {
-      "id": 100256025,
+      "id": 68508433,
       "setNumber": "LOCH-JP025",
       "rarityVersions": [
         "UR",
@@ -718,7 +718,7 @@
       }
     },
     {
-      "id": 100201001,
+      "id": 4993187,
       "setNumber": "LOCH-JP026",
       "rarityVersions": [
         "UR",
@@ -727,7 +727,7 @@
       ],
       "name_hint": "W：P化装舞会组合",
       "cardData": {
-        "cn_name": "W：P化装舞会组合",
+        "cn_name": "W：P变幻舞夜",
         "jp_name": "W：Pファンシーボール",
         "en_name": "",
         "jp_ruby": "ウー：ピーファンシーボール",

@@ -2,6 +2,18 @@
 
 > 从 DEVELOPMENT.md 拆分，记录各版本的变更和待处理事项。
 
+## 工具链更新（2026-03-19）— build_pack_data.py 自动填充卡牌密码
+
+### build_pack_data.py 新增 name_hint 自动回查机制
+- **问题背景**：新卡包发售初期，部分卡片在百鸽数据库中的密码为 0 或临时密码（≥100000000），导致 build 时无法匹配卡牌详情
+- **方案A 实施**：在 `build_pack_data.py` 中集成自动填充逻辑，当卡片 `id=0` 时，通过 `name_hint` 字段在 `cards.json` 中进行 NFKC 标准化名称匹配，自动填充正确的卡牌密码
+- **`load_cards_db()` 增强**：新增返回 `by_name` 映射（按 `nwbbs_n`/`cn_name`/`jp_name` 三个字段索引），支持名称回查
+- **`build_pack()` 增强**：新增 `by_name` 参数，cardIds 和 supplementPack 中的卡片均支持 id=0 时自动填充
+- **构建日志增强**：自动填充时输出 `🔄 自动填充密码: X 张` 提示，方便追踪
+- **卡牌数据库更新**：`cards.json` 同步更新至百鸽最新数据
+- **卡包数据重新构建**：LOCH、LOCR 卡包数据使用最新 cards.json 重新构建
+- **涉及修改文件**：`tools/build_pack_data.py`、`tools/db/cards.json`、`tools/db/.cards_md5`、`data/ocg/cards/ocg_loch.json`、`data/ocg/cards/ocg_locr.json`
+
 ## v1.7.7（2026-03-18）— 新增 LOCR 价格配置 + 卡包列表更新
 - **新增 LOCR 独立价格文件**：`data/ocg/prices/locr_prices.json`，单包 35🪙、整盒 488🪙，卡片市场价格待集换社数据补充
 - **价格系统注册 LOCR**：`priceSystem.js` 的 `PRICE_FILES` 新增 `locr` 映射，游戏启动时自动加载 LOCR 价格
