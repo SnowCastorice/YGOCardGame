@@ -592,6 +592,27 @@ NR 是非官方定义的稀有度（封入率更低的 N 卡）。集换社和 N
 | `tools/build_loch_map.py` | LOCH 卡图映射表构建 |
 | `tools/build_loch_rarity_map.py` | LOCH 稀有度映射表构建 |
 | `tools/build_blzd_image_map.py` | BLZD 卡图映射表构建 |
+| `tools/resize_preview_cards.py` | LOCR+LOSP 预览卡图批量处理（缩放+转webp） |
+
+---
+
+## `resize_preview_cards.py` — 预览卡图批量处理工具
+
+将 `local/PreviewCards/LOCR+LOSP/FinalCardArt/` 中的所有卡图统一处理：
+- 缩放到宽度 420px（高度按比例自适应），与 CDN `_w420` 尺寸对齐
+- 转换为 webp 格式（质量 85%），与线上图源格式一致
+- 输出到 `local/PreviewCards/LOCR+LOSP/ProcessedCardArt/` 目录
+
+| 命令 | 说明 |
+|------|------|
+| `python tools/resize_preview_cards.py` | 处理所有图片（默认 420px，质量 85） |
+| `python tools/resize_preview_cards.py --dry-run` | 预览模式，只显示处理计划 |
+| `python tools/resize_preview_cards.py --width 200` | 指定目标宽度（如生成小图） |
+| `python tools/resize_preview_cards.py --quality 90` | 指定 webp 质量（1-100） |
+
+> 💡 使用 LANCZOS 高质量重采样算法，缩放后的图片清晰度优秀。
+> 📁 原始文件不会被修改，处理结果输出到独立的 `ProcessedCardArt/` 目录。
+> ⚠️ 需要 Pillow 库：`pip install Pillow`
 
 #### 数据文件
 
