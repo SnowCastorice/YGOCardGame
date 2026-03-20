@@ -1,0 +1,692 @@
+{
+  "_说明": "LOCR 卡图映射表 — 卡片密码(password) -> 本地卡图文件名（按稀有度）",
+  "_格式": "localImages 中每个稀有度对应一个本地 webp 文件名",
+  "_来源优先级": "twitter_photo > twitter_render > ygojp > official > ygometa",
+  "_生成方式": "由 tools/build_locr_image_map.py 自动生成",
+  "cards": {
+    "100257001": {
+      "setNumber": "LOCR-JP001",
+      "name": "白色幻兽-青眼白龙",
+      "localImages": {
+        "GMR": "LOCR-JP001_GMR_official_render_art.webp",
+        "GMR-OF": "LOCR-JP001_GMR-OF_twitter_photo_art.webp",
+        "PSER-OF": "LOCR-JP001_PSER-OF_twitter_photo_art.webp",
+        "UR": "LOCR-JP001_UR_official_render_art.webp",
+        "UR-OF": "LOCR-JP001_UR-OF_twitter_photo_art.webp"
+      }
+    },
+    "100257002": {
+      "setNumber": "LOCR-JP002",
+      "name": "苍之深渊 渊眼白龙",
+      "localImages": {
+        "PSER-OF": "LOCR-JP002_PSER-OF_twitter_photo_art.webp",
+        "UR": "LOCR-JP002_UR_ygometa_render_art.webp",
+        "UR-OF": "LOCR-JP002_UR-OF_twitter_render_art.webp"
+      }
+    },
+    "100257003": {
+      "setNumber": "LOCR-JP003",
+      "name": "龙引导呼笛",
+      "localImages": {
+        "PSER-OF": "LOCR-JP003_PSER-OF_twitter_photo_art.webp",
+        "UR": "LOCR-JP003_UR_ygometa_render_art.webp",
+        "UR-OF": "LOCR-JP003_UR-OF_official_render_art.webp"
+      }
+    },
+    "100257004": {
+      "setNumber": "LOCR-JP004",
+      "name": "终击龙-电子终结龙",
+      "localImages": {
+        "PSER-OF": "LOCR-JP004_PSER-OF_twitter_photo_art.webp",
+        "UR": "LOCR-JP004_UR_ygometa_render_art.webp",
+        "UR-OF": "LOCR-JP004_UR-OF_twitter_photo_art.webp"
+      }
+    },
+    "100257005": {
+      "setNumber": "LOCR-JP005",
+      "name": "机光龙-电子龙",
+      "localImages": {
+        "PSER-OF": "LOCR-JP005_PSER-OF_twitter_photo_art.webp",
+        "UR": "LOCR-JP005_UR_ygometa_render_art.webp",
+        "UR-OF": "LOCR-JP005_UR-OF_twitter_render_art.webp"
+      }
+    },
+    "100257006": {
+      "setNumber": "LOCR-JP006",
+      "name": "未来融合·新星",
+      "localImages": {
+        "PSER-OF": "LOCR-JP006_PSER-OF_twitter_photo_art.webp",
+        "UR": "LOCR-JP006_UR_ygometa_render_art.webp",
+        "UR-OF": "LOCR-JP006_UR-OF_twitter_render_art.webp"
+      }
+    },
+    "100257007": {
+      "setNumber": "LOCR-JP007",
+      "name": "红龙 魁札尔科亚特尔",
+      "localImages": {
+        "PSER-OF": "LOCR-JP007_PSER-OF_twitter_photo_art.webp",
+        "UR": "LOCR-JP007_UR_ygometa_render_art.webp",
+        "UR-OF": "LOCR-JP007_UR-OF_twitter_photo_art.webp"
+      }
+    },
+    "100257008": {
+      "setNumber": "LOCR-JP008",
+      "name": "真红莲新星龙-燃烧之魂",
+      "localImages": {
+        "PSER-OF": "LOCR-JP008_PSER-OF_twitter_photo_art.webp",
+        "UR": "LOCR-JP008_UR_ygometa_render_art.webp",
+        "UR-OF": "LOCR-JP008_UR-OF_twitter_render_art.webp"
+      }
+    },
+    "100257009": {
+      "setNumber": "LOCR-JP009",
+      "name": "红莲魔族之链",
+      "localImages": {
+        "PSER-OF": "LOCR-JP009_PSER-OF_twitter_photo_art.webp",
+        "UR": "LOCR-JP009_UR_ygometa_render_art.webp",
+        "UR-OF": "LOCR-JP009_UR-OF_twitter_render_art.webp"
+      }
+    },
+    "100257010": {
+      "setNumber": "LOCR-JP010",
+      "name": "超银河眼光子龙-光子咆哮",
+      "localImages": {
+        "PSER-OF": "LOCR-JP010_PSER-OF_twitter_photo_art.webp",
+        "UR": "LOCR-JP010_UR_ygometa_render_art.webp",
+        "UR-OF": "LOCR-JP010_UR-OF_twitter_render_art.webp"
+      }
+    },
+    "100257011": {
+      "setNumber": "LOCR-JP011",
+      "name": "银河眼辉光子龙",
+      "localImages": {
+        "PSER-OF": "LOCR-JP011_PSER-OF_twitter_photo_art.webp",
+        "UR": "LOCR-JP011_UR_ygometa_render_art.webp",
+        "UR-OF": "LOCR-JP011_UR-OF_official_render_art.webp"
+      }
+    },
+    "100257012": {
+      "setNumber": "LOCR-JP012",
+      "name": "银河防卫机器人·轨道 7",
+      "localImages": {
+        "PSER-OF": "LOCR-JP012_PSER-OF_twitter_photo_art.webp",
+        "UR": "LOCR-JP012_UR_ygometa_render_art.webp",
+        "UR-OF": "LOCR-JP012_UR-OF_twitter_render_art.webp"
+      }
+    },
+    "100257013": {
+      "setNumber": "LOCR-JP013",
+      "name": "四天之龙 凶饿毒融合龙",
+      "localImages": {
+        "PSER-OF": "LOCR-JP013_PSER-OF_twitter_photo_art.webp",
+        "UR": "LOCR-JP013_UR_ygometa_render_art.webp",
+        "UR-OF": "LOCR-JP013_UR-OF_twitter_render_art.webp"
+      }
+    },
+    "100257014": {
+      "setNumber": "LOCR-JP014",
+      "name": "四天之龙 幻透翼同调龙",
+      "localImages": {
+        "PSER-OF": "LOCR-JP014_PSER-OF_twitter_photo_art.webp",
+        "UR": "LOCR-JP014_UR_ygometa_render_art.webp",
+        "UR-OF": "LOCR-JP014_UR-OF_twitter_render_art.webp"
+      }
+    },
+    "100257015": {
+      "setNumber": "LOCR-JP015",
+      "name": "四天之龙 暗叛逆超量龙",
+      "localImages": {
+        "PSER-OF": "LOCR-JP015_PSER-OF_twitter_photo_art.webp",
+        "UR": "LOCR-JP015_UR_ygometa_render_art.webp",
+        "UR-OF": "LOCR-JP015_UR-OF_twitter_render_art.webp"
+      }
+    },
+    "100257016": {
+      "setNumber": "LOCR-JP016",
+      "name": "装弹枪管解放龙",
+      "localImages": {
+        "PSER-OF": "LOCR-JP016_PSER-OF_twitter_photo_art.webp",
+        "UR": "LOCR-JP016_UR_ygometa_render_art.webp",
+        "UR-OF": "LOCR-JP016_UR-OF_twitter_render_art.webp"
+      }
+    },
+    "100257017": {
+      "setNumber": "LOCR-JP017",
+      "name": "弹丸雨幕龙",
+      "localImages": {
+        "PSER-OF": "LOCR-JP017_PSER-OF_twitter_photo_art.webp",
+        "UR": "LOCR-JP017_UR_ygometa_render_art.webp",
+        "UR-OF": "LOCR-JP017_UR-OF_twitter_render_art.webp"
+      }
+    },
+    "100257018": {
+      "setNumber": "LOCR-JP018",
+      "name": "三连枪管旋转",
+      "localImages": {
+        "PSER-OF": "LOCR-JP018_PSER-OF_twitter_photo_art.webp",
+        "UR": "LOCR-JP018_UR_ygometa_render_art.webp",
+        "UR-OF": "LOCR-JP018_UR-OF_twitter_render_art.webp"
+      }
+    },
+    "100257019": {
+      "setNumber": "LOCR-JP019",
+      "name": "造物主 埃玛",
+      "localImages": {
+        "PSER": "LOCR-JP019_PSER_twitter_photo_art.webp",
+        "UR": "LOCR-JP019_UR_ygojp_render_art.webp"
+      }
+    },
+    "100257020": {
+      "setNumber": "LOCR-JP020",
+      "name": "暗之神",
+      "localImages": {
+        "PSER": "LOCR-JP020_PSER_twitter_photo_art.webp",
+        "UR": "LOCR-JP020_UR_ygojp_render_art.webp"
+      }
+    },
+    "100257021": {
+      "setNumber": "LOCR-JP021",
+      "name": "神鸣",
+      "localImages": {
+        "PSER": "LOCR-JP021_PSER_twitter_photo_art.webp",
+        "UR": "LOCR-JP021_UR_ygojp_render_art.webp"
+      }
+    },
+    "100257022": {
+      "setNumber": "LOCR-JP022",
+      "name": "暗黑调整 灾祸盗贼",
+      "localImages": {
+        "PSER": "LOCR-JP022_PSER_twitter_photo_art.webp",
+        "UR": "LOCR-JP022_UR_ygojp_render_art.webp"
+      }
+    },
+    "100257023": {
+      "setNumber": "LOCR-JP023",
+      "name": "暗黑调整 梦魇鬼手",
+      "localImages": {
+        "PSER": "LOCR-JP023_PSER_twitter_photo_art.webp",
+        "UR": "LOCR-JP023_UR_ygojp_render_art.webp"
+      }
+    },
+    "100257024": {
+      "setNumber": "LOCR-JP024",
+      "name": "机炮食人魔",
+      "localImages": {
+        "PSER": "LOCR-JP024_PSER_twitter_photo_art.webp",
+        "UR": "LOCR-JP024_UR_ygojp_render_art.webp"
+      }
+    },
+    "100257025": {
+      "setNumber": "LOCR-JP025",
+      "name": "永火死亡枪手",
+      "localImages": {
+        "PSER": "LOCR-JP025_PSER_twitter_photo_art.webp",
+        "UR": "LOCR-JP025_UR_ygojp_render_art.webp"
+      }
+    },
+    "100257026": {
+      "setNumber": "LOCR-JP026",
+      "name": "混沌终结支配者-开辟与终焉的支配者-",
+      "localImages": {
+        "PSER": "LOCR-JP026_PSER_twitter_photo_art.webp",
+        "UR": "LOCR-JP026_UR_ygojp_render_art.webp"
+      }
+    },
+    "100257027": {
+      "setNumber": "LOCR-JP027",
+      "name": "超升阶魔法-究极之力",
+      "localImages": {
+        "PSER": "LOCR-JP027_PSER_twitter_photo_art.webp",
+        "UR": "LOCR-JP027_UR_ygojp_render_art.webp"
+      }
+    },
+    "100257028": {
+      "setNumber": "LOCR-JP028",
+      "name": "完美电子多元驱动蛇·神龙",
+      "localImages": {
+        "PSER-OF": "LOCR-JP028_PSER-OF_twitter_photo_art.webp",
+        "UR": "LOCR-JP028_UR_ygojp_render_art.webp"
+      }
+    },
+    "48770333": {
+      "setNumber": "LOCR-JP029",
+      "name": "雷击坏兽 雷鸣龙王",
+      "localImages": {
+        "UR": "LOCR-JP029_UR_ygojp_render_art.webp"
+      }
+    },
+    "37495766": {
+      "setNumber": "LOCR-JP030",
+      "name": "救援ACE队 涡轮湍流消防战车",
+      "localImages": {
+        "UR": "LOCR-JP030_UR_ygojp_render_art.webp"
+      }
+    },
+    "2347656": {
+      "setNumber": "LOCR-JP031",
+      "name": "白银之城的拉比林斯",
+      "localImages": {
+        "PSER": "LOCR-JP031_PSER_twitter_photo_art.webp",
+        "UR": "LOCR-JP031_UR_twitter_render_art.webp"
+      }
+    },
+    "53765052": {
+      "setNumber": "LOCR-JP032",
+      "name": "原罪之迪亚贝尔泽",
+      "localImages": {
+        "PSER": "LOCR-JP032_PSER_twitter_photo_art.webp",
+        "UR": "LOCR-JP032_UR_ygojp_render_art.webp"
+      }
+    },
+    "68468459": {
+      "setNumber": "LOCR-JP033",
+      "name": "阿不思的落胤",
+      "localImages": {
+        "PSER": "LOCR-JP033_PSER_twitter_photo_art.webp",
+        "UR": "LOCR-JP033_UR_ygojp_render_art.webp"
+      }
+    },
+    "55273560": {
+      "setNumber": "LOCR-JP034",
+      "name": "白之圣女 艾克莉西娅",
+      "localImages": {
+        "PSER": "LOCR-JP034_PSER_twitter_photo_art.webp",
+        "UR": "LOCR-JP034_UR_ygojp_render_art.webp"
+      }
+    },
+    "93039339": {
+      "setNumber": "LOCR-JP035",
+      "name": "灾厄之星 提·丰",
+      "localImages": {
+        "UR": "LOCR-JP035_UR_ygojp_render_art.webp"
+      }
+    },
+    "93854893": {
+      "setNumber": "LOCR-JP036",
+      "name": "宵星之机神 丁吉尔苏",
+      "localImages": {
+        "UR": "LOCR-JP036_UR_ygojp_render_art.webp"
+      }
+    },
+    "2263869": {
+      "setNumber": "LOCR-JP037",
+      "name": "月女神之镞",
+      "localImages": {
+        "PSER": "LOCR-JP037_PSER_twitter_photo_art.webp",
+        "UR": "LOCR-JP037_UR_ygojp_render_art.webp"
+      }
+    },
+    "68337209": {
+      "setNumber": "LOCR-JP038",
+      "name": "码丽丝梦游地下界",
+      "localImages": {
+        "PSER-OF": "LOCR-JP038_PSER-OF_twitter_photo_art.webp",
+        "UR": "LOCR-JP038_UR_twitter_render_art.webp"
+      }
+    },
+    "49036338": {
+      "setNumber": "LOCR-JP039",
+      "name": "PSY骨架驱动者",
+      "localImages": {
+        "SR": "LOCR-JP039_SR_ygojp_render_art.webp"
+      }
+    },
+    "87602890": {
+      "setNumber": "LOCR-JP040",
+      "name": "轰雷帝 扎博尔格",
+      "localImages": {
+        "SR": "LOCR-JP040_SR_ygojp_render_art.webp"
+      }
+    },
+    "29925614": {
+      "setNumber": "LOCR-JP041",
+      "name": "混沌魅惑的女王",
+      "localImages": {
+        "SR": "LOCR-JP041_SR_ygojp_render_art.webp"
+      }
+    },
+    "72090076": {
+      "setNumber": "LOCR-JP042",
+      "name": "星义绿廊兽",
+      "localImages": {
+        "SR": "LOCR-JP042_SR_ygojp_render_art.webp"
+      }
+    },
+    "99177923": {
+      "setNumber": "LOCR-JP043",
+      "name": "永火恶魔",
+      "localImages": {
+        "SR": "LOCR-JP043_SR_ygojp_render_art.webp"
+      }
+    },
+    "51858306": {
+      "setNumber": "LOCR-JP044",
+      "name": "日食翼龙",
+      "localImages": {
+        "SR": "LOCR-JP044_SR_ygojp_render_art.webp"
+      }
+    },
+    "1225009": {
+      "setNumber": "LOCR-JP045",
+      "name": "白银之城的召使 阿里安娜",
+      "localImages": {
+        "SR": "LOCR-JP045_SR_ygojp_render_art.webp"
+      }
+    },
+    "63198739": {
+      "setNumber": "LOCR-JP046",
+      "name": "原石龙 变种绿柱石龙",
+      "localImages": {
+        "SR": "LOCR-JP046_SR_ygojp_render_art.webp"
+      }
+    },
+    "99937011": {
+      "setNumber": "LOCR-JP047",
+      "name": "剑神官 姆多拉",
+      "localImages": {
+        "SR": "LOCR-JP047_SR_ygojp_render_art.webp"
+      }
+    },
+    "46502744": {
+      "setNumber": "LOCR-JP048",
+      "name": "应战的G",
+      "localImages": {
+        "SR": "LOCR-JP048_SR_ygojp_render_art.webp"
+      }
+    },
+    "29417188": {
+      "setNumber": "LOCR-JP049",
+      "name": "念动力防卫者",
+      "localImages": {
+        "SR": "LOCR-JP049_SR_ygojp_render_art.webp"
+      }
+    },
+    "63542003": {
+      "setNumber": "LOCR-JP050",
+      "name": "宿神像 凯尔多",
+      "localImages": {
+        "SR": "LOCR-JP050_SR_ygojp_render_art.webp"
+      }
+    },
+    "44663232": {
+      "setNumber": "LOCR-JP051",
+      "name": "异怪之妖精 艾尔佛彼娅",
+      "localImages": {
+        "SR": "LOCR-JP051_SR_ygojp_render_art.webp"
+      }
+    },
+    "56209279": {
+      "setNumber": "LOCR-JP052",
+      "name": "永火死灵师",
+      "localImages": {
+        "SR": "LOCR-JP052_SR_ygojp_render_art.webp"
+      }
+    },
+    "74203495": {
+      "setNumber": "LOCR-JP053",
+      "name": "PSY骨架装备·δ",
+      "localImages": {
+        "SR": "LOCR-JP053_SR_ygojp_render_art.webp"
+      }
+    },
+    "19211362": {
+      "setNumber": "LOCR-JP054",
+      "name": "星义旗舰兽",
+      "localImages": {
+        "SR": "LOCR-JP054_SR_ygojp_render_art.webp"
+      }
+    },
+    "38814750": {
+      "setNumber": "LOCR-JP055",
+      "name": "PSY骨架装备·γ",
+      "localImages": {
+        "SR": "LOCR-JP055_SR_ygojp_render_art.webp"
+      }
+    },
+    "61980241": {
+      "setNumber": "LOCR-JP056",
+      "name": "白森林的莉泽特",
+      "localImages": {
+        "SR": "LOCR-JP056_SR_ygojp_render_art.webp"
+      }
+    },
+    "33750025": {
+      "setNumber": "LOCR-JP057",
+      "name": "轮回龙",
+      "localImages": {
+        "SR": "LOCR-JP057_SR_ygojp_render_art.webp"
+      }
+    },
+    "82315403": {
+      "setNumber": "LOCR-JP058",
+      "name": "电子永恒龙",
+      "localImages": {
+        "SR": "LOCR-JP058_SR_ygojp_render_art.webp"
+      }
+    },
+    "13455674": {
+      "setNumber": "LOCR-JP059",
+      "name": "水晶机巧-中枢大蛇",
+      "localImages": {
+        "SR": "LOCR-JP059_SR_ygojp_render_art.webp"
+      }
+    },
+    "10515412": {
+      "setNumber": "LOCR-JP060",
+      "name": "光辉暴风龙",
+      "localImages": {
+        "SR": "LOCR-JP060_SR_ygojp_render_art.webp"
+      }
+    },
+    "44698398": {
+      "setNumber": "LOCR-JP061",
+      "name": "神影金龙 光速子龙",
+      "localImages": {
+        "SR": "LOCR-JP061_SR_ygojp_render_art.webp"
+      }
+    },
+    "61374414": {
+      "setNumber": "LOCR-JP062",
+      "name": "混沌超量 伟人庇护混沌骑士",
+      "localImages": {
+        "SR": "LOCR-JP062_SR_ygojp_render_art.webp"
+      }
+    },
+    "49456901": {
+      "setNumber": "LOCR-JP063",
+      "name": "混沌No.104 假面魔蹈士 阴影",
+      "localImages": {
+        "SR": "LOCR-JP063_SR_ygojp_render_art.webp"
+      }
+    },
+    "34876719": {
+      "setNumber": "LOCR-JP064",
+      "name": "伟人庇护战车骑士",
+      "localImages": {
+        "SR": "LOCR-JP064_SR_ygojp_render_art.webp"
+      }
+    },
+    "2061963": {
+      "setNumber": "LOCR-JP065",
+      "name": "No.104 假面魔蹈士 闪光",
+      "localImages": {
+        "SR": "LOCR-JP065_SR_ygojp_render_art.webp"
+      }
+    },
+    "3790062": {
+      "setNumber": "LOCR-JP066",
+      "name": "No.65 裁断魔人",
+      "localImages": {
+        "SR": "LOCR-JP066_SR_ygojp_render_art.webp"
+      }
+    },
+    "2857636": {
+      "setNumber": "LOCR-JP067",
+      "name": "梦幻崩影·凤凰",
+      "localImages": {
+        "SR": "LOCR-JP067_SR_ygojp_render_art.webp"
+      }
+    },
+    "75452921": {
+      "setNumber": "LOCR-JP068",
+      "name": "梦幻崩影·地狱犬",
+      "localImages": {
+        "SR": "LOCR-JP068_SR_ygojp_render_art.webp"
+      }
+    },
+    "59494222": {
+      "setNumber": "LOCR-JP069",
+      "name": "守墓的刻印",
+      "localImages": {
+        "SR": "LOCR-JP069_SR_ygojp_render_art.webp"
+      }
+    },
+    "88901994": {
+      "setNumber": "LOCR-JP070",
+      "name": "同调鸣动",
+      "localImages": {
+        "SR": "LOCR-JP070_SR_ygojp_render_art.webp"
+      }
+    },
+    "7477101": {
+      "setNumber": "LOCR-JP071",
+      "name": "时空之七皇",
+      "localImages": {
+        "SR": "LOCR-JP071_SR_ygojp_render_art.webp"
+      }
+    },
+    "92221402": {
+      "setNumber": "LOCR-JP072",
+      "name": "混沌态元素",
+      "localImages": {
+        "SR": "LOCR-JP072_SR_ygojp_render_art.webp"
+      }
+    },
+    "92501449": {
+      "setNumber": "LOCR-JP073",
+      "name": "原石的鸣狞",
+      "localImages": {
+        "SR": "LOCR-JP073_SR_ygojp_render_art.webp"
+      }
+    },
+    "29095457": {
+      "setNumber": "LOCR-JP074",
+      "name": "原石的穿光",
+      "localImages": {
+        "SR": "LOCR-JP074_SR_ygojp_render_art.webp"
+      }
+    },
+    "1149109": {
+      "setNumber": "LOCR-JP075",
+      "name": "卡组封锁",
+      "localImages": {
+        "SR": "LOCR-JP075_SR_ygojp_render_art.webp"
+      }
+    },
+    "56506740": {
+      "setNumber": "LOCR-JP076",
+      "name": "原石的皇脉",
+      "localImages": {
+        "SR": "LOCR-JP076_SR_ygojp_render_art.webp"
+      }
+    },
+    "31849106": {
+      "setNumber": "LOCR-JP077",
+      "name": "异次元竞技场",
+      "localImages": {
+        "SR": "LOCR-JP077_SR_ygojp_render_art.webp"
+      }
+    },
+    "5380979": {
+      "setNumber": "LOCR-JP078",
+      "name": "拉比林斯迷宫欢迎",
+      "localImages": {
+        "SR": "LOCR-JP078_SR_ygojp_render_art.webp"
+      }
+    },
+    "58053438": {
+      "setNumber": "LOCR-JP079",
+      "name": "列王诗篇",
+      "localImages": {
+        "SR": "LOCR-JP079_SR_ygojp_render_art.webp"
+      }
+    },
+    "53334471": {
+      "setNumber": "LOCR-JP080",
+      "name": "御前试合",
+      "localImages": {
+        "SR": "LOCR-JP080_SR_ygojp_render_art.webp"
+      }
+    },
+    "12381100": {
+      "setNumber": "LOSP-JP011",
+      "name": "究极龙魔导师",
+      "localImages": {
+        "PSER-OF": "LOSP-JP011_PSER-OF_twitter_photo_art.webp"
+      }
+    },
+    "87116928": {
+      "setNumber": "LOSP-JP012",
+      "name": "嵌合巨舰龙",
+      "localImages": {
+        "PSER-OF": "LOSP-JP012_PSER-OF_twitter_photo_art.webp"
+      }
+    },
+    "99585850": {
+      "setNumber": "LOSP-JP013",
+      "name": "真红莲超新星龙",
+      "localImages": {
+        "PSER-OF": "LOSP-JP013_PSER-OF_twitter_photo_art.webp"
+      }
+    },
+    "31801517": {
+      "setNumber": "LOSP-JP014",
+      "name": "No.62 银河眼光子龙皇",
+      "localImages": {
+        "PSER-OF": "LOSP-JP014_PSER-OF_twitter_photo_art.webp"
+      }
+    },
+    "13331639": {
+      "setNumber": "LOSP-JP015",
+      "name": "霸王龙 扎克",
+      "localImages": {
+        "PSER-OF": "LOSP-JP015_PSER-OF_twitter_render_art.webp"
+      }
+    },
+    "98630720": {
+      "setNumber": "LOSP-JP016",
+      "name": "前托枪管龙",
+      "localImages": {
+        "PSER-OF": "LOSP-JP016_PSER-OF_twitter_photo_art.webp"
+      }
+    },
+    "22850702": {
+      "setNumber": "LOSP-JP017",
+      "name": "混沌之双翼",
+      "localImages": {
+        "PSER-OF": "LOSP-JP017_PSER-OF_twitter_photo_art.webp"
+      }
+    },
+    "98127546": {
+      "setNumber": "LOSP-JP018",
+      "name": "闭锁世界的冥神",
+      "localImages": {
+        "PSER-OF": "LOSP-JP018_PSER-OF_twitter_photo_art.webp"
+      }
+    },
+    "91530236": {
+      "setNumber": "LOSP-JP019",
+      "name": "精灵术的术使",
+      "localImages": {
+        "PSER-OF": "LOSP-JP019_PSER-OF_twitter_photo_art.webp"
+      }
+    },
+    "40366667": {
+      "setNumber": "LOSP-JP020",
+      "name": "灵王的波动",
+      "localImages": {
+        "PSER-OF": "LOSP-JP020_PSER-OF_twitter_photo_art.webp"
+      }
+    }
+  }
+}

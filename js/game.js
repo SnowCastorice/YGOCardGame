@@ -24,6 +24,9 @@ let currentGameMode = 'ocg';  // 当前游戏模式（预留：未来可扩展 '
 let currentPackCategory = 'recent';  // 当前选中的卡包分类（recent/booster/structure/concept/special）
 let currentOpenMode = 'pack';  // 当前开包模式：'pack'|'box'|'3box'，用于快捷再开按钮
 
+// ====== 卡图严格匹配模式（开发者调试用，从 localStorage 恢复） ======
+window._strictImageMatch = localStorage.getItem('strictImageMatch') === 'true';
+
 // ====== 稀有度排序（由 rarities.json 动态生成，以下为兜底默认值） ======
 // 升序映射：{ code: weight }，weight 越大越稀有 —— 用于开包结果排序（N→最稀有）
 let RARITY_ORDER_ASC = { 'N': 10, 'NR': 20, 'R': 30, 'SR': 40, 'UR': 50, 'UR-OF': 55, 'UTR': 60, 'CR': 65, 'SER': 70, 'PSER': 80, 'PSER-OF': 90, 'GMR-OF': 100 };
@@ -3238,8 +3241,9 @@ function showDevTools() {
             if (devToolsTitleClickCount >= DEV_TOOLS_UNLOCK_CLICKS) {
                 devToolsTitleClickCount = 0;
                 clearTimeout(devToolsTitleClickTimer);
-                // 同时控制两个隐藏板块：CDN 卡图对比、管理后台
+                // 同时控制所有隐藏板块：卡图调试、CDN 卡图对比、管理后台
                 const hiddenSections = [
+                    document.getElementById('devtools-image-section'),
                     document.getElementById('devtools-cdn-section'),
                     document.getElementById('devtools-admin-section')
                 ].filter(Boolean);
@@ -3257,7 +3261,7 @@ function showDevTools() {
                     }
                 });
                 if (isCurrentlyHidden) {
-                    console.log('🔓 隐藏功能已解锁（CDN 卡图对比、管理后台）');
+                    console.log('🔓 隐藏功能已解锁（卡图调试、CDN 卡图对比、管理后台）');
                     showDevtoolsToast('🔓 隐藏功能已解锁');
                 } else {
                     console.log('🔒 隐藏功能已关闭');
@@ -3265,6 +3269,21 @@ function showDevTools() {
                 }
             }
         });
+    }
+
+    // 绑定卡图严格匹配模式 checkbox
+    const strictImageCheckbox = document.getElementById('devtools-strict-image-match');
+    if (strictImageCheckbox) {
+        // 从 localStorage 恢复状态
+        const savedStrict = localStorage.getItem('strictImageMatch') === 'true';
+        strictImageCheckbox.checked = savedStrict;
+        window._strictImageMatch = savedStrict;
+        strictImageCheckbox.onchange = function () {
+            window._strictImageMatch = this.checked;
+            localStorage.setItem('strictImageMatch', this.checked);
+            console.log(this.checked ? '🎨 卡图严格匹配模式：已开启' : '🎨 卡图严格匹配模式：已关闭');
+            showDevtoolsToast(this.checked ? '🎨 严格匹配模式已开启' : '🎨 严格匹配模式已关闭');
+        };
     }
 
     // 绑定按钮事件（仅首次）

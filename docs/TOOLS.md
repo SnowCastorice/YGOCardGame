@@ -591,10 +591,45 @@ NR 是非官方定义的稀有度（封入率更低的 N 卡）。集换社和 N
 | `tools/download_loch_images.py` | LOCH 卡图本地化下载 |
 | `tools/build_loch_map.py` | LOCH 卡图映射表构建 |
 | `tools/build_loch_rarity_map.py` | LOCH 稀有度映射表构建 |
+| `tools/build_locr_image_map.py` | LOCR 卡图映射表构建（localImages 新格式） |
 | `tools/build_blzd_image_map.py` | BLZD 卡图映射表构建 |
 | `tools/resize_preview_cards.py` | LOCR+LOSP 预览卡图批量处理（缩放+转webp） |
 
 ---
+
+## `build_locr_image_map.py` — LOCR 卡图映射表生成
+
+从 `data/ocg/images/locr/` 目录扫描所有卡图文件名，结合 `data/ocg/cards/ocg_locr.json` 中的卡片密码和卡编号信息，自动生成 `data/ocg/locr_image_map.json` 映射表。
+
+映射表采用 **localImages 新格式**（按卡编号 + 稀有度查找本地文件名），与 LOCH/BLZD 的 metaId 格式不同：
+
+```json
+{
+  "cards": {
+    "100257001": {
+      "setNumber": "LOCR-JP001",
+      "name": "白色幻兽-青眼白龙",
+      "localImages": {
+        "UR": "LOCR-JP001_UR_ygojp_render_art.webp",
+        "UR-OF": "LOCR-JP001_UR-OF_twitter_photo_art.webp",
+        "PSER-OF": "LOCR-JP001_PSER-OF_twitter_photo_art.webp"
+      }
+    }
+  }
+}
+```
+
+同一张卡同一稀有度有多张来源不同的图时，按优先级选择最优的一张：
+- **来源优先级**：`twitter+photo_art` > `twitter+render_art` > `ygojp` > `official`
+
+| 命令 | 说明 |
+|------|------|
+| `python tools/build_locr_image_map.py` | 生成映射表 |
+| `python tools/build_locr_image_map.py --dry-run` | 预览模式，不写入文件 |
+| `python tools/build_locr_image_map.py --stats` | 显示详细统计 |
+
+> 💡 文件命名规范：`{卡编号}_{稀有度}_{来源}_{类型}.webp`（如 `LOCR-JP001_UR-OF_twitter_photo_art.webp`）
+> ⚠️ 每次新增或更新 LOCR 卡图后，需重新运行此脚本更新映射表。
 
 ## `resize_preview_cards.py` — 预览卡图批量处理工具
 

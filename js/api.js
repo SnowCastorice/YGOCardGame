@@ -639,11 +639,17 @@ async function getOCGCardSetData(packConfig, onProgress) {
                 if (mapResp.ok) {
                     const mapData = await mapResp.json();
                     imageMap = mapData.cards || null;
-                    // 如果配置了本地图片目录，附加到 imageMap 供 getCardImageUrl 生成 Cloudflare 本地备份 URL
+                    // 如果配置了本地图片目录，附加到 imageMap 供 getCardImageUrl 生成本地备份 URL
                     if (imageMap && packConfig.localImagesDir) {
                         imageMap._localDir = packConfig.localImagesDir;
                     }
-                    console.log(`🗺️ 已加载卡图映射表 [${packConfig.imageMapFile}]，共 ${Object.keys(imageMap).length} 条${packConfig.localImagesDir ? '（S3 CDN 优先，Cloudflare 本地备份）' : ''}`);
+                    // 检测映射表模式：新格式（localImages）还是旧格式（metaId）
+                    const firstEntry = imageMap ? Object.values(imageMap).find(v => v && typeof v === 'object') : null;
+                    const isLocalImagesMode = firstEntry && firstEntry.localImages;
+                    const modeDesc = isLocalImagesMode
+                        ? '（localImages 模式，按稀有度加载本地卡图）'
+                        : (packConfig.localImagesDir ? '（S3 CDN 优先，Cloudflare 本地备份）' : '');
+                    console.log(`🗺️ 已加载卡图映射表 [${packConfig.imageMapFile}]，共 ${Object.keys(imageMap).length - (imageMap._localDir ? 1 : 0)} 条${modeDesc}`);
                 }
             } catch (e) {
                 console.warn(`⚠️ 卡图映射表 [${packConfig.imageMapFile}] 加载失败，使用默认图源:`, e);
@@ -677,34 +683,123 @@ async function getOCGCardSetData(packConfig, onProgress) {
 }
 
 /**
- * 获取卡图URL —— S3 CDN 优先，Cloudflare 本地图片备份，回退到 YGOCDB CDN
- * 支持按稀有度获取不同版本的卡图（如 LOCH 卡包中 OF 超框卡版本使用超框卡图）
+ * 稀有度 fallback 顺序表（按 sortWeight 从高到低排列）
+ * 
+ * 高稀有度找不到卡图时，可以 fallback 到比自己 sortWeight 更低（更基础）的稀有度
+ * 
+ * 普通卡（非OF）和 OF卡（破框卡）分别拥有独立的 fallback 链，互不共享：
+ *   普通卡: PSER → SER → CR → UTR → UR → SR → (无图)
+ *   OF 卡:  GMR-OF → PSER-OF → UR-OF → (无图)
+ */
+const RARITY_FALLBACK_NORMAL = ['PSER', 'SER', 'CR', 'UTR', 'UR', 'SR', 'R', 'NR', 'N'];
+const RARITY_FALLBACK_OF = ['GMR-OF', 'PSER-OF', 'UR-OF'];
+
+/** 占位图路径（卡图缺失时显示） */
+const MISSING_IMAGE_PLACEHOLDER = 'data/ocg/images/printing.jpg';
+
+/**
+ * 判断稀有度是否为 OF（破框卡）
+ */
+function isOverFrameRarity(rarity) {
+    return rarity && rarity.endsWith('-OF');
+}
+
+/**
+ * 根据稀有度从 localImages 中查找卡图文件名（支持 fallback）
+ * 
+ * 规则：
+ *   - 严格模式：只查找完全匹配的稀有度，找不到返回 null
+ *   - 兼容模式：高稀有度可以使用低稀有度的卡图（按 sortWeight 从高到低），但不能反向
+ *   - OF 卡和普通卡的 fallback 链互不共享
+ * 
+ * @param {object} localImages - { "UR": "file.webp", "UR-OF": "file2.webp", ... }
+ * @param {string} rarityCode - 目标稀有度
+ * @param {boolean} strictMode - 是否严格匹配（开发者调试模式）
+ * @returns {string|null} 匹配到的文件名，或 null
+ */
+function resolveLocalImage(localImages, rarityCode, strictMode) {
+    if (!localImages || !rarityCode) return null;
+
+    // 1. 精确匹配
+    if (localImages[rarityCode]) {
+        return localImages[rarityCode];
+    }
+
+    // 严格模式：精确匹配失败就返回 null
+    if (strictMode) {
+        return null;
+    }
+
+    // 2. 兼容模式 fallback：只向低稀有度方向查找
+    const isOF = isOverFrameRarity(rarityCode);
+    const fallbackChain = isOF ? RARITY_FALLBACK_OF : RARITY_FALLBACK_NORMAL;
+
+    // 找到当前稀有度在 fallback 链中的位置
+    const currentIndex = fallbackChain.indexOf(rarityCode);
+
+    // 从当前位置的下一个开始查找（只向更低稀有度方向）
+    // 如果当前稀有度不在链中（如 GMR），从链头开始
+    const startIndex = currentIndex >= 0 ? currentIndex + 1 : 0;
+
+    for (let i = startIndex; i < fallbackChain.length; i++) {
+        if (localImages[fallbackChain[i]]) {
+            return localImages[fallbackChain[i]];
+        }
+    }
+
+    // 所有 fallback 都找不到
+    return null;
+}
+
+/**
+ * 获取卡图URL —— 支持两种模式：
+ *   1. metaId 模式（LOCH/BLZD）：S3 CDN + Cloudflare 本地备份
+ *   2. localImages 模式（LOCR）：按稀有度查找本地卡图文件名，支持 fallback
  * 
  * @param {number|string} cardId - 卡片密码（password）
- * @param {object|null} imageMap - 卡图映射表（password → {metaId, name, altMetaId?}），null 时使用默认图源
+ * @param {object|null} imageMap - 卡图映射表，null 时使用默认图源
  * @param {string} size - 图片尺寸：'small' = 列表用（200px）, 'large' = 大图（420px）
- * @param {string} [rarityCode] - 可选，稀有度代码（如 'UR-OF'、'GMR-OF'），用于查找该稀有度的替代卡图
- * @returns {{ url: string, fallbackUrl: string|null }} 主图URL和备份URL（Cloudflare 本地图片）
+ * @param {string} [rarityCode] - 可选，稀有度代码（如 'UR-OF'、'GMR-OF'），用于查找对应卡图
+ * @returns {{ url: string, fallbackUrl: string|null }} 主图URL和备份URL
  */
 function getCardImageUrl(cardId, imageMap, size, rarityCode) {
     const pw = String(cardId);
-    // 如果映射表中有该卡的 metaId，使用映射表图源
-    if (imageMap && imageMap[pw] && imageMap[pw].metaId) {
-        // 优先检查该稀有度是否有替代卡图（如 LOCH 的 OF 超框卡版本使用超框卡图）
-        let metaId = imageMap[pw].metaId;
-        if (rarityCode && imageMap[pw].altMetaId && imageMap[pw].altMetaId[rarityCode]) {
-            metaId = imageMap[pw].altMetaId[rarityCode];
+
+    if (imageMap && imageMap[pw]) {
+        const cardEntry = imageMap[pw];
+
+        // === 模式一：localImages（LOCR 新格式，按稀有度查找本地文件名） ===
+        if (cardEntry.localImages) {
+            const strictMode = window._strictImageMatch || false;
+            const localDir = imageMap._localDir || '';
+            const matchedFile = resolveLocalImage(cardEntry.localImages, rarityCode, strictMode);
+
+            if (matchedFile) {
+                const url = localDir ? `${localDir}/${matchedFile}` : matchedFile;
+                return { url: url, fallbackUrl: null };
+            }
+            // 没有匹配的卡图 → 显示占位图
+            return { url: MISSING_IMAGE_PLACEHOLDER, fallbackUrl: null };
         }
-        const sizeSuffix = size === 'large'
-            ? API_CONFIG.YUGIOHMETA.SIZE_LARGE   // _w420
-            : API_CONFIG.YUGIOHMETA.SIZE_SMALL;  // _w200
-        // 主图源：Cloudflare 本地图片（优先）；备份：S3 CDN（本地缺失时回退）
-        const s3Url = `${API_CONFIG.YUGIOHMETA.CDN_BASE}/${metaId}${sizeSuffix}.webp`;
-        const localUrl = imageMap._localDir
-            ? `${imageMap._localDir}/${metaId}${sizeSuffix}.webp`
-            : null;
-        return { url: localUrl || s3Url, fallbackUrl: localUrl ? s3Url : null };
+
+        // === 模式二：metaId（LOCH/BLZD 旧格式，S3 CDN + 本地备份） ===
+        if (cardEntry.metaId) {
+            let metaId = cardEntry.metaId;
+            // 检查该稀有度是否有替代卡图（如 OF 超框卡版本使用超框卡图）
+            if (rarityCode && cardEntry.altMetaId && cardEntry.altMetaId[rarityCode]) {
+                metaId = cardEntry.altMetaId[rarityCode];
+            }
+            const sizeSuffix = size === 'large'
+                ? API_CONFIG.YUGIOHMETA.SIZE_LARGE   // _w420
+                : API_CONFIG.YUGIOHMETA.SIZE_SMALL;  // _w200
+            const s3Url = `${API_CONFIG.YUGIOHMETA.CDN_BASE}/${metaId}${sizeSuffix}.webp`;
+            const localUrl = imageMap._localDir
+                ? `${imageMap._localDir}/${metaId}${sizeSuffix}.webp`
+                : null;
+            return { url: localUrl || s3Url, fallbackUrl: localUrl ? s3Url : null };
+        }
     }
+
     // 回退到默认 YGOCDB CDN（百鸽日文卡图）
     return { url: `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardId}.jpg`, fallbackUrl: null };
 }
@@ -844,9 +939,9 @@ function buildSupplementCardsFromLocalData(packConfig, imageMap) {
 
         const setNumber = cardDef.setNumber || '';
 
-        // 卡图URL：优先使用 S3 CDN（主），Cloudflare 本地图片（备份），回退到 YGOCDB CDN
-        const imgSmallResult = imageMap ? getCardImageUrl(cardDef.id, imageMap, 'small') : { url: `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardDef.id}.jpg`, fallbackUrl: null };
-        const imgLargeResult = imageMap ? getCardImageUrl(cardDef.id, imageMap, 'large') : { url: `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardDef.id}.jpg`, fallbackUrl: null };
+        // 卡图URL：传入 rarityCode 以支持 localImages 模式按稀有度查找卡图
+        const imgSmallResult = imageMap ? getCardImageUrl(cardDef.id, imageMap, 'small', rarityCode) : { url: `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardDef.id}.jpg`, fallbackUrl: null };
+        const imgLargeResult = imageMap ? getCardImageUrl(cardDef.id, imageMap, 'large', rarityCode) : { url: `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardDef.id}.jpg`, fallbackUrl: null };
 
         cards.push({
             id: cardDef.id,

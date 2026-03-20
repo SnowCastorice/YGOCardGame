@@ -2,6 +2,47 @@
 
 > 从 DEVELOPMENT.md 拆分，记录各版本的变更和待处理事项。
 
+## LOCR 卡图本地化 + 卡图系统重构（2026-03-20）
+
+### LOCR 卡图本地化
+- **新增 171 张 LOCR 本地卡图**：`data/ocg/images/locr/` 目录下，覆盖 LOCR-JP001~JP018 + LOSP-JP011~JP020 的 UR、UR-OF、PSER-OF 等多稀有度卡图
+- **新增 `locr_image_map.json` 映射表**：采用 **localImages 新格式**，按卡编号 + 稀有度查找本地文件名（与 LOCH/BLZD 的 metaId 格式不同）
+- **新增 `tools/build_locr_image_map.py`**：自动扫描卡图文件并生成映射表，支持 `--dry-run`（预览）和 `--stats`（统计）参数
+- **新增 `tools/check_missing_images.py`**：缺图检测脚本，统计哪些卡片/稀有度缺少保底卡图
+- **卡图来源优先级**：`twitter_photo(5)` > `twitter_render(4)` > `ygojp(3)` > `official(2)` > `ygometa(1)`
+- **文件命名规范**：`{卡编号}_{稀有度}_{来源}_{类型}.webp`（如 `LOCR-JP001_UR-OF_twitter_photo_art.webp`）
+
+### 卡图系统重构（`api.js`）
+- **新增 localImages 模式**：`getCardImageUrl()` 现支持两种映射表格式——旧格式 `metaId`（LOCH/BLZD）和新格式 `localImages`（LOCR），按稀有度直接查找本地文件名
+- **新增稀有度 fallback 机制**：高稀有度卡图缺失时，自动向低稀有度方向查找替代卡图。普通卡和 OF 卡（破框卡）拥有独立 fallback 链，互不共享
+  - 普通卡链：PSER → SER → CR → UTR → UR → SR → R → NR → N
+  - OF 卡链：GMR-OF → PSER-OF → UR-OF
+- **新增占位图**：卡图完全缺失时显示 `printing.jpg` 占位图，替代浏览器加载失败的破碎图标
+- **新增 `resolveLocalImage()` 函数**：核心查找逻辑，支持严格匹配和兼容匹配两种模式
+
+### 卡图严格匹配模式（设置面板新增调试功能）
+- **新增隐藏板块「🎨 卡图调试」**：设置面板连点标题 5 次解锁后可见
+- 开启后，缺少对应稀有度卡图的卡片显示占位图（方便排查缺失卡图）；关闭时高稀有度自动回退到低稀有度卡图
+- 设置持久化到 `localStorage`，刷新页面不丢失
+
+### 数据修复
+- **`ocg_locr.json` 格式修复**：修复多张卡片 `name_hint` 字段后缺少逗号的 JSON 语法问题（8处）
+- **LOCR-JP018 命名修正**：卡图稀有度从错误的 `UR` 修正为 `UR-OF`
+
+### 文档更新
+- **`docs/TOOLS.md`**：新增 `build_locr_image_map.py` 工具使用说明（命令、格式、命名规范）
+- **涉及修改文件**：`js/api.js`、`js/game.js`、`index.html`、`data/ocg/cards/ocg_locr.json`、`docs/TOOLS.md`
+- **新增文件**：`data/ocg/locr_image_map.json`、`data/ocg/images/locr/`（171 张卡图）、`tools/build_locr_image_map.py`、`tools/check_missing_images.py`
+
+## Bug 修复（2026-03-20）— LOSP 辅助包卡图显示修复
+
+### 辅助包卡图加载 Bug 修复
+- **问题**：LOCR 收集一览中辅助包（LOSP-JP011~020）的 PSER-OF 卡图全部显示 "NOW PRINTING" 占位图
+- **根因**：`api.js` 的 `buildSupplementCardsFromLocalData()` 函数调用 `getCardImageUrl()` 时未传递 `rarityCode` 参数，导致 `localImages` 模式下无法匹配到对应稀有度的卡图
+- **修复**：在 `getCardImageUrl()` 调用中补充 `rarityCode` 参数，辅助包卡图现在能正确按稀有度查找本地卡图文件
+- **影响范围**：修复后 LOCR/LOCH 两个卡包的辅助包卡图均能正确显示
+- **涉及修改文件**：`js/api.js`
+
 ## 工具链更新（2026-03-19）— build_pack_data.py 自动填充卡牌密码
 
 ### build_pack_data.py 新增 name_hint 自动回查机制
