@@ -2,6 +2,31 @@
 
 > 从 DEVELOPMENT.md 拆分，记录各版本的变更和待处理事项。
 
+## OCR 价格数据更新（2026-03-21）— BLZD + LOCH + LOCR 三包价格
+
+### OCR 工具链增强
+- **`extract_prices.py`**：新增 LOCR 主包的卡名映射加载和编号前缀解析支持
+- **`merge_prices.py`**：新增 LOCR 主包的合并逻辑（正包 80 张 + LOSP vol2 附属包 10 张）
+- **`ocr_workflow.py`**：新增 LOCR 主包的 review 价格对比步骤支持
+- **`card_cutter.py`** / **`card_rect_cutter.py`**：OCR 切图工具优化
+
+### 价格数据更新
+- **`blzd_prices.json`**：BLZD 主包价格更新（卡盒 ¥370、单包 ¥9.9 + 全卡价格）
+- **`loch_prices.json`**：LOCH 主包价格更新（卡盒 ¥345、单包 ¥9.5 + LOSP vol1 包 ¥70 + 全卡价格）
+- **`locr_prices.json`**：LOCR 主包价格更新（卡盒 ¥370、单包 ¥9.9 + LOSP vol2 包 ¥88.88 + 90 张卡 322 条价格）
+
+### 文档更新
+- **`docs/TOOLS.md`**：OCR 工作流工具使用说明更新
+- **涉及修改文件**：`tools/extract_prices.py`、`tools/merge_prices.py`、`tools/ocr_workflow.py`、`tools/card_cutter.py`、`tools/card_rect_cutter.py`、`data/ocg/prices/blzd_prices.json`、`data/ocg/prices/loch_prices.json`、`data/ocg/prices/locr_prices.json`、`docs/TOOLS.md`
+
+## 文档更新（2026-03-21）— 双设备配置 + MCP 设备区分
+
+### DEVELOPMENT.md 双设备配置
+- **Python OCR 工具环境** 改为双设备表格，记录设备 A（chihayadu / RTX 4060）和设备 B（snow9 / RTX 3070）的硬件配置
+- 虚拟环境路径统一为 `local/venv/`，每台设备各自安装依赖
+- **PaddleOCR MCP Server** 标注仅设备 A 使用，设备 B 不配置此 MCP，OCR 工作流通过命令行脚本执行
+- **涉及修改文件**：`DEVELOPMENT.md`
+
 ## LOCR 卡图本地化 + 卡图系统重构（2026-03-20）
 
 ### LOCR 卡图本地化
@@ -149,7 +174,7 @@
 - 新建 `tools/ocr_workflow.py`：一键 OCR 价格更新工作流入口脚本，串联 裁切→OCR→解析→合并 全流程
 - 支持日期参数（如 `20260309`）和 `--step`/`--from` 分步执行
 - 自动检测截图分辨率，不正确时提醒用户调整到 2064×2752 ppi264
-- 用法：`tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309`
+- 用法：`local/venv/Scripts/python.exe tools/ocr_workflow.py 20260309`
 
 ### 清理 TCG 代码 + 价格更新 + OCR工具v3优化（3月9日）
 - 清理所有 TCG 相关代码（HTML/CSS/JS），保留今后扩展 TCG 开卡模式的架构设计

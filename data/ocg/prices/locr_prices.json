@@ -1,14 +1,891 @@
 {
-  "_说明": "LOCR 对手篇卡包市场价格数据",
-  "_单位": "金币（与人民币1:1）",
-  "_数据来源": "初期手动填写，后续可接入集换社数据",
-  "_更新时间": "2026-03-18",
-  "_价格说明": "集换社暂无数据，卡片价格待补充",
+  "_说明": "LOCR + LOSP vol2 卡包市场价格数据（集换社）",
+  "_单位": "人民币/元",
+  "_数据来源": "集换社App截图 OCR 识别",
+  "_更新时间": "2026-03-21",
+  "_价格说明": "所有价格为集换社'起'价（最低在售价）",
+  "_特殊说明_LOSP": "LOSP为特殊+1包，vol1(001-010)属于LOCH，vol2(011-020)属于LOCR，各自拥有独立的卡包价格，价格随市场动态变化",
   "packPrices": {
     "LOCR": {
-      "box": 488.0,
-      "pack": 35.0
+      "box": 370.0,
+      "pack": 9.9
+    },
+    "LOSP": {
+      "pack": 88.88
     }
   },
-  "cards": {}
+  "cards": {
+    "100257001": {
+      "setNumber": "LOCR-JP001",
+      "name": "白色幻兽-青眼白龙",
+      "prices": {
+        "UR": 1.0,
+        "UR-OF": 155.0,
+        "SER": 10.0,
+        "PSER-OF": 1699.0,
+        "GMR-OF": 100000.0
+      }
+    },
+    "100257002": {
+      "setNumber": "LOCR-JP002",
+      "name": "苍之深渊 渊眼白龙",
+      "prices": {
+        "UR": 0.99,
+        "UR-OF": 60.0,
+        "SER": 6.99,
+        "PSER-OF": 540.0,
+        "GMR-OF": 98000.0
+      }
+    },
+    "100257003": {
+      "setNumber": "LOCR-JP003",
+      "name": "龙引导呼笛",
+      "prices": {
+        "UR": 0.5,
+        "UR-OF": 15.0,
+        "SER": 3.0,
+        "PSER-OF": 260.0,
+        "GMR-OF": 45000.0
+      }
+    },
+    "100257004": {
+      "setNumber": "LOCR-JP004",
+      "name": "终击龙-电子终结龙",
+      "prices": {
+        "UR": 0.5,
+        "UR-OF": 28.0,
+        "SER": 0.99,
+        "PSER-OF": 149.0,
+        "GMR-OF": 24000.0
+      }
+    },
+    "100257005": {
+      "setNumber": "LOCR-JP005",
+      "name": "机光龙-电子龙",
+      "prices": {
+        "UR": 0.98,
+        "UR-OF": 18.0,
+        "SER": 7.0,
+        "PSER-OF": 150.0,
+        "GMR-OF": 18900.0
+      }
+    },
+    "100257006": {
+      "setNumber": "LOCR-JP006",
+      "name": "未来融合·新星",
+      "prices": {
+        "UR": 1.0,
+        "UR-OF": 20.0,
+        "SER": 2.9,
+        "PSER-OF": 155.0,
+        "GMR-OF": 12800.0
+      }
+    },
+    "100257007": {
+      "setNumber": "LOCR-JP007",
+      "name": "红龙 魁札尔科亚特尔",
+      "prices": {
+        "UR": 3.99,
+        "UR-OF": 65.0,
+        "SER": 5.0,
+        "PSER-OF": 280.0,
+        "GMR-OF": 85000.0
+      }
+    },
+    "100257008": {
+      "setNumber": "LOCR-JP008",
+      "name": "真红莲新星龙-燃烧之魂",
+      "prices": {
+        "UR": 1.3,
+        "UR-OF": 37.0,
+        "SER": 7.9,
+        "PSER-OF": 370.0,
+        "GMR-OF": 48000.0
+      }
+    },
+    "100257009": {
+      "setNumber": "LOCR-JP009",
+      "name": "红莲魔族之链",
+      "prices": {
+        "UR": 0.5,
+        "UR-OF": 22.0,
+        "SER": 7.5,
+        "PSER-OF": 99.9,
+        "GMR-OF": 6666.0
+      }
+    },
+    "100257010": {
+      "setNumber": "LOCR-JP010",
+      "name": "超银河眼光子龙-光子咆哮",
+      "prices": {
+        "UR": 1.0,
+        "UR-OF": 25.0,
+        "SER": 3.5,
+        "PSER": 125.0,
+        "PSER-OF": 125.0,
+        "GMR-OF": 25500.0
+      }
+    },
+    "100257011": {
+      "setNumber": "LOCR-JP011",
+      "name": "银河眼辉光子龙",
+      "prices": {
+        "UR": 0.5,
+        "UR-OF": 34.0,
+        "SER": 6.7,
+        "PSER-OF": 128.9,
+        "GMR-OF": 24000.0
+      }
+    },
+    "100257012": {
+      "setNumber": "LOCR-JP012",
+      "name": "银河防卫机器人·轨道 7",
+      "prices": {
+        "UR": 0.98,
+        "UR-OF": 6.0,
+        "SER": 0.9,
+        "PSER-OF": 125.0,
+        "GMR-OF": 66700.0
+      }
+    },
+    "100257013": {
+      "setNumber": "LOCR-JP013",
+      "name": "四天之龙 凶饿毒融合龙",
+      "prices": {
+        "UR": 0.99,
+        "UR-OF": 35.0,
+        "SER": 6.0,
+        "PSER-OF": 154.9,
+        "GMR-OF": 14900.0
+      }
+    },
+    "100257014": {
+      "setNumber": "LOCR-JP014",
+      "name": "四天之龙 幻透翼同调龙",
+      "prices": {
+        "UR": 0.5,
+        "UR-OF": 15.0,
+        "SER": 4.0,
+        "PSER-OF": 85.0,
+        "GMR-OF": 12000.0
+      }
+    },
+    "100257015": {
+      "setNumber": "LOCR-JP015",
+      "name": "四天之龙 暗叛逆XYZ龙",
+      "prices": {
+        "UR": 1.5,
+        "UR-OF": 25.0,
+        "SER": 1.5,
+        "PSER-OF": 230.0,
+        "GMR-OF": 18000.0
+      }
+    },
+    "100257016": {
+      "setNumber": "LOCR-JP016",
+      "name": "装弹枪管解放龙",
+      "prices": {
+        "UR": 0.5,
+        "UR-OF": 5.0,
+        "SER": 1.5,
+        "PSER-OF": 73.0,
+        "GMR-OF": 13000.0
+      }
+    },
+    "100257017": {
+      "setNumber": "LOCR-JP017",
+      "name": "弹丸雨幕龙",
+      "prices": {
+        "UR": 2.5,
+        "UR-OF": 39.0,
+        "SER": 9.0,
+        "PSER-OF": 230.0,
+        "GMR-OF": 8880.0
+      }
+    },
+    "100257018": {
+      "setNumber": "LOCR-JP018",
+      "name": "三重枪管旋转",
+      "prices": {
+        "UR": 1.0,
+        "SER": 5.0,
+        "PSER-OF": 188.0,
+        "GMR-OF": 9600.0,
+        "GMR": 35900.0,
+        "UR-OF": 18.0
+      }
+    },
+    "100257019": {
+      "setNumber": "LOCR-JP019",
+      "name": "造物主 埃玛",
+      "prices": {
+        "UR": 0.5,
+        "SER": 0.5,
+        "PSER": 10.0
+      }
+    },
+    "100257020": {
+      "setNumber": "LOCR-JP020",
+      "name": "暗之神",
+      "prices": {
+        "UR": 0.5,
+        "SER": 0.5,
+        "PSER": 4.4
+      }
+    },
+    "100257021": {
+      "setNumber": "LOCR-JP021",
+      "name": "神鸣",
+      "prices": {
+        "UR": 1.39,
+        "SER": 6.0,
+        "PSER": 140.0
+      }
+    },
+    "100257022": {
+      "setNumber": "LOCR-JP022",
+      "name": "暗黑调整 灾祸盗贼",
+      "prices": {
+        "UR": 0.5,
+        "SER": 1.3,
+        "PSER": 6.9
+      }
+    },
+    "100257023": {
+      "setNumber": "LOCR-JP023",
+      "name": "暗黑调整 梦魇鬼手",
+      "prices": {
+        "UR": 0.5,
+        "SER": 0.5,
+        "PSER": 13.9
+      }
+    },
+    "100257024": {
+      "setNumber": "LOCR-JP024",
+      "name": "机炮食人魔",
+      "prices": {
+        "UR": 0.5,
+        "SER": 0.5,
+        "PSER": 24.0
+      }
+    },
+    "100257025": {
+      "setNumber": "LOCR-JP025",
+      "name": "永火死亡枪手",
+      "prices": {
+        "UR": 0.5,
+        "SER": 1.4,
+        "PSER": 10.0
+      }
+    },
+    "100257026": {
+      "setNumber": "LOCR-JP026",
+      "name": "混沌终结支配者-开辟与终焉的支配者-",
+      "prices": {
+        "UR": 0.5,
+        "SER": 2.4,
+        "PSER": 18.0
+      }
+    },
+    "100257027": {
+      "setNumber": "LOCR-JP027",
+      "name": "超升阶魔法-究极之力",
+      "prices": {
+        "UR": 0.5,
+        "SER": 1.4,
+        "PSER": 18.0
+      }
+    },
+    "100257028": {
+      "setNumber": "LOCR-JP028",
+      "name": "完美电子多元驱动蛇·神龙",
+      "prices": {
+        "UR": 0.5,
+        "SER": 1.0,
+        "PSER": 40.0
+      }
+    },
+    "48770333": {
+      "setNumber": "LOCR-JP029",
+      "name": "雷击坏兽 雷鸣龙王",
+      "prices": {
+        "UR": 0.5,
+        "SER": 1.0,
+        "PSER": 15.0
+      }
+    },
+    "37495766": {
+      "setNumber": "LOCR-JP030",
+      "name": "救援ACE队 涡轮湍流消防战车",
+      "prices": {
+        "UR": 0.5,
+        "SER": 1.5,
+        "PSER": 11.0
+      }
+    },
+    "2347656": {
+      "setNumber": "LOCR-JP031",
+      "name": "白银之城的拉比林斯",
+      "prices": {
+        "UR": 0.5,
+        "SER": 2.49,
+        "PSER": 130.0
+      }
+    },
+    "53765052": {
+      "setNumber": "LOCR-JP032",
+      "name": "原罪之迪亚贝尔泽",
+      "prices": {
+        "UR": 0.5,
+        "SER": 0.9,
+        "PSER": 34.6
+      }
+    },
+    "68468459": {
+      "setNumber": "LOCR-JP033",
+      "name": "阿不思的落胤",
+      "prices": {
+        "UR": 0.5,
+        "SER": 2.0,
+        "PSER": 58.0
+      }
+    },
+    "55273560": {
+      "setNumber": "LOCR-JP034",
+      "name": "白之圣女 艾克莉西娅",
+      "prices": {
+        "UR": 0.5,
+        "SER": 3.0,
+        "PSER": 118.8
+      }
+    },
+    "93039339": {
+      "setNumber": "LOCR-JP035",
+      "name": "灾厄之星 提·丰",
+      "prices": {
+        "UR": 2.0,
+        "CR": 3.0,
+        "SER": 3.0,
+        "PSER": 59.9
+      }
+    },
+    "93854893": {
+      "setNumber": "LOCR-JP036",
+      "name": "宵星之机神 丁吉尔苏",
+      "prices": {
+        "UR": 0.5,
+        "SER": 0.9,
+        "PSER": 23.88
+      }
+    },
+    "2263869": {
+      "setNumber": "LOCR-JP037",
+      "name": "月女神之镞",
+      "prices": {
+        "UR": 1.0,
+        "SER": 1.98,
+        "PSER": 45.0
+      }
+    },
+    "68337209": {
+      "setNumber": "LOCR-JP038",
+      "name": "魔∀丽丝梦游地下界",
+      "prices": {
+        "UR": 0.5,
+        "SER": 1.3,
+        "PSER": 120.0
+      }
+    },
+    "49036338": {
+      "setNumber": "LOCR-JP039",
+      "name": "PSY骨架驱动者",
+      "prices": {
+        "SR": 0.5,
+        "UTR": 0.5,
+        "SER": 0.5,
+        "PSER": 25.0
+      }
+    },
+    "87602890": {
+      "setNumber": "LOCR-JP040",
+      "name": "轰雷帝 扎博尔格",
+      "prices": {
+        "SR": 0.5,
+        "CR": 1.9,
+        "SER": 1.5,
+        "PSER": 18.0
+      }
+    },
+    "29925614": {
+      "setNumber": "LOCR-JP041",
+      "name": "混沌魅惑的女王",
+      "prices": {
+        "SR": 0.5,
+        "CR": 0.5,
+        "SER": 0.7,
+        "PSER": 25.0
+      }
+    },
+    "72090076": {
+      "setNumber": "LOCR-JP042",
+      "name": "星义绿廊兽",
+      "prices": {
+        "SR": 0.5,
+        "UTR": 1.0,
+        "SER": 0.9,
+        "PSER": 14.0
+      }
+    },
+    "99177923": {
+      "setNumber": "LOCR-JP043",
+      "name": "永火恶魔",
+      "prices": {
+        "SR": 0.5,
+        "CR": 0.5,
+        "SER": 1.4,
+        "PSER": 20.0
+      }
+    },
+    "51858306": {
+      "setNumber": "LOCR-JP044",
+      "name": "日食翼龙",
+      "prices": {
+        "SR": 0.5,
+        "CR": 1.5,
+        "SER": 0.5,
+        "PSER": 24.99
+      }
+    },
+    "1225009": {
+      "setNumber": "LOCR-JP045",
+      "name": "白银之城的召使 阿里安娜",
+      "prices": {
+        "SR": 0.5,
+        "UTR": 0.99,
+        "SER": 1.99,
+        "PSER": 135.0
+      }
+    },
+    "63198739": {
+      "setNumber": "LOCR-JP046",
+      "name": "原石龙 变种绿柱石龙",
+      "prices": {
+        "SR": 0.5,
+        "UTR": 4.99,
+        "SER": 4.0,
+        "PSER": 55.88
+      }
+    },
+    "99937011": {
+      "setNumber": "LOCR-JP047",
+      "name": "剑神官 姆多拉",
+      "prices": {
+        "SR": 0.5,
+        "CR": 2.0,
+        "SER": 2.5,
+        "PSER": 25.0
+      }
+    },
+    "46502744": {
+      "setNumber": "LOCR-JP048",
+      "name": "应战的G",
+      "prices": {
+        "SR": 1.3,
+        "CR": 9.5,
+        "SER": 5.5,
+        "PSER": 115.0
+      }
+    },
+    "29417188": {
+      "setNumber": "LOCR-JP049",
+      "name": "念动力防卫者",
+      "prices": {
+        "SR": 0.5,
+        "UTR": 0.5,
+        "SER": 0.5,
+        "PSER": 5.0
+      }
+    },
+    "63542003": {
+      "setNumber": "LOCR-JP050",
+      "name": "宿神像 凯尔多",
+      "prices": {
+        "SR": 0.5,
+        "CR": 1.0,
+        "SER": 2.0,
+        "PSER": 30.0
+      }
+    },
+    "44663232": {
+      "setNumber": "LOCR-JP051",
+      "name": "异怪之妖精 艾尔佛彼娅",
+      "prices": {
+        "SR": 0.5,
+        "CR": 1.0,
+        "SER": 1.5,
+        "PSER": 15.0
+      }
+    },
+    "56209279": {
+      "setNumber": "LOCR-JP052",
+      "name": "永火死灵师",
+      "prices": {
+        "SR": 0.5,
+        "CR": 0.9,
+        "SER": 0.5,
+        "PSER": 30.0
+      }
+    },
+    "74203495": {
+      "setNumber": "LOCR-JP053",
+      "name": "PSY骨架装备·δ",
+      "prices": {
+        "SR": 0.5,
+        "UTR": 3.0,
+        "SER": 0.5,
+        "PSER": 25.0
+      }
+    },
+    "19211362": {
+      "setNumber": "LOCR-JP054",
+      "name": "星义旗舰兽",
+      "prices": {
+        "SR": 0.5,
+        "UTR": 2.39,
+        "SER": 1.4,
+        "PSER": 39.0
+      }
+    },
+    "38814750": {
+      "setNumber": "LOCR-JP055",
+      "name": "PSY骨架装备·γ",
+      "prices": {
+        "SR": 0.5,
+        "UTR": 5.0,
+        "SER": 1.7,
+        "PSER": 90.0
+      }
+    },
+    "61980241": {
+      "setNumber": "LOCR-JP056",
+      "name": "白森林的莉泽特",
+      "prices": {
+        "SR": 0.5,
+        "UTR": 2.9,
+        "SER": 1.0,
+        "PSER": 75.0
+      }
+    },
+    "33750025": {
+      "setNumber": "LOCR-JP057",
+      "name": "轮回龙",
+      "prices": {
+        "SR": 0.5,
+        "CR": 0.5,
+        "SER": 0.5,
+        "PSER": 21.9
+      }
+    },
+    "82315403": {
+      "setNumber": "LOCR-JP058",
+      "name": "电子永恒龙",
+      "prices": {
+        "SR": 0.5,
+        "CR": 0.6,
+        "SER": 0.5,
+        "PSER": 59.99
+      }
+    },
+    "13455674": {
+      "setNumber": "LOCR-JP059",
+      "name": "水晶机巧-胶子柠龙黑晶",
+      "prices": {
+        "SR": 0.5,
+        "UTR": 0.5,
+        "SER": 0.5,
+        "PSER": 25.0
+      }
+    },
+    "10515412": {
+      "setNumber": "LOCR-JP060",
+      "name": "光辉暴风龙",
+      "prices": {
+        "SR": 0.5,
+        "UTR": 0.96,
+        "SER": 1.0,
+        "PSER": 55.0
+      }
+    },
+    "44698398": {
+      "setNumber": "LOCR-JP061",
+      "name": "神影金龙 光速子龙",
+      "prices": {
+        "SR": 0.5,
+        "CR": 1.0,
+        "SER": 1.4,
+        "PSER": 45.0
+      }
+    },
+    "61374414": {
+      "setNumber": "LOCR-JP062",
+      "name": "混沌XYZ 伟人庇护混沌骑士",
+      "prices": {
+        "SR": 0.5,
+        "CR": 3.0,
+        "SER": 1.5,
+        "PSER": 24.0
+      }
+    },
+    "49456901": {
+      "setNumber": "LOCR-JP063",
+      "name": "混沌No.104 假面魔蹈士 阴影",
+      "prices": {
+        "SR": 0.5,
+        "CR": 2.9,
+        "SER": 0.5,
+        "PSER": 34.0
+      }
+    },
+    "34876719": {
+      "setNumber": "LOCR-JP064",
+      "name": "伟人庇护战车骑士",
+      "prices": {
+        "SR": 0.5,
+        "CR": 3.0,
+        "SER": 1.9,
+        "PSER": 59.9
+      }
+    },
+    "2061963": {
+      "setNumber": "LOCR-JP065",
+      "name": "No.104 假面魔蹈士 闪光",
+      "prices": {
+        "SR": 0.5,
+        "CR": 0.89,
+        "SER": 2.5,
+        "PSER": 28.0
+      }
+    },
+    "3790062": {
+      "setNumber": "LOCR-JP066",
+      "name": "No.65 裁断魔人",
+      "prices": {
+        "SR": 0.5,
+        "CR": 1.5,
+        "SER": 1.5,
+        "PSER": 8.0
+      }
+    },
+    "2857636": {
+      "setNumber": "LOCR-JP067",
+      "name": "梦幻崩影·凤凰",
+      "prices": {
+        "SR": 0.5,
+        "UTR": 0.96,
+        "SER": 1.0,
+        "PSER": 39.0
+      }
+    },
+    "75452921": {
+      "setNumber": "LOCR-JP068",
+      "name": "梦幻崩影·地狱犬",
+      "prices": {
+        "SR": 0.5,
+        "UTR": 0.99,
+        "SER": 0.8,
+        "PSER": 45.0
+      }
+    },
+    "59494222": {
+      "setNumber": "LOCR-JP069",
+      "name": "守墓的刻印",
+      "prices": {
+        "SR": 0.5,
+        "CR": 1.5,
+        "SER": 0.8,
+        "PSER": 25.0
+      }
+    },
+    "88901994": {
+      "setNumber": "LOCR-JP070",
+      "name": "同调鸣动",
+      "prices": {
+        "SR": 0.5,
+        "UTR": 2.5,
+        "SER": 0.5,
+        "PSER": 75.0
+      }
+    },
+    "7477101": {
+      "setNumber": "LOCR-JP071",
+      "name": "时空之七皇",
+      "prices": {
+        "SR": 0.5,
+        "CR": 5.0,
+        "SER": 2.0,
+        "PSER": 108.0
+      }
+    },
+    "92221402": {
+      "setNumber": "LOCR-JP072",
+      "name": "混沌态元素",
+      "prices": {
+        "SR": 0.5,
+        "CR": 2.0,
+        "SER": 0.5,
+        "PSER": 55.0
+      }
+    },
+    "92501449": {
+      "setNumber": "LOCR-JP073",
+      "name": "原石的鸣狞",
+      "prices": {
+        "SR": 0.5,
+        "UTR": 0.5,
+        "SER": 0.7,
+        "CR": 68.0,
+        "PSER": 68.0
+      }
+    },
+    "29095457": {
+      "setNumber": "LOCR-JP074",
+      "name": "原石的穿光",
+      "prices": {
+        "SR": 0.5,
+        "UTR": 1.5,
+        "SER": 0.5,
+        "PSER": 135.0
+      }
+    },
+    "1149109": {
+      "setNumber": "LOCR-JP075",
+      "name": "卡组封锁",
+      "prices": {
+        "SR": 0.5,
+        "UTR": 3.0,
+        "SER": 2.69,
+        "PSER": 28.8
+      }
+    },
+    "56506740": {
+      "setNumber": "LOCR-JP076",
+      "name": "原石的皇脉",
+      "prices": {
+        "SR": 0.5,
+        "UTR": 3.0,
+        "SER": 2.0,
+        "PSER": 89.0
+      }
+    },
+    "31849106": {
+      "setNumber": "LOCR-JP077",
+      "name": "异次元竞技场",
+      "prices": {
+        "SR": 0.5,
+        "CR": 2.99,
+        "SER": 2.0,
+        "PSER": 150.0
+      }
+    },
+    "5380979": {
+      "setNumber": "LOCR-JP078",
+      "name": "拉比林斯迷宫欢迎",
+      "prices": {
+        "SR": 0.5,
+        "UTR": 1.5,
+        "SER": 0.5,
+        "PSER": 54.9
+      }
+    },
+    "58053438": {
+      "setNumber": "LOCR-JP079",
+      "name": "列王诗篇",
+      "prices": {
+        "SR": 0.5,
+        "UTR": 1.0,
+        "SER": 1.5,
+        "PSER": 100.0
+      }
+    },
+    "53334471": {
+      "setNumber": "LOCR-JP080",
+      "name": "御前试合",
+      "prices": {
+        "SR": 0.5,
+        "UTR": 1.7,
+        "SER": 0.5,
+        "PSER": 85.0
+      }
+    },
+    "12381100": {
+      "setNumber": "LOSP-JP011",
+      "name": "究极龙魔导师",
+      "prices": {
+        "PSER-OF": 137.0
+      }
+    },
+    "87116928": {
+      "setNumber": "LOSP-JP012",
+      "name": "嵌合巨舰龙",
+      "prices": {
+        "PSER-OF": 20.0
+      }
+    },
+    "99585850": {
+      "setNumber": "LOSP-JP013",
+      "name": "真红莲超新星龙",
+      "prices": {
+        "PSER-OF": 65.0
+      }
+    },
+    "31801517": {
+      "setNumber": "LOSP-JP014",
+      "name": "No.62 银河眼光子龙皇",
+      "prices": {
+        "PSER-OF": 49.9
+      }
+    },
+    "13331639": {
+      "setNumber": "LOSP-JP015",
+      "name": "霸王龙 扎克",
+      "prices": {
+        "PSER-OF": 27.99
+      }
+    },
+    "98630720": {
+      "setNumber": "LOSP-JP016",
+      "name": "前托枪管龙",
+      "prices": {
+        "PSER-OF": 34.9
+      }
+    },
+    "22850702": {
+      "setNumber": "LOSP-JP017",
+      "name": "混沌之双翼",
+      "prices": {
+        "PSER-OF": 119.0
+      }
+    },
+    "98127546": {
+      "setNumber": "LOSP-JP018",
+      "name": "闭锁世界的冥神",
+      "prices": {
+        "PSER-OF": 118.0
+      }
+    },
+    "91530236": {
+      "setNumber": "LOSP-JP019",
+      "name": "精灵术的术使",
+      "prices": {
+        "PSER-OF": 49.0
+      }
+    },
+    "40366667": {
+      "setNumber": "LOSP-JP020",
+      "name": "灵王的波动",
+      "prices": {
+        "PSER-OF": 318.8
+      }
+    }
+  }
 }

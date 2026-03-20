@@ -89,8 +89,15 @@ def load_card_name_map():
     从卡片数据文件加载卡名映射（用于通过 OCR 识别的卡名反向查找编号）
     
     返回: {'LOCH': {编号: {cn_name, jp_name, keywords}}, 'LOSP': {...}, 'BLZD': {...}}
+    
+    【特殊规则】LOSP 是跨卡包的+1包：
+      - LOSP vol1 (JP001~010) 属于 LOCH 的附属包，卡包价格存入 loch_prices.json
+      - LOSP vol2 (JP011~020) 属于 LOCR 的附属包，卡包价格存入 locr_prices.json
+      - 两个 vol 各自拥有独立的卡包价格，价格随市场动态变化（每次扫描可能不同）
+      两个 vol 的卡名映射统一存在 name_map['LOSP'] 中，但价格分别写入对应的价格文件
+      TODO: 后续需要在 merge 逻辑中根据编号范围自动分流到对应的价格文件
     """
-    name_map = {'LOCH': {}, 'LOSP': {}, 'BLZD': {}}
+    name_map = {'LOCH': {}, 'LOCR': {}, 'LOSP': {}, 'BLZD': {}}
     pw_index = _load_cards_db()
     print(f"  cards.json 索引: {len(pw_index)} 条记录")
 
@@ -133,6 +140,16 @@ def load_card_name_map():
         for card in sp.get('cards', []):
             _process_card(card, name_map['LOSP'])
 
+    # 加载 LOCR 系列（主包 JP001~080 + LOSP vol2 JP011~020）
+    locr_path = os.path.join(BASE_DIR, 'data', 'ocg', 'cards', 'ocg_locr.json')
+    if os.path.exists(locr_path):
+        locr_data = json.load(open(locr_path, 'r', encoding='utf-8'))
+        for card in locr_data.get('cardIds', []):
+            _process_card(card, name_map['LOCR'])
+        sp = locr_data.get('supplementPack', {})
+        for card in sp.get('cards', []):
+            _process_card(card, name_map['LOSP'])
+
     # 加载 BLZD 系列
     blzd_path = os.path.join(BASE_DIR, 'data', 'ocg', 'cards', 'ocg_blzd.json')
     if os.path.exists(blzd_path):
@@ -146,6 +163,7 @@ def load_card_name_map():
     total = sum(len(m) for m in name_map.values())
     sc_count = sum(1 for pm in name_map.values() for info in pm.values() if info['cn_name'])
     print(f"  卡名覆盖率: {sc_count}/{total} 张卡有显示名称")
+    print(f"  卡名映射: LOCH={len(name_map['LOCH'])}, LOCR={len(name_map['LOCR'])}, LOSP={len(name_map['LOSP'])}, BLZD={len(name_map['BLZD'])}")
     return name_map
 
 
@@ -472,7 +490,7 @@ def parse_set_number(text_lines, name_map=None):
     # 1. 尝试匹配完整的编号 XXXX-JP(S)NNN
     #    LOCH-JP001, BLZD-JP002, BLZD-JPS01
     #    注意：编号数字部分至少2位才算完整，1位（如JP0）可能是截断的
-    match = re.search(r'((?:LOCH|BLZD|LOSP)-JPS?\d{2,3})', all_text, re.IGNORECASE)
+    match = re.search(r'((?:LOCH|LOCR|BLZD|LOSP)-JPS?\d{2,3})', all_text, re.IGNORECASE)
     if match:
         return match.group(1).upper()
     
@@ -485,7 +503,7 @@ def parse_set_number(text_lines, name_map=None):
     
     # 3. 匹配截断的编号 XXXX-JP... 或 XXXX-JPO... 等
     #    这种情况无法恢复完整编号，返回前缀
-    match = re.search(r'((?:LOCH|BLZD|LOSP)-JP[S]?)', all_text, re.IGNORECASE)
+    match = re.search(r'((?:LOCH|LOCR|BLZD|LOSP)-JP[S]?)', all_text, re.IGNORECASE)
     if match:
         return match.group(1).upper() + '???'  # 标记为未知编号
     
@@ -536,12 +554,12 @@ def parse_rarity_precise(text_lines):
     4. 编号和稀有度分行: "BLZD-JP..." + "PSER" → PSER
     5. 编号含空格: BLZD-JP026 N → N, BLZD-JPS06 UR → UR
     """
-    # 收集所有可能的编号行（包含 LOCH/BLZD/LOSP 关键字的行）
+    # 收集所有可能的编号行（包含 LOCH/LOCR/BLZD/LOSP 关键字的行）
     code_lines = []
     other_lines = []
     for line in text_lines:
         text = line['text'].strip()
-        if re.search(r'(?:LOCH|BLZD|LOSP)', text, re.IGNORECASE):
+        if re.search(r'(?:LOCH|LOCR|BLZD|LOSP)', text, re.IGNORECASE):
             code_lines.append(text)
         else:
             other_lines.append(text)
@@ -609,6 +627,8 @@ def get_series_prefix(filename, text_lines=None):
         return 'blzd'
     elif filename.startswith('LOCH'):
         return 'loch'
+    elif filename.startswith('LOCR'):
+        return 'locr'
     elif filename.startswith('LOSP'):
         return 'losp'
     
@@ -617,6 +637,8 @@ def get_series_prefix(filename, text_lines=None):
         all_text = ' '.join([l['text'] for l in text_lines])
         if 'LOCH' in all_text.upper():
             return 'loch'
+        elif 'LOCR' in all_text.upper():
+            return 'locr'
         elif 'LOSP' in all_text.upper():
             return 'losp'
         elif 'BLZD' in all_text.upper():
@@ -666,7 +688,7 @@ def extract_card_name(text_lines):
             continue
         # 跳过编号行
         text_upper = text.upper()
-        if any(p in text_upper for p in ['LOCH', 'BLZD', 'LOSP', 'JPY']):
+        if any(p in text_upper for p in ['LOCH', 'LOCR', 'BLZD', 'LOSP', 'JPY']):
             continue
         # 跳过纯数字
         if re.match(r'^[\d.]+$', text):
@@ -757,13 +779,23 @@ def infer_set_number_from_context(filename, text_lines, all_data):
 # ==============================
 # 主流程
 # ==============================
-def main(date_str=None):
+def main(date_str=None, ocr_path=None, output_path=None, summary_path=None, cut_info_path=None):
     """
     主函数
     date_str: 日期字符串 (YYYYMMDD格式)，如 '20260312'
+    ocr_path: OCR结果文件路径（默认使用全局 OCR_PATH）
+    output_path: 输出文件路径（默认使用全局 OUTPUT_PATH）
+    summary_path: 汇总文件路径（默认使用全局 SUMMARY_PATH）
+    cut_info_path: 裁切信息文件路径（默认使用 test_output/card_cut_info.json）
     """
+    # 使用传入路径或默认值
+    _ocr_path = ocr_path or OCR_PATH
+    _output_path = output_path or OUTPUT_PATH
+    _summary_path = summary_path or SUMMARY_PATH
+    _cut_info_path = cut_info_path or os.path.join(BASE_DIR, 'test_output', 'card_cut_info.json')
+
     # 加载 OCR 数据
-    with open(OCR_PATH, 'r', encoding='utf-8') as f:
+    with open(_ocr_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
     
     # 处理日期
@@ -778,13 +810,12 @@ def main(date_str=None):
     # 加载卡名映射（来自 cards.json + ocg_loch.json + ocg_blzd.json）
     print('\n加载卡名映射...')
     name_map = load_card_name_map()
-    print(f"  卡名映射: LOCH={len(name_map['LOCH'])}, LOSP={len(name_map['LOSP'])}, BLZD={len(name_map['BLZD'])}")
+    print(f"  卡名映射: LOCH={len(name_map['LOCH'])}, LOCR={len(name_map['LOCR'])}, LOSP={len(name_map['LOSP'])}, BLZD={len(name_map['BLZD'])}")
     
     # 加载裁切信息（获取卡片索引）
-    cut_info_path = os.path.join(BASE_DIR, 'test_output', 'card_cut_info.json')
     card_idx_map = {}
-    if os.path.exists(cut_info_path):
-        with open(cut_info_path, 'r', encoding='utf-8') as f:
+    if os.path.exists(_cut_info_path):
+        with open(_cut_info_path, 'r', encoding='utf-8') as f:
             cut_info = json.load(f)
         for item in cut_info:
             if item.get('filename'):
@@ -794,6 +825,7 @@ def main(date_str=None):
     # 结构: { "loch": { "LOCH-JP001": { "UR": {"price": 0.5}, "SER": {"price": 2.0} } } }
     parsed = {
         'loch': {},
+        'locr': {},
         'blzd': {},
         'losp': {}
     }
@@ -801,6 +833,7 @@ def main(date_str=None):
     # 包价格
     pack_prices = {
         'loch': {},
+        'locr': {},
         'blzd': {},
         'losp': {}
     }
@@ -873,6 +906,9 @@ def main(date_str=None):
         
         # 推断卡包编码
         pack = series.upper()
+        # 【特殊规则】LOSP 是跨卡包的+1包（vol1=001~010归LOCH, vol2=011~020归LOCR）
+        # 两个 vol 各自拥有独立的卡包价格，价格随市场动态变化
+        # TODO: 后续 merge 时需根据编号范围将价格分流到 loch_prices.json 或 locr_prices.json
         if filename.startswith('LOSP'):
             pack = 'LOSP'
         
@@ -1003,7 +1039,7 @@ def main(date_str=None):
     
     # 输出各系列统计
     print(f'\n===== 各系列解析结果 =====')
-    for s in ['loch', 'blzd', 'losp']:
+    for s in ['loch', 'locr', 'blzd', 'losp']:
         cards = parsed[s]
         total_prices = sum(len(v) for v in cards.values())
         print(f'{s.upper()}: {len(cards)} 张卡, {total_prices} 条价格')
@@ -1025,9 +1061,9 @@ def main(date_str=None):
     }
     output.update(parsed)
     
-    with open(OUTPUT_PATH, 'w', encoding='utf-8') as f:
+    with open(_output_path, 'w', encoding='utf-8') as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
-    print(f'\n已保存到: {OUTPUT_PATH}')
+    print(f'\n已保存到: {_output_path}')
     
     # 保存汇总文件
     summary_output = []
@@ -1035,7 +1071,7 @@ def main(date_str=None):
     summary_output.append('=' * 80)
     summary_output.append('')
     
-    for s in ['loch', 'blzd', 'losp']:
+    for s in ['loch', 'locr', 'blzd', 'losp']:
         cards = parsed[s]
         if not cards:
             continue
@@ -1062,9 +1098,9 @@ def main(date_str=None):
             summary_output.append(f'  {issue}')
         summary_output.append('')
     
-    with open(SUMMARY_PATH, 'w', encoding='utf-8') as f:
+    with open(_summary_path, 'w', encoding='utf-8') as f:
         f.write('\n'.join(summary_output))
-    print(f'汇总已保存到: {SUMMARY_PATH}')
+    print(f'汇总已保存到: {_summary_path}')
 
 
 if __name__ == '__main__':

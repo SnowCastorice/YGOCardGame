@@ -229,19 +229,19 @@ CROP_OFFSET_BOTTOM = 125       # 裁切下沿偏移
 
 ```bash
 # 一键完整流程（截图日期为目录名）
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309
+local/venv/Scripts/python.exe tools/ocr_workflow.py 20260309
 
 # 分步执行
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step rename     # 步骤1: 截图重命名
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step cut        # 步骤2: 行裁切
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step card_cut   # 步骤3: 单卡裁切
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step ocr_cards  # 步骤4: 单卡OCR
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step parse      # 步骤5: 解析价格
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step merge      # 步骤6: 合并到JSON
+local/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step rename     # 步骤1: 截图重命名
+local/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step cut        # 步骤2: 行裁切
+local/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step card_cut   # 步骤3: 单卡裁切
+local/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step ocr_cards  # 步骤4: 单卡OCR
+local/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step parse      # 步骤5: 解析价格
+local/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step merge      # 步骤6: 合并到JSON
 
 # 从某一步开始执行到最后（跳过已完成的步骤）
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --from card_cut   # 从单卡裁切开始
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --from parse      # 从解析开始
+local/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --from card_cut   # 从单卡裁切开始
+local/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --from parse      # 从解析开始
 ```
 
 > 💡 **首次使用**：只需将集换社截图放入 `tools/OCRPics/YYYYMMDD/` 目录，然后运行一键命令即可。
@@ -262,7 +262,7 @@ tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --from parse      #
 
 ```bash
 # 独立运行
-tools/venv/Scripts/python.exe tools/card_cutter.py
+local/venv/Scripts/python.exe tools/card_cutter.py
 ```
 
 > 💡 单卡裁切是精度提升的关键：每张卡独立 OCR 后编号识别几乎完美，远优于行级 OCR。
@@ -281,7 +281,7 @@ tools/venv/Scripts/python.exe tools/card_cutter.py
 
 ```bash
 # 独立运行
-tools/venv/Scripts/python.exe tools/batch_ocr_cards.py
+local/venv/Scripts/python.exe tools/batch_ocr_cards.py
 ```
 
 ---
@@ -358,7 +358,7 @@ flowchart LR
 ### 第 1 步：截图重命名（rename）
 
 ```bash
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step rename
+local/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step rename
 ```
 
 对所有未命名的截图（MuMu默认命名等）做一次OCR识别卡包前缀，然后按卡包分组编号重命名为 `{PACK}{序号}.png`（如 `LOCH01.png`、`BLZD03.png`）。已经以卡包名开头的截图跳过OCR。
@@ -369,7 +369,7 @@ tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step rename
 ### 第 2 步：行裁切（cut）
 
 ```bash
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step cut
+local/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step cut
 ```
 
 调用 `card_rect_cutter.py`，基于 OpenCV Canny边缘检测 + 卡图矩形定位，将长截图精确裁切为每行的文字信息条。卡包前缀直接从文件名提取（需先运行 rename 步骤）。
@@ -381,7 +381,7 @@ tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step cut
 ### 第 3 步：单卡裁切（card_cut）
 
 ```bash
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step card_cut
+local/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step card_cut
 ```
 
 调用 `card_cutter.py`，将行图按十等分裁切为独立单卡图。
@@ -394,7 +394,7 @@ tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step card_cut
 ### 第 4 步：单卡 OCR（ocr_cards）
 
 ```bash
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step ocr_cards
+local/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step ocr_cards
 ```
 
 使用 PaddleOCR 逐张识别单卡图。**这是精度提升的关键环节**——单卡独立识别后编号准确率远高于行级。
@@ -407,7 +407,7 @@ tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step ocr_cards
 ### 第 5 步：解析价格（parse）
 
 ```bash
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step parse
+local/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step parse
 ```
 
 调用 `extract_prices.py`（v7 合并卡名匹配版），从 OCR 结果中提取结构化价格数据。
@@ -458,7 +458,7 @@ flowchart TD
 
 ### 第 6 步：合并到价格 JSON（merge）
 ```bash
-tools/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step merge
+local/venv/Scripts/python.exe tools/ocr_workflow.py 20260309 --step merge
 ```
 
 调用 `merge_prices.py`，将解析结果智能合并到最终价格文件。
@@ -526,31 +526,31 @@ git push origin main
 
 ```bash
 # ===== 推荐：一键工作流 =====
-tools/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD
+local/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD
 
 # ===== 手动分步执行 =====
 # 0. 截图放入 tools/OCRPics/YYYYMMDD/
 # 1. 截图重命名（OCR识别卡包前缀）
-tools/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step rename
+local/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step rename
 # 2. 行裁切
-tools/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step cut
+local/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step cut
 # 3. 单卡裁切
-tools/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step card_cut
+local/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step card_cut
 # 4. 单卡OCR
-tools/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step ocr_cards
+local/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step ocr_cards
 # 5. 解析价格
-tools/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step parse
+local/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step parse
 # 6. 合并到价格文件
-tools/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step merge
+local/venv/Scripts/python.exe tools/ocr_workflow.py YYYYMMDD --step merge
 # 7. 检查 test_output/price_comparison.csv
 # 8. 提交推送
 git add data/ocg/prices/ && git commit -m "更新卡片市场价格" && git push
 
 # ===== 独立脚本（不通过 workflow 调用）=====
-tools/venv/Scripts/python.exe tools/card_rect_cutter.py 20260312  # 行裁切（测试）
-tools/venv/Scripts/python.exe tools/card_cutter.py                 # 单卡裁切
-tools/venv/Scripts/python.exe tools/extract_prices.py              # 解析价格
-tools/venv/Scripts/python.exe tools/merge_prices.py                # 合并价格
+local/venv/Scripts/python.exe tools/card_rect_cutter.py 20260312  # 行裁切（测试）
+local/venv/Scripts/python.exe tools/card_cutter.py                 # 单卡裁切
+local/venv/Scripts/python.exe tools/extract_prices.py              # 解析价格
+local/venv/Scripts/python.exe tools/merge_prices.py                # 合并价格
 ```
 
 ### ⚠️ 已知问题与排错经验

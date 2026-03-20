@@ -66,7 +66,7 @@ YGOCardGame/
 
 ### OCR 价格更新
 
-- **一键工作流**：`tools/venv/Scripts/python.exe tools/ocr_workflow.py <日期>`
+- **一键工作流**：`local/venv/Scripts/python.exe tools/ocr_workflow.py <日期>`
 - **自动流程**：截图裁切 → OCR 识别 → 解析价格 → 人工确认 → 合并 JSON
 
 详见：[docs/TOOLS.md](docs/TOOLS.md)

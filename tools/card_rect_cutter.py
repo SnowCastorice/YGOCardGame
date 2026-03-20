@@ -93,13 +93,12 @@ def detect_card_rects(img_path):
                         'area': area
                     })
 
-    if rects:
-        return rects, img.shape[:2]
+    fast_rects = list(rects)  # 保存快速路径结果，继续执行回退路径
 
     # === 回退路径：用 boundingRect 尺寸过滤（不依赖轮廓面积）===
     # 某些截图（如卡包页面）卡图内容复杂，Canny边缘不完整导致轮廓面积远小于预期
     # 但 boundingRect 的宽高仍然准确
-    print("  [回退] 快速路径未检测到卡图，使用 boundingRect 尺寸过滤")
+    # 无论快速路径是否有结果，都执行回退路径以捕获遗漏的矩形
     contours_all, _ = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
     candidates = []
@@ -120,17 +119,40 @@ def detect_card_rects(img_path):
 
     # 对同位置的重复轮廓去重（保留面积最大的）
     candidates.sort(key=lambda r: (r['cy'], r['cx']))
-    rects = []
+    fallback_rects = []
     for c in candidates:
-        if not rects or abs(c['cy'] - rects[-1]['cy']) > 10 or abs(c['cx'] - rects[-1]['cx']) > 10:
-            rects.append(c)
-        elif c['area'] > rects[-1]['area']:
-            rects[-1] = c
+        if not fallback_rects or abs(c['cy'] - fallback_rects[-1]['cy']) > 10 or abs(c['cx'] - fallback_rects[-1]['cx']) > 10:
+            fallback_rects.append(c)
+        elif c['area'] > fallback_rects[-1]['area']:
+            fallback_rects[-1] = c
 
-    if rects:
-        print(f"  [回退] 通过 boundingRect 尺寸过滤检测到 {len(rects)} 个卡图矩形")
-
-    return rects, img.shape[:2]
+    # === 合并快速路径和回退路径的结果 ===
+    if fast_rects and not fallback_rects:
+        # 只有快速路径有结果
+        print(f"  [快速路径] 检测到 {len(fast_rects)} 个卡图矩形")
+        return fast_rects, img.shape[:2]
+    elif not fast_rects and fallback_rects:
+        # 只有回退路径有结果
+        print(f"  [回退路径] 检测到 {len(fallback_rects)} 个卡图矩形")
+        return fallback_rects, img.shape[:2]
+    elif fast_rects and fallback_rects:
+        # 两个路径都有结果，合并去重（同位置保留面积最大的）
+        merged = list(fast_rects)
+        for fb in fallback_rects:
+            is_dup = False
+            for i, m in enumerate(merged):
+                if abs(fb['cy'] - m['cy']) <= 15 and abs(fb['cx'] - m['cx']) <= 15:
+                    is_dup = True
+                    if fb['area'] > m['area']:
+                        merged[i] = fb
+                    break
+            if not is_dup:
+                merged.append(fb)
+        print(f"  [合并] 快速路径={len(fast_rects)}个, 回退路径={len(fallback_rects)}个, 合并后={len(merged)}个")
+        return merged, img.shape[:2]
+    else:
+        # 两个路径都没结果
+        return [], img.shape[:2]
 
 
 def cluster_rects_to_rows(rects):

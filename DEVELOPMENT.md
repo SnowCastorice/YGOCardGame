@@ -10,18 +10,31 @@
 > **📌 规则：DEVELOPMENT.md 不记录近期更新，所有变更统一记录到 [CHANGELOG.md](docs/CHANGELOG.md)。**
 
 ### 🐍 Python OCR 工具环境
-- **虚拟环境**：`tools/venv/`（Python 3.11 + PaddlePaddle-GPU 3.0.0 CUDA 12.6 + PaddleOCR 3.4.0）
-- **GPU 加速**：RTX 4060 (8GB VRAM)，每段识别 ~1 秒（CPU 约 8-10 秒/段，提速约 8x）
-- **一键工作流**：`tools/venv/Scripts/python.exe tools/ocr_workflow.py <日期>`（推荐）
-- **单独调用**：`tools/venv/Scripts/python.exe tools/ocr_price.py <截图路径> --output <输出JSON>`
+
+项目在两台设备上交替开发，虚拟环境路径统一为 `local/venv/`。
+
+| | 设备 A | 设备 B |
+|---|---|---|
+| **用户名** | `chihayadu` | `snow9` |
+| **GPU** | RTX 4060 (8GB VRAM) | RTX 3070 (8GB VRAM) |
+| **Python** | 3.11 | 3.11 |
+| **PaddlePaddle-GPU** | 3.0.0 (CUDA 12.6) | 3.0.0 (CUDA 12.6) |
+| **PaddleOCR** | 3.4.0 | 3.4.0 |
+
+> 虚拟环境目录 `local/` 在 `.gitignore` 中，不会被提交。每台设备需各自安装依赖。
+
+- **GPU 加速**：每段识别 ~1 秒（CPU 约 8-10 秒/段，提速约 8x）
+- **一键工作流**：`local/venv/Scripts/python.exe tools/ocr_workflow.py <日期>`（推荐）
+- **单独调用**：`local/venv/Scripts/python.exe tools/ocr_price.py <截图路径> --output <输出JSON>`
 - **注意**：PaddleOCR 不支持 Python 3.14，必须使用 3.11 虚拟环境运行
 
-### 🔌 PaddleOCR MCP Server（2026-03-04 新增）
+### 🔌 PaddleOCR MCP Server（仅设备 A）
 - **功能**：让 AI 编辑器直接调用本地 OCR 能力识别图片中的文字
 - **配置文件**：`C:\Users\chihayadu\.gongfeng-copilot\mcp.json`（服务名: `paddleocr`）
 - **启动方式**：CodeBuddy 自动通过 STDIO 模式管理进程，使用 GPU 加速
-- **包版本**：`paddleocr-mcp 0.5.0`（pip 安装在 tools/venv 中）
+- **包版本**：`paddleocr-mcp 0.5.0`（pip 安装在 local/venv 中）
 - **验证**：重启 CodeBuddy 后，MCP 工具列表中应出现 PaddleOCR 相关工具
+- **设备 B 不配置此 MCP**，OCR 工作流通过命令行脚本执行即可
 
 ## 📚 文档索引
 

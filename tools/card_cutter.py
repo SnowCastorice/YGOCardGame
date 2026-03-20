@@ -10,7 +10,7 @@
 4. 输出命名格式: {卡包}{截图序号}_{行序号}_card{卡序号}.png
 
 使用方法:
-  tools/venv/Scripts/python.exe tools/card_cutter.py
+  local/venv/Scripts/python.exe tools/card_cutter.py
 """
 
 import json
@@ -111,18 +111,24 @@ def cut_row_to_cards(row_img_path, output_dir, row_filename):
     return cards
 
 
-def process_all_rows(base_dir):
+def process_all_rows(base_dir, row_pics_dir=None, card_pics_dir=None, output_dir=None):
     """
     处理所有行裁切图，裁切为单卡图
     
     参数:
       base_dir: 项目根目录
+      row_pics_dir: 行裁切图目录（默认 test_output/row_pics/）
+      card_pics_dir: 单卡图输出目录（默认 test_output/card_pics/）
+      output_dir: 中间产物输出目录（默认 test_output/）
       
     返回: 全部裁切信息
     """
-    output_dir = os.path.join(base_dir, 'test_output')
-    row_pics_dir = os.path.join(output_dir, 'row_pics')
-    card_pics_dir = os.path.join(output_dir, 'card_pics')
+    if output_dir is None:
+        output_dir = os.path.join(base_dir, 'test_output')
+    if row_pics_dir is None:
+        row_pics_dir = os.path.join(output_dir, 'row_pics')
+    if card_pics_dir is None:
+        card_pics_dir = os.path.join(output_dir, 'card_pics')
     
     # 确保单卡图目录存在
     os.makedirs(card_pics_dir, exist_ok=True)
