@@ -2,6 +2,31 @@
 
 > 从 DEVELOPMENT.md 拆分，记录各版本的变更和待处理事项。
 
+## v1.7.8（2026-03-21）— LOSP 拆分 + LOCR 临时密码兼容 + GMR-OF 价格规则
+
+### LOSP 辅助包拆分为 vol1 / vol2
+- **`loch_prices.json`**：LOSP 包价键名从 `LOSP` 改为 `LOSP-vol1`（属于 LOCH 卡包）
+- **`locr_prices.json`**：LOSP 包价键名从 `LOSP` 改为 `LOSP-vol2`（属于 LOCR 卡包）
+- **`priceSystem.js`**：`getPackPrice('LOSP')` 自动回退查找 `LOSP-vol1` 或 `LOSP-vol2`
+
+### LOCR 临时密码兼容方案
+- **问题背景**：LOCR 是最新发售卡包，百鸽数据库（ygocdb）尚未收录正确的卡片密码，使用的是临时密码（≥100000000），导致价格文件中的 cardId 与卡片数据中的 id 不一致
+- **`priceSystem.js` 新增 `setNumberIndex` 反向索引**：加载价格数据时，自动建立 `setNumber → cardId` 的反向映射
+- **新增 `resolveCardId()` 内部函数**：查询价格时先尝试直接匹配 cardId，失败后通过 setNumber 反向索引回退查找
+- **影响**：LOCR 所有卡片（含 LOSP-vol2）现在可以正确获取到市场价格，当百鸽后续更新真实密码后也能自动兼容
+
+### LOCR-JP018 价格修复
+- **修复**：移除 `locr_prices.json` 中 LOCR-JP018 错误的 `GMR` 稀有度价格（¥35,900），该卡包不存在单纯的 GMR 稀有度，正确的是 `GMR-OF`（¥9,600，已正确录入）
+
+### LOCH 卡片密码更新
+- **`loch_prices.json`**：LOCH-JP001~JP018 的 cardId 从临时密码（100256xxx）更新为百鸽已收录的真实密码（如 88570003 等）
+
+### GMR-OF 亚洲版价格规则说明
+- **`loch_prices.json`** 和 **`locr_prices.json`** 均添加 `_GMR-OF价格规则` 元数据字段
+- **规则**：GMR-OF 稀有度在集换社会出现两列价格（亚洲版在左、日本版在右），本项目只录入亚洲版（左侧）价格，不录入日本版价格
+- 所有 36 张 GMR-OF 卡片（LOCH 18张 + LOCR 18张）的亚洲版价格已确认正确
+- **涉及修改文件**：`js/priceSystem.js`、`data/ocg/prices/loch_prices.json`、`data/ocg/prices/locr_prices.json`、`data/changelog.json`、`index.html`
+
 ## OCR 价格数据更新（2026-03-21）— BLZD + LOCH + LOCR 三包价格
 
 ### OCR 工具链增强

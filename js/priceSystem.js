@@ -22,6 +22,9 @@ const PriceSystem = (function () {
     let priceCache = {};
     // 卡包价格：{ "LOCH": { box: 385, pack: 22 }, "LOSP": { pack: 77 } }
     let packPrices = {};
+    // setNumber → 价格文件中的 cardId 反向索引（兼容临时密码卡片）
+    // 当卡片数据 id 更新为真实密码后，仍能通过 setNumber 回退查找价格
+    let setNumberIndex = {};
     // 已加载的价格文件列表
     let loadedFiles = [];
     // 是否已初始化
@@ -85,6 +88,10 @@ const PriceSystem = (function () {
                     var cardPrice = data.cards[cardId];
                     if (cardPrice && cardPrice.prices) {
                         priceCache[cardId] = cardPrice.prices;
+                        // 建立 setNumber → cardId 反向索引（用于临时密码兼容）
+                        if (cardPrice.setNumber) {
+                            setNumberIndex[cardPrice.setNumber] = cardId;
+                        }
                     }
                 });
             }
@@ -99,14 +106,30 @@ const PriceSystem = (function () {
     // ====== 查询接口 ======
 
     /**
+     * 解析卡片ID：优先直接匹配 priceCache，查不到时通过 setNumber 反向索引回退
+     * 用于兼容临时密码卡片（如 LOCR JP001-JP028 使用临时编号，未来 ygocdb 更新后 id 会变）
+     * @param {number|string} cardId - 卡片密码或 setNumber
+     * @returns {string|null} 价格缓存中的有效 key，未找到返回 null
+     */
+    function resolveCardId(cardId) {
+        var key = String(cardId);
+        if (priceCache[key]) return key;
+        // 回退：尝试通过 setNumber 索引查找
+        var mappedId = setNumberIndex[key];
+        if (mappedId && priceCache[mappedId]) return mappedId;
+        return null;
+    }
+
+    /**
      * 获取指定卡片指定稀有度的市场价格
      * @param {number|string} cardId - 卡片密码
      * @param {string} rarity - 稀有度代码（如 'UR', 'SER', 'PSER' 等）
      * @returns {number|null} 价格（人民币），未找到返回 null
      */
     function getCardPrice(cardId, rarity) {
-        var prices = priceCache[String(cardId)];
-        if (!prices) return null;
+        var resolvedId = resolveCardId(cardId);
+        if (!resolvedId) return null;
+        var prices = priceCache[resolvedId];
         var price = prices[rarity];
         return price !== undefined ? price : null;
     }
@@ -117,8 +140,9 @@ const PriceSystem = (function () {
      * @returns {object|null} 价格映射 如 { "UR": 0.5, "SER": 1.5 }，未找到返回 null
      */
     function getCardPrices(cardId) {
-        var prices = priceCache[String(cardId)];
-        return prices ? Object.assign({}, prices) : null;
+        var resolvedId = resolveCardId(cardId);
+        if (!resolvedId) return null;
+        return Object.assign({}, priceCache[resolvedId]);
     }
 
     /**
@@ -138,7 +162,12 @@ const PriceSystem = (function () {
      * @returns {object|null} 如 { box: 385, pack: 22 }，未找到返回 null
      */
     function getPackPrice(packCode) {
-        return packPrices[packCode] || null;
+        if (packPrices[packCode]) return packPrices[packCode];
+        // LOSP 特殊处理：拆分为 vol1（属于LOCH）和 vol2（属于LOCR），尝试回退匹配
+        if (packCode === 'LOSP') {
+            return packPrices['LOSP-vol1'] || packPrices['LOSP-vol2'] || null;
+        }
+        return null;
     }
 
     /**
@@ -147,7 +176,7 @@ const PriceSystem = (function () {
      * @returns {boolean}
      */
     function hasPrice(cardId) {
-        return !!priceCache[String(cardId)];
+        return resolveCardId(cardId) !== null;
     }
 
     /**
