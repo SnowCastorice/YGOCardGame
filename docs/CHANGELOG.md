@@ -33,6 +33,14 @@
 - **修复**：在 `handleReport` 中逐个更新卡包统计后，添加 `await addToPackIndexBatch(KV, packCodes)` 调用，新卡包首次上报时自动加入索引
 - **影响**：LOCR 及后续新卡包上报数据后会自动出现在管理后台统计中
 
+### KV 写入限流参数调整 — 升级 Cloudflare 付费计划
+- **背景**：已购买 Cloudflare 基础数据服务，KV 每日写入限额大幅提升，不再受免费计划 1,000 次/天的限制
+- **`DAILY_WRITE_THRESHOLD`**：`900` → `100,000`，保留充足余量
+- **`DAILY_WRITES_SAMPLE_INTERVAL`**：`50` → `500`，采样持久化间隔扩大 10 倍，进一步减少 daily_writes 本身的 KV 写入开销
+- **保留 throttled 降级逻辑**：服务端 daily_writes 限流机制和前端 throttled 降级逻辑均保持不变，作为安全兜底
+- **涉及修改文件**：`functions/api/pack-stats.js`
+
+## OCR 价格数据更新
 ## OCR 价格数据更新（2026-03-21）— BLZD + LOCH + LOCR 三包价格
 
 ### OCR 工具链增强
