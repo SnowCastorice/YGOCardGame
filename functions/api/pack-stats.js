@@ -228,6 +228,9 @@ async function handleReport(context) {
       };
     }
 
+    // 将本次上报的卡包代码注册到 index:packs 索引（新卡包首次上报时自动加入）
+    await addToPackIndexBatch(KV, packCodes);
+
     // 更新内存中的全局统计缓存（增量更新，避免重新计算）
     if (globalStatsCache.data) {
       globalStatsCache.data.totalPacks += totalPacksDelta;

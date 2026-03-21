@@ -27,6 +27,12 @@
 - 所有 36 张 GMR-OF 卡片（LOCH 18张 + LOCR 18张）的亚洲版价格已确认正确
 - **涉及修改文件**：`js/priceSystem.js`、`data/ocg/prices/loch_prices.json`、`data/ocg/prices/locr_prices.json`、`data/changelog.json`、`index.html`
 
+### 管理后台统计修复 — LOCR 缺失
+- **问题**：管理后台（`/admin/stats.html`）的"各卡包明细"中缺少 LOCR，只显示 LOCH 和 BLZD
+- **原因**：`functions/api/pack-stats.js` 的 `handleReport` 函数在上报数据时，只更新了各卡包的 `stats:{packCode}` 统计数据，但从未调用 `addToPackIndexBatch` 将新卡包注册到 `index:packs` 索引中
+- **修复**：在 `handleReport` 中逐个更新卡包统计后，添加 `await addToPackIndexBatch(KV, packCodes)` 调用，新卡包首次上报时自动加入索引
+- **影响**：LOCR 及后续新卡包上报数据后会自动出现在管理后台统计中
+
 ## OCR 价格数据更新（2026-03-21）— BLZD + LOCH + LOCR 三包价格
 
 ### OCR 工具链增强
