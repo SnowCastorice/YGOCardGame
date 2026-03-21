@@ -10,10 +10,10 @@
  *   GET  /api/pack-stats            - 查询指定卡包的全球开包统计
  *   GET  /api/pack-stats?admin=1    - 查询所有卡包的全局统计（管理后台用，无需鉴权）
  * 
- * KV 写入限流保护：
+ * KV 写入限流保护（已升级 Cloudflare 付费计划，写入限额大幅提升）：
  *   - 使用 Worker 内存变量追踪每日 KV 写入次数（零 KV 开销）
- *   - 每 50 次写入才采样持久化一次到 KV（meta:daily_writes）
- *   - 接近免费限额（1000次/天）时返回 throttled 信号，前端暂停上报
+ *   - 每 500 次写入才采样持久化一次到 KV（meta:daily_writes）
+ *   - 接近限额（100,000次/天）时返回 throttled 信号，前端暂停上报
  *   - 前端收到信号后将数据暂存 localStorage，次日自动补发
  * 
  * 服务端内存缓存：
@@ -38,6 +38,7 @@
  *   - daily_writes 改用内存变量追踪，每 50 次才写一次 KV（节省约 50% 写入）
  *   - GET 查询使用 30 秒内存缓存，绝大多数请求零 KV 读取
  *   - stats:_all 懒更新：POST 时异步写回，GET 时只读 1 次（而非遍历所有卡包）
+ *   - daily_writes 改用内存变量追踪，每 500 次才写一次 KV（减少 daily_writes 本身的写入开销）
  *   - 单次批量请求的 KV 写入次数 = 卡包种类数（仅各卡包统计）
  * 
  * 部署方式：Cloudflare Pages Functions（随项目自动部署）
@@ -57,16 +58,16 @@ const ALLOWED_ORIGINS = [
 
 /**
  * 每日 KV 写入限额保护阈值
- * Cloudflare 免费计划每日允许 1,000 次写入
- * 设为 900，预留 100 次作为安全余量
+ * 已升级 Cloudflare 付费计划，每日写入限额大幅提升
+ * 设为 100,000，保留充足余量
  */
-const DAILY_WRITE_THRESHOLD = 900;
+const DAILY_WRITE_THRESHOLD = 100000;
 
 /** 每日写入计数的 KV Key（采样写入，非每次写入） */
 const DAILY_WRITES_KEY = 'meta:daily_writes';
 
 /** daily_writes 采样写入间隔（每隔 N 次内存计数才持久化一次到 KV） */
-const DAILY_WRITES_SAMPLE_INTERVAL = 50;
+const DAILY_WRITES_SAMPLE_INTERVAL = 500;
 
 /** 服务端 GET 查询内存缓存 TTL（毫秒） */
 const SERVER_CACHE_TTL = 30 * 1000; // 30秒
@@ -227,6 +228,9 @@ async function handleReport(context) {
         totalBoxes: packStats.totalBoxes
       };
     }
+
+    // 将本次上报的卡包代码注册到 index:packs 索引（新卡包首次上报时自动加入）
+    await addToPackIndexBatch(KV, packCodes);
 
     // 更新内存中的全局统计缓存（增量更新，避免重新计算）
     if (globalStatsCache.data) {
