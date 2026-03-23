@@ -6,7 +6,7 @@
   "_更新时间": "2026-02-28",
   "_映射说明": "metaId为默认卡图(普通版); altMetaId记录OF超框卡版本使用的超框卡图ID",
   "cards": {
-    "100256001": {
+    "88570003": {
       "metaId": "69486a45cc3b933d5cad30e8",
       "name": "Dark Magician, the Pharaoh's Servant",
       "setNumber": "LOCH-JP001",
@@ -16,7 +16,7 @@
         "GMR-OF": "69486c39131604f9a8437d13"
       }
     },
-    "100256002": {
+    "14965712": {
       "metaId": "69a15fabebc6ba57ea226e3e",
       "name": "Multiplying Kuriboh!",
       "setNumber": "LOCH-JP002",
@@ -26,7 +26,7 @@
         "GMR-OF": "69662d0ba629bbc4000089c9"
       }
     },
-    "100256003": {
+    "41350417": {
       "metaId": "69a15fe60c46bf1a132b10ec",
       "name": "Dark Magical Curtain",
       "setNumber": "LOCH-JP003",
@@ -36,7 +36,7 @@
         "GMR-OF": "699ff5d271d7e2f8145b4d5c"
       }
     },
-    "100256004": {
+    "87758525": {
       "metaId": "69a160098f8cbf98a4c80878",
       "name": "Favorite HERO Shining Flare Wingman",
       "setNumber": "LOCH-JP004",
@@ -46,7 +46,7 @@
         "GMR-OF": "69486c91d8043dc79533f710"
       }
     },
-    "100256005": {
+    "13243124": {
       "metaId": "69a1602d30626f425bb8c799",
       "name": "Favorite HERO Flame Wingman",
       "setNumber": "LOCH-JP005",
@@ -56,7 +56,7 @@
         "GMR-OF": "699e7e7a8419601d5a5077ad"
       }
     },
-    "100256006": {
+    "40237839": {
       "metaId": "69a1605495af605565618e5a",
       "name": "Winged Kuriboh Sabatiel LV10",
       "setNumber": "LOCH-JP006",
@@ -66,7 +66,7 @@
         "GMR-OF": "69662d2eec17b3d5404e77f3"
       }
     },
-    "100256007": {
+    "76636978": {
       "metaId": "69a160773a5983362c9b58e5",
       "name": "Stardust Dragon - Victim Sanctuary",
       "setNumber": "LOCH-JP007",
@@ -76,7 +76,7 @@
         "GMR-OF": "69486ccccc3b933d5cad316e"
       }
     },
-    "100256008": {
+    "13021682": {
       "metaId": "69a160a671d7e2f8145eb5ed",
       "name": "Starjunk Synchron",
       "setNumber": "LOCH-JP008",
@@ -86,7 +86,7 @@
         "GMR-OF": "69662d70ad0c0050aabcbdef"
       }
     },
-    "100256009": {
+    "49415281": {
       "metaId": "69a160ca38bd7bd36297d9f9",
       "name": "Synchro Emergency",
       "setNumber": "LOCH-JP009",
@@ -96,7 +96,7 @@
         "GMR-OF": "699cb5ef171db3ac20a0ca89"
       }
     },
-    "100256010": {
+    "76504386": {
       "metaId": "69a160ed8f8cbf98a4c80a19",
       "name": "Number 39: Utopia the Envoy of Light",
       "setNumber": "LOCH-JP010",
@@ -106,7 +106,7 @@
         "GMR-OF": "69486cfecc3b933d5cad3179"
       }
     },
-    "100256011": {
+    "12908094": {
       "metaId": "69a160f7ccd9119f5dbe826e",
       "name": "Gagaga Magician - Gagaga Magic",
       "setNumber": "LOCH-JP011",
@@ -116,7 +116,7 @@
         "GMR-OF": "69662dace456c14d7305b848"
       }
     },
-    "100256012": {
+    "48393693": {
       "metaId": "69a160ffc064194636d37858",
       "name": "Gagaga Girl - Cell Phone Subtraction",
       "setNumber": "LOCH-JP012",
@@ -126,7 +126,7 @@
         "GMR-OF": "699b627fe996e5a7c96a8d12"
       }
     },
-    "100256013": {
+    "75787708": {
       "metaId": "69a1610f30626f425bb8ca0c",
       "name": "Odd-Eyes Pendulum Dragon of the Four Heavenly Dragons",
       "setNumber": "LOCH-JP013",
@@ -136,7 +136,7 @@
         "GMR-OF": "69486d558db5a5b342f5083d"
       }
     },
-    "100256014": {
+    "1186447": {
       "metaId": "69a16118d8c34705d06d9ac2",
       "name": "Horoscope Sorcerer, the Stargazer Magician",
       "setNumber": "LOCH-JP014",
@@ -146,7 +146,7 @@
         "GMR-OF": "69662f49f851189ddaf28bff"
       }
     },
-    "100256015": {
+    "48171151": {
       "metaId": "69a161276dd1798949025a58",
       "name": "Astrograph Sorcerer, the Star Magician",
       "setNumber": "LOCH-JP015",
@@ -156,7 +156,7 @@
         "GMR-OF": "699a4ebb66e693e6f792c1cb"
       }
     },
-    "100256016": {
+    "74665150": {
       "metaId": "69a1612fb4acf1e9c446ef82",
       "name": "Decode Talker Integration",
       "setNumber": "LOCH-JP016",
@@ -166,7 +166,7 @@
         "GMR-OF": "69486e128665ec9779b06c2a"
       }
     },
-    "100256017": {
+    "64865": {
       "metaId": "69a16138211547f9667024b1",
       "name": "Cyberse Code Magician",
       "setNumber": "LOCH-JP017",
@@ -176,7 +176,7 @@
         "GMR-OF": "69662df409ab844edc3b28b6"
       }
     },
-    "100256018": {
+    "37458564": {
       "metaId": "69a161413a5983362c9b5a61",
       "name": "Cyberse Contract Witch",
       "setNumber": "LOCH-JP018",
@@ -186,42 +186,42 @@
         "GMR-OF": "69986017879ebfe074300f85"
       }
     },
-    "100256019": {
+    "73443672": {
       "metaId": "694875e734407dc060a04be8",
       "name": "Underworld Circle",
       "setNumber": "LOCH-JP019"
     },
-    "100256020": {
+    "847217": {
       "metaId": "699317801e1e98f458b6ce8e",
       "name": "Orichalcos Sword of Sealing",
       "setNumber": "LOCH-JP020"
     },
-    "100256021": {
+    "32236916": {
       "metaId": "699317db67288245fc68bb0c",
       "name": "Rainbow Bridge Bifrost",
       "setNumber": "LOCH-JP021"
     },
-    "100256022": {
+    "68721020": {
       "metaId": "699318271e1e98f458b6cfe2",
       "name": "Malefic Force",
       "setNumber": "LOCH-JP022"
     },
-    "100256023": {
+    "5125629": {
       "metaId": "69931b371c07d7474854db33",
       "name": "Malefic Paradigm Shift",
       "setNumber": "LOCH-JP023"
     },
-    "100256024": {
+    "31114334": {
       "metaId": "69931761a8ccf2a075b2af3a",
       "name": "Assault Blackwing - Kusanagi the Gathering Storm",
       "setNumber": "LOCH-JP024"
     },
-    "100256025": {
+    "68508433": {
       "metaId": "69486dc17fff721c2d2ab34f",
       "name": "Master Spirit Tech Force - Pendulum Ruler",
       "setNumber": "LOCH-JP025"
     },
-    "100201001": {
+    "4993187": {
       "metaId": "698451cccd341e76339cc0af",
       "name": "W:P Fancy Ball",
       "setNumber": "LOCH-JP026"
