@@ -712,7 +712,17 @@ function renderPackList() {
         return;
     }
 
-    filteredPacks.forEach(function (pack) {
+    // P0-1: 首屏封面预加载 —— 「近期发售」分类的前3个卡包提前触发图片加载
+    if (currentPackCategory === 'recent') {
+        filteredPacks.slice(0, 3).forEach(pack => {
+            const packCode = pack.packCode || pack.setCode || '';
+            const url = getPackCoverImageUrl(pack, packCode, 'pack');
+            const preImg = new Image();
+            preImg.src = url;
+        });
+    }
+
+    filteredPacks.forEach(function (pack, packIndex) {
         const packCard = document.createElement('div');
         packCard.className = 'pack-card' + (pack.locked ? ' pack-card--locked' : '');
 
@@ -742,12 +752,16 @@ function renderPackList() {
         // 发售日期
         const releaseDateText = pack.releaseDate || '';
 
+        // P0-4: 首屏前3个卡包使用 eager 加载，其余使用 lazy 加载
+        const loadingAttr = (currentPackCategory === 'recent' && packIndex < 3) ? 'eager' : 'lazy';
+
         // 锁定卡包：不显示价格和预览按钮，显示锁定标志
         if (pack.locked) {
             packCard.innerHTML = `
                 <div class="pack-card__cover">
                     <div class="pack-cover-container">
-                        <img class="pack-cover-img" src="${coverImageUrl}" alt="${packNameDisplay}" loading="lazy"
+                        <img class="pack-cover-img" src="${coverImageUrl}" alt="${packNameDisplay}" loading="${loadingAttr}"
+                             width="80" height="139"
                              referrerpolicy="no-referrer"
                              onerror="handlePackCoverError(this);" />
                         <span class="pack-icon pack-icon-fallback" style="display:none;">🎴</span>
@@ -768,7 +782,8 @@ function renderPackList() {
             packCard.innerHTML = `
                 <div class="pack-card__cover">
                     <div class="pack-cover-container">
-                        <img class="pack-cover-img" src="${coverImageUrl}" alt="${packNameDisplay}" loading="lazy"
+                        <img class="pack-cover-img" src="${coverImageUrl}" alt="${packNameDisplay}" loading="${loadingAttr}"
+                             width="80" height="139"
                              referrerpolicy="no-referrer"
                              onerror="handlePackCoverError(this);" />
                         <span class="pack-icon pack-icon-fallback" style="display:none;">🎴</span>
@@ -830,13 +845,13 @@ function renderPackList() {
 function getPackCoverImageUrl(pack, packCode, type) {
     type = type || 'pack';
 
-    // 0. OCG 模式下，优先尝试本地封面图（data/ocg/covers/{packCode}-{type}.png）
-    //    如果 .png 不存在（404），onerror 会自动尝试 .jpg，再失败才 fallback 到外部 URL
+    // OCG 模式下，使用本地 WebP 封面图（data/ocg/covers/{packCode}-{type}.webp）
+    // 加载失败时直接 fallback 到 emoji
     if (currentGameMode === 'ocg' && packCode) {
-        return `data/ocg/covers/${packCode}-${type}.png`;
+        return `data/ocg/covers/${packCode}-${type}.webp`;
     }
 
-    // 以下为原有逻辑，也作为 OCG 本地图加载失败时的 fallback 目标
+    // 以下为原有逻辑，也作为非 OCG 模式的 fallback 目标
     return getPackCoverFallbackUrl(pack, packCode);
 }
 
@@ -877,7 +892,7 @@ function getPackCoverFallbackUrl(pack, packCode) {
 
 /**
  * 卡包封面图加载失败时的处理函数
- * 新逻辑：本地封面图（-pack/-box）失败 → 原有外部 URL → 首卡卡图 → emoji
+ * 简化逻辑：.webp 加载失败 → 直接显示 emoji
  */
 async function handlePackCoverError(imgEl) {
     const pack = imgEl._packData;
@@ -886,46 +901,9 @@ async function handlePackCoverError(imgEl) {
 
     console.warn(`⚠️ 卡包封面图加载失败: ${pack ? pack.packId : '未知'}, URL: ${failedUrl}`);
 
-    // ——— 第一层 fallback：本地封面图失败 → 先尝试另一种格式（png↔jpg），再尝试外部 URL ———
-    // 判断当前失败的是否是本地 covers 路径
-    if (failedUrl.includes('data/ocg/covers/') && pack) {
-        const packCode = pack.packCode || pack.setCode || '';
-
-        // 如果当前是 .png 失败，先尝试 .jpg 格式
-        if (failedUrl.endsWith('.png')) {
-            const jpgUrl = failedUrl.replace(/\.png$/, '.jpg');
-            console.log(`🔄 本地封面图 .png 不存在，尝试 .jpg: ${pack.packId}`);
-            imgEl.src = jpgUrl;
-            // .jpg 也失败时，走外部 URL fallback
-            imgEl.onerror = function () {
-                const fallbackUrl = getPackCoverFallbackUrl(pack, packCode);
-                if (fallbackUrl) {
-                    console.log(`🔄 本地封面图均不存在，尝试外部 URL: ${pack.packId}, URL: ${fallbackUrl}`);
-                    imgEl.src = fallbackUrl;
-                    imgEl.onerror = function () {
-                        handlePackCoverErrorFinal(imgEl);
-                    };
-                } else {
-                    handlePackCoverErrorFinal(imgEl);
-                }
-            };
-            return;
-        }
-
-        // 如果当前是 .jpg 失败（或其他本地格式），直接走外部 URL
-        const fallbackUrl = getPackCoverFallbackUrl(pack, packCode);
-        if (fallbackUrl) {
-            console.log(`🔄 本地封面图不存在，尝试外部 URL: ${pack.packId}, URL: ${fallbackUrl}`);
-            imgEl.src = fallbackUrl;
-            imgEl.onerror = function () {
-                handlePackCoverErrorFinal(imgEl);
-            };
-            return;
-        }
-    }
-
-    // ——— 第二层 fallback：外部 URL 也失败 / 非本地图失败 → 首卡卡图 / emoji ———
-    await handlePackCoverErrorFinal(imgEl);
+    // 直接显示 emoji 兜底
+    imgEl.style.display = 'none';
+    if (fallbackIcon) fallbackIcon.style.display = 'block';
 }
 
 /**
