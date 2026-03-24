@@ -77,7 +77,7 @@ buildOCGCardsFromLocalData()（纯本地转换）
 
 | `data/changelog.json` | 更新日志（网页内展示） |
 | `data/fallback_cards.js` | 离线兜底卡牌数据 |
-| `tools/db/cards.json` | YGOCDB 全量数据库（12MB，13900+ 张卡），通过 `update_cards_db.py` 自动更新（不提交到 Git） |
+| `tools/db/cards.json` | YGOCDB 全量数据库（12MB，13900+ 张卡），通过 `update_cards_db.py` 自动更新（已提交到 Git） |
 | `data/common/rarities.json` | 全局稀有度定义文件，管理所有稀有度元数据（名称/描述/颜色/分类等） |
 
 ### OCG 卡包数据目录结构
@@ -87,9 +87,17 @@ data/ocg/
 ├── packs.json           ← 卡包元信息索引
 ├── pack_list.json       ← 完整卡包目录
 ├── loch_image_map.json  ← LOCH 卡图映射表（metaId / altMetaId）
-├── covers/              ← 本地封面图（{packCode}.png）
+├── locr_image_map.json  ← LOCR 卡图映射表（localImages 新格式）
+├── blzd_image_map.json  ← BLZD 卡图映射表（metaId）
+├── covers/              ← 本地封面图（{packCode}-{type}.webp）
 ├── images/              ← 本地卡图目录（v1.5.33+）
-│   └── loch/            ← LOCH 卡图（196 个 webp 文件，约 7.3MB）
+│   ├── loch/            ← LOCH 卡图（196 个 webp 文件，约 7.3MB）
+│   ├── locr/            ← LOCR 卡图（171 个 webp 文件）
+│   └── blzd/            ← BLZD 卡图（200 个 webp 文件，约 7.0MB）
+├── prices/              ← 市场价格 JSON
+│   ├── loch_prices.json
+│   ├── locr_prices.json
+│   └── blzd_prices.json
 └── cards/               ← 独立卡牌列表文件
     ├── ocg_blzd.json
     ├── ocg_loch.json

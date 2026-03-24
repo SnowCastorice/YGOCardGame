@@ -681,3 +681,92 @@ NR 是非官方定义的稀有度（封入率更低的 N 卡）。集换社和 N
 |------|------|
 | `tools/OCRPics/20260304/` | 2026-03-04 截图（首次价格采集） |
 | `tools/OCRPics/20260309/` | 2026-03-09 截图（第二次价格更新） |
+
+---
+
+## `local/` 目录结构规范
+
+> `local/` 整个目录在 `.gitignore` 中，不随 Git 同步。此章节记录其目录结构和命名规范，确保多设备间保持一致。
+
+### 整体结构
+
+```
+local/
+├── venv/                    ← Python 虚拟环境（每台设备各自安装）
+├── PreviewCards/            ← 先行卡图素材（发售前收集的卡图）
+│   ├── NAMING_CONVENTION.txt
+│   └── {卡包代号}/          ← 如 LOCR+LOSP/、LOCH/
+│       ├── FinalCardArt/    ← 最终整理好的卡图（按命名规范命名）
+│       ├── ProcessedCardArt/← 经 resize_preview_cards.py 处理后的输出
+│       └── origin/          ← 原始素材（按来源分类）
+│           ├── twitter/     ← 官方推特
+│           ├── official/    ← 官方网站
+│           ├── ygojp/       ← ygojp.com
+│           └── ygometa/     ← ygometa.com
+└── OCRPricePics/            ← 集换社价格截图（按卡包+日期归档）
+    └── {卡包代号}/
+        └── {YYYYMMDD}/     ← 如 LOCH/20260321/
+            └── {PACK}{序号}.png
+```
+
+### PreviewCards 卡图命名规范
+
+#### 命名格式
+
+```
+{卡片编号}_{稀有度}_{卡图来源}_{卡图类型}.{扩展名}
+```
+
+- 分隔符：`_`（下划线）
+- 卡片编号内部保留 `-`（连字符），这是官方卡号的固有格式
+
+#### 各字段说明
+
+| 字段 | 可选值 | 说明 |
+|------|--------|------|
+| **卡片编号** | `LOCR-JP001`、`LOCH-JP038` 等 | `{卡包代号}-{地区}{编号}` |
+| **稀有度** | `SR`、`UR`、`UR-OF`、`PSER`、`PSER-OF`、`GMR`、`GMR-OF` 等 | `-OF` 后缀 = Over Frame（超框），非 Official |
+| **卡图来源** | `official`、`twitter`、`ygojp`、`ygometa` | 图片出处 |
+| **卡图类型** | `render_art`、`photo_art`、`render_source`、`photo_source` | 见下方说明 |
+
+**卡图类型**：
+- `render_art` — 渲染图成品，可直接导入使用
+- `photo_art` — 实卡照片成品，可直接导入使用
+- `render_source` — 渲染图素材，含背景/介绍，需裁切
+- `photo_source` — 实卡照片素材，含背景/介绍，需裁切
+
+**命名示例**：
+
+```
+LOCR-JP001_GMR-OF_twitter_render_art.jpg    ← 超框GMR，官推渲染图成品
+LOCR-JP019_UR_ygojp_render_art.webp         ← 普通UR，ygojp渲染图成品
+LOCR-JP018_UR_twitter_render_art.jpg        ← 普通UR（传统卡框），官推渲染图成品
+```
+
+**重复文件名处理**：同名但 MD5 不同时，在扩展名前追加 `_0`、`_1` 后缀。无冲突时不加后缀。
+
+#### origin 子目录
+
+`origin/` 中按来源分类存放原始素材，可保留原始文件名。`FinalCardArt/` 中的文件必须按上述规范重命名。
+
+对于需要裁切的素材，`origin/{来源}/` 下可建 `processed/`（已裁切）和 `unprocessed/`（未裁切）子目录。
+
+### OCRPricePics 价格截图归档规范
+
+OCR 价格截图按 **卡包 → 日期** 两级目录归档：
+
+```
+local/OCRPricePics/
+├── LOCH/20260321/        ← LOCH 主包截图
+│   └── LOCH01.png ~ LOCH07.png
+├── LOCR/20260321/        ← LOCR 主包截图
+│   └── LOCR01.png ~ LOCR07.png
+├── LOSP/20260321/        ← LOSP 辅助包截图
+│   └── LOSP01.png ~ LOSP02.png
+├── BLZD/20260321/        ← BLZD 主包截图
+│   └── BLZD01.png ~ BLZD03.png
+└── BLZDS/20260321/       ← BLZD 辅助包截图
+    └── BLZDS01.png
+```
+
+文件名以 **卡包代号 + 两位序号** 命名（如 `LOCH01.png`），与 OCR 工作流的截图命名规范一致。

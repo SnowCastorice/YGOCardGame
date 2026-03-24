@@ -2,6 +2,30 @@
 
 > 从 DEVELOPMENT.md 拆分，记录各版本的变更和待处理事项。
 
+## 文档整理 + INP 性能优化 + Stop Hook（2026-03-25）
+
+### 说明文件查漏补缺
+- **DEVELOPMENT.md**：版本号 v1.7.6 → v1.7.8，脚本路径 `ocr_price.py` → `ocr_workflow.py`
+- **README.md**：版本号 badge v1.7.6 → v1.7.8，文档路径 `docs/DEVELOPMENT.md` → `DEVELOPMENT.md`
+- **ARCHITECTURE.md**：`cards.json` 描述改为"已提交到 Git"，目录结构补充 locr/blzd 相关文件
+- **CHANGELOG.md**：删除重复标题，末尾待处理事项替换为指向 TODO.md 的引用
+- **FEATURES.md**：初始金币 10 万 → 100 万
+- **CLAUDE.md 与 DEVELOPMENT.md 合并**：CLAUDE.md 整合了用户背景、发布流程、临时文件规范、业务规则等独有内容；DEVELOPMENT.md 精简为仅保留双设备 OCR 环境和 PaddleOCR MCP 配置
+- **docs/TOOLS.md**：新增 `local/` 目录结构规范（PreviewCards 命名规范、OCRPricePics 归档规范）
+
+### INP 性能优化（3 项）
+- **P0: showResults() DocumentFragment 批量插入**（`js/game.js`）：主卡和附赠卡的 DOM 插入从逐个 `appendChild()` 改为 `DocumentFragment` 一次性批量插入，减少重排。影响 `#btn-quick-reopen`、`#btn-open-box`、`#btn-open-3box` 三个按钮
+- **P1: 背包分批渲染 + 事件委托**（`js/inventory.js`）：`renderInventoryModal()` 首屏只渲染 30 张卡片，滚动到底部时追加下一批；排序按钮和卡片点击改为事件委托。新增 `buildCardItemsHtml()` 公共函数
+- **P2: devResetGame() 自定义确认弹窗**（`js/game.js`、`index.html`、`css/style.css`）：新增 `#confirm-modal` 通用确认弹窗组件（z-index:500），替代原生 `confirm()`/`alert()` 阻塞对话框。新增 `showConfirmDialog()` 通用函数，成功/失败提示改用 `showDevtoolsToast()`
+
+### Claude Code Stop Hook
+- **新增 `.claude/hooks/session-end-check.sh`**：会话结束前自动检查 CHANGELOG 同步 + 版本号一致性
+- **`.claude/settings.json`**：注册 Stop hook
+- **`CLAUDE.md`**：会话结束 Hooks 章节从"手动必须执行"更新为"自动执行"说明
+
+### 文档更新
+- **`docs/TODO.md`**：新增"版本号唯一来源改造"待办事项
+
 ## v1.7.8（2026-03-21）— LOSP 拆分 + LOCR 临时密码兼容 + GMR-OF 价格规则
 
 ### LOSP 辅助包拆分为 vol1 / vol2
@@ -40,7 +64,6 @@
 - **保留 throttled 降级逻辑**：服务端 daily_writes 限流机制和前端 throttled 降级逻辑均保持不变，作为安全兜底
 - **涉及修改文件**：`functions/api/pack-stats.js`
 
-## OCR 价格数据更新
 ## OCR 价格数据更新（2026-03-21）— BLZD + LOCH + LOCR 三包价格
 
 ### OCR 工具链增强
@@ -490,41 +513,4 @@
 
 ---
 
-# ⏳ 待处理事项
-
-> 以下是已确认但尚未完成的事项，请在后续开发中关注。
-
-## 🟡 KONAMI 官方商品数据补全（进行中）
-- 已完成：四个分类首页展示的商品信息采集（各 16 个，共 64 个商品），保存在 `pack_references/konami_official_products/` 下
-- 待完成：各分类「もっと見る」（查看更多）内的早期商品数据录入
-- 数据源：https://www.yugioh-card.com/japan/products/
-
-## 🟡 OCG 稀有度问题
-- BLZD 已完成真实数据录入，其他卡包（CH02、25DB）仍为测试稀有度
-- 缓存同步：`api.js` 的 `getOCGCardSetData` 中已增加稀有度同步逻辑
-
-## 🟢 多版本稀有度系统（已基本完成）
-- 数据结构：统一使用 `rarityVersions` 数组（已移除冗余的 `rarityCode` 字段）
-- **全局稀有度定义**：`data/common/rarities.json`，12种稀有度完整定义
-- 12种稀有度 UI 支持（含破框版本 UR-OF / PSER-OF / GMR-OF）
-- **已确认**：散包4号位复用整盒概率分布（`boxSlot4Distribution` + `ofTypeOdds`），不使用 `versionOdds`，概率与整盒完全一致
-
-## 🔴 YGOProDeck 图源限流（挂起）
-- 现象：YGOProDeck 图源在 CDN 测试工具中始终加载失败
-- 原因：YGOProDeck 启用了 Cloudflare Turnstile 人机验证，程序化请求被拦截
-- 已尝试：串行请求 + 500ms 间隔 + referrerPolicy=no-referrer + 失败重试，仍然被限流
-- 影响范围：仅影响 CDN 测试工具中的 YGOProDeck 图源对比，不影响游戏正常功能
-- 待后续决策：是否从 CDN 测试工具中移除 YGOProDeck 图源
-
-## ✅ LOCH/LOSP 卡图 CDN 切换（已完成）
-- S3 CDN（s3.duellinksmeta.com）作为主图源，Cloudflare Pages 本地图片作为备份
-- `getCardImageUrl` 返回 `{url, fallbackUrl}` 对象，`handleCardImageError` 全局函数自动 fallback
-- 已于 2026-03-04 验证通过
-
-## � 优化网页 UI（待规划）
-- 作为大方向记录，具体优化内容待后续细化
-
-## �🟢 图片资源自建 CDN 方案（后续规划）
-- 当前使用第三方 CDN（YGOCDB / KONAMI / YugiohMeta），暂时够用
-- 后续计划迁移到 Cloudflare R2 对象存储
-- **触发时机**：活跃卡包超 10 个或第三方 CDN 不稳定时启动
+> 📋 **待办事项和路线图**已迁移到 [TODO.md](TODO.md)，不再在此维护。

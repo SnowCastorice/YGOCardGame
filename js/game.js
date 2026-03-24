@@ -2471,6 +2471,8 @@ async function showResults(cards, bonusCards) {
     const maxTotalDelay = 2; // 秒
     const perCardDelay = Math.min(.15, maxTotalDelay / displayCards.length);
 
+    // 使用 DocumentFragment 批量插入，避免逐个 appendChild 触发重排
+    const fragment = document.createDocumentFragment();
     for (let i = 0; i < displayCards.length; i++) {
         const card = displayCards[i];
         const cardEl = document.createElement('div');
@@ -2489,7 +2491,7 @@ async function showResults(cards, bonusCards) {
             // 使用 API 提供的卡图，添加 clickable 类和 data 属性供放大查看
             const fallbackUrl = card.imageFallbackUrl || '';
             const largeFallbackUrl = card.imageLargeFallbackUrl || '';
-            imageHtml = `<img class="card-image clickable" src="${card.imageUrl}" alt="${cardName}" loading="lazy" 
+            imageHtml = `<img class="card-image clickable" src="${card.imageUrl}" alt="${cardName}" loading="lazy"
                               data-large-url="${largeUrl}" data-card-name="${cardName}" data-card-foreign="${foreignName}"
                               data-fallback="${fallbackUrl}" data-large-fallback="${largeFallbackUrl}"
                               onerror="handleCardImageError(this)">
@@ -2526,8 +2528,9 @@ async function showResults(cards, bonusCards) {
             </div>
         `;
 
-        display.appendChild(cardEl);
+        fragment.appendChild(cardEl);
     }
+    display.appendChild(fragment);
 
     // 渲染+1辅助包区域（仅开盒时显示）
     const bonusDisplay = document.getElementById('bonus-display');
@@ -2536,6 +2539,8 @@ async function showResults(cards, bonusCards) {
         if (bonusCards.length > 0) {
             bonusDisplay.style.display = '';
             bonusCardsEl.innerHTML = '';
+            // 使用 DocumentFragment 批量插入附赠卡
+            const bonusFragment = document.createDocumentFragment();
             for (const card of bonusCards) {
                 const cardEl = document.createElement('div');
         const rarityCode = (card.rarityVersions || ['N'])[0];
@@ -2548,7 +2553,7 @@ async function showResults(cards, bonusCards) {
                     const foreignName = card.nameOriginal || '';
                     const bonusFallbackUrl = card.imageFallbackUrl || '';
                     const bonusLargeFallbackUrl = card.imageLargeFallbackUrl || '';
-                    imageHtml = `<img class="card-image clickable" src="${card.imageUrl}" alt="${cardName}" loading="lazy" 
+                    imageHtml = `<img class="card-image clickable" src="${card.imageUrl}" alt="${cardName}" loading="lazy"
                                       data-large-url="${largeUrl}" data-card-name="${cardName}" data-card-foreign="${foreignName}"
                                       data-fallback="${bonusFallbackUrl}" data-large-fallback="${bonusLargeFallbackUrl}"
                                       onerror="handleCardImageError(this)">
@@ -2572,8 +2577,9 @@ async function showResults(cards, bonusCards) {
                         ${nameHtml}
                     </div>
                 `;
-                bonusCardsEl.appendChild(cardEl);
+                bonusFragment.appendChild(cardEl);
             }
+            bonusCardsEl.appendChild(bonusFragment);
         } else {
             // 非开盒模式，隐藏辅助包区域
             bonusDisplay.style.display = 'none';
@@ -2847,24 +2853,61 @@ console.log('🛠️ [设置] 添加 100万 金币');
 }
 
 /**
+ * 通用确认弹窗（替代原生 confirm，不阻塞主线程）
+ * @param {string} title - 弹窗标题
+ * @param {string} message - 弹窗内容（支持换行）
+ * @param {function} onConfirm - 点击确定后的回调
+ */
+function showConfirmDialog(title, message, onConfirm) {
+    var modal = document.getElementById('confirm-modal');
+    var titleEl = document.getElementById('confirm-modal-title');
+    var msgEl = document.getElementById('confirm-modal-message');
+    var btnOk = document.getElementById('btn-confirm-ok');
+    var btnCancel = document.getElementById('btn-confirm-cancel');
+    var btnCancelX = document.getElementById('btn-confirm-cancel-x');
+
+    titleEl.textContent = title;
+    msgEl.textContent = message;
+    modal.classList.add('active');
+
+    // 清除旧事件（用克隆节点替换）
+    var newBtnOk = btnOk.cloneNode(true);
+    var newBtnCancel = btnCancel.cloneNode(true);
+    var newBtnCancelX = btnCancelX.cloneNode(true);
+    btnOk.parentNode.replaceChild(newBtnOk, btnOk);
+    btnCancel.parentNode.replaceChild(newBtnCancel, btnCancel);
+    btnCancelX.parentNode.replaceChild(newBtnCancelX, btnCancelX);
+
+    function close() { modal.classList.remove('active'); }
+
+    newBtnCancel.addEventListener('click', close);
+    newBtnCancelX.addEventListener('click', close);
+    newBtnOk.addEventListener('click', function () {
+        close();
+        if (onConfirm) onConfirm();
+    });
+}
+
+/**
  * 开发者工具：重置游戏（重置货币余额至初始值，不清除缓存）
  */
 function devResetGame() {
-    if (!confirm('❗ 确定要重置游戏吗？\n\n这将重置以下数据：\n• 🪙 金币恢复为初始值\n• 🎒 背包清空所有卡片\n\n⚠️ 不会清除缓存数据。若需清除缓存，请前往「💾 缓存管理」。')) {
-        return;
-    }
-
-    try {
-        CurrencySystem.resetAll();
-        CurrencySystem.updateUI();
-        // 重置背包
-        InventorySystem.clearAll();
-        alert('✅ 游戏已重置！货币已恢复为初始值，背包已清空。');
-        console.log('🛠️ [设置] 游戏已重置（含背包清空）');
-    } catch (error) {
-        console.error('❌ 重置游戏失败:', error);
-        alert('❌ 重置失败：' + error.message);
-    }
+    showConfirmDialog(
+        '❗ 确定要重置游戏吗？',
+        '这将重置以下数据：\n• 🪙 金币恢复为初始值\n• 🎒 背包清空所有卡片\n\n⚠️ 不会清除缓存数据。若需清除缓存，请前往「💾 缓存管理」。',
+        function () {
+            try {
+                CurrencySystem.resetAll();
+                CurrencySystem.updateUI();
+                InventorySystem.clearAll();
+                showDevtoolsToast('✅ 游戏已重置！货币已恢复，背包已清空。');
+                console.log('🛠️ [设置] 游戏已重置（含背包清空）');
+            } catch (error) {
+                console.error('❌ 重置游戏失败:', error);
+                showDevtoolsToast('❌ 重置失败：' + error.message);
+            }
+        }
+    );
 }
 // ============================================
 // 背包弹窗

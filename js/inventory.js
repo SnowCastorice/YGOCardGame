@@ -439,17 +439,88 @@ const InventorySystem = (function () {
             </div>
         `;
 
-        // 卡片网格列表
+        // 卡片网格列表（分批渲染，首屏只渲染前 BATCH_SIZE 张，滚动时追加）
+        const BATCH_SIZE = 30;
         html += '<div class="inventory-grid">';
-        sortedCards.forEach(function (card) {
+        html += buildCardItemsHtml(sortedCards.slice(0, BATCH_SIZE));
+        html += '</div>';
+
+        contentEl.innerHTML = html;
+
+        // 分批加载状态
+        let renderedCount = Math.min(BATCH_SIZE, sortedCards.length);
+        const gridEl = contentEl.querySelector('.inventory-grid');
+
+        // 滚动懒加载：距底部 200px 时追加下一批
+        if (sortedCards.length > BATCH_SIZE) {
+            contentEl.addEventListener('scroll', function onScroll() {
+                if (renderedCount >= sortedCards.length) {
+                    contentEl.removeEventListener('scroll', onScroll);
+                    return;
+                }
+                if (contentEl.scrollTop + contentEl.clientHeight >= contentEl.scrollHeight - 200) {
+                    const nextBatch = sortedCards.slice(renderedCount, renderedCount + BATCH_SIZE);
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = buildCardItemsHtml(nextBatch);
+                    const fragment = document.createDocumentFragment();
+                    while (tempDiv.firstChild) {
+                        fragment.appendChild(tempDiv.firstChild);
+                    }
+                    gridEl.appendChild(fragment);
+                    renderedCount += nextBatch.length;
+                }
+            });
+        }
+
+        // 事件委托：排序按钮（在 contentEl 上统一监听）
+        contentEl.addEventListener('click', function (e) {
+            // 排序按钮点击
+            const sortBtn = e.target.closest('.sort-btn');
+            if (sortBtn) {
+                const clickedSort = sortBtn.getAttribute('data-sort');
+                if (clickedSort === currentSortBy) {
+                    const newOrder = currentSortOrder === 'desc' ? 'asc' : 'desc';
+                    renderInventoryModal(clickedSort, newOrder);
+                } else {
+                    renderInventoryModal(clickedSort, 'desc');
+                }
+                return;
+            }
+
+            // 卡片点击（放大查看卡图）
+            const cardItem = e.target.closest('.inventory-card-item');
+            if (cardItem) {
+                const cardId = cardItem.getAttribute('data-card-id');
+                const rarity = cardItem.getAttribute('data-rarity');
+                const card = getCard(cardId);
+                if (card) {
+                    const rarityImgs = (card.rarityImageUrls && card.rarityImageUrls[rarity]) || {};
+                    const viewerCard = {
+                        id: card.id,
+                        name: card.name,
+                        nameCN: card.nameCN,
+                        nameOriginal: card.nameOriginal,
+                        imageUrl: rarityImgs.imageUrl || card.imageUrl,
+                        imageLargeUrl: rarityImgs.imageLargeUrl || card.imageLargeUrl
+                    };
+                    showCardViewer(viewerCard);
+                }
+            }
+        });
+    }
+
+    /**
+     * 构建卡片列表 HTML 片段（供分批渲染复用）
+     */
+    function buildCardItemsHtml(cards) {
+        let html = '';
+        cards.forEach(function (card) {
             const rarityCode = card.displayRarity || (card.rarityVersions || ['N'])[0];
             const cardCount = card.displayCount || card.count || 1;
             const price = getCardPrice(rarityCode, card.id);
             const isMarket = hasMarketPrice(card.id);
             const displayName = card.nameCN || card.name || card.nameOriginal || '未知卡片';
 
-            // 卡图 HTML —— 带 fallback 机制：主图源失败时自动尝试备用 CDN
-            // 备用图源：YGOProDeck CDN（小图）
             const fallbackUrl = 'https://images.ygoprodeck.com/images/cards_small/' + card.id + '.jpg';
             let imageHtml;
             if (card.imageUrl) {
@@ -458,13 +529,11 @@ const InventorySystem = (function () {
                                   onerror="if(!this.dataset.tried){this.dataset.tried='1';this.src=this.dataset.fallback;}else{this.style.display='none';this.nextElementSibling.style.display='flex';}">
                              <div class="inventory-card-placeholder" style="display:none;">🃏</div>`;
             } else {
-                // 无 imageUrl 时直接用 fallback 图源尝试加载
                 imageHtml = `<img class="inventory-card-image" src="${fallbackUrl}" alt="${displayName}" loading="lazy"
                                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                              <div class="inventory-card-placeholder" style="display:none;">🃏</div>`;
             }
 
-            // 有市场报价显示价格，无报价显示"暂无报价"
             let priceHtml;
             if (isMarket) {
                 priceHtml = `<div class="inventory-card-price">🪙 ${formatPrice(price)}</div>`;
@@ -485,46 +554,7 @@ const InventorySystem = (function () {
                 </div>
             `;
         });
-        html += '</div>';
-
-        contentEl.innerHTML = html;
-
-        // 绑定排序按钮事件（点击同一按钮切换升降序，点击不同按钮重置为降序）
-        contentEl.querySelectorAll('.sort-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                const clickedSort = this.getAttribute('data-sort');
-                if (clickedSort === currentSortBy) {
-                    // 同一按钮：切换排序方向
-                    const newOrder = currentSortOrder === 'desc' ? 'asc' : 'desc';
-                    renderInventoryModal(clickedSort, newOrder);
-                } else {
-                    // 不同按钮：切换维度，默认降序
-                    renderInventoryModal(clickedSort, 'desc');
-                }
-            });
-        });
-
-        // 绑定卡片点击事件（放大查看卡图）
-        contentEl.querySelectorAll('.inventory-card-item').forEach(function (item) {
-            item.addEventListener('click', function () {
-                const cardId = this.getAttribute('data-card-id');
-                const rarity = this.getAttribute('data-rarity');
-                const card = getCard(cardId);
-                if (card) {
-                    // 从 rarityImageUrls 中获取对应稀有度的大图URL（超框卡等特殊版本使用不同卡图）
-                    const rarityImgs = (card.rarityImageUrls && card.rarityImageUrls[rarity]) || {};
-                    const viewerCard = {
-                        id: card.id,
-                        name: card.name,
-                        nameCN: card.nameCN,
-                        nameOriginal: card.nameOriginal,
-                        imageUrl: rarityImgs.imageUrl || card.imageUrl,
-                        imageLargeUrl: rarityImgs.imageLargeUrl || card.imageLargeUrl
-                    };
-                    showCardViewer(viewerCard);
-                }
-            });
-        });
+        return html;
     }
 
     /**

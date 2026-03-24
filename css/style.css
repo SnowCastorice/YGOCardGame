@@ -1425,6 +1425,65 @@ body {
 }
 
 /* 开发者工具 Toast 提示 */
+/* 通用确认弹窗（z-index 高于其他弹窗，确保不被遮挡） */
+.confirm-modal-content {
+    max-width: 340px;
+    width: 85%;
+    border-radius: 16px;
+    padding: 0;
+    overflow: hidden;
+}
+
+#confirm-modal {
+    z-index: 500;
+}
+
+.confirm-modal-content .modal-header {
+    padding: 14px 16px 10px;
+}
+
+.confirm-modal-content .modal-body {
+    padding: 0 20px 16px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #ccc;
+    white-space: pre-line;
+}
+
+.confirm-modal-actions {
+    display: flex;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.confirm-btn {
+    flex: 1;
+    padding: 14px 0;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.confirm-btn--cancel {
+    background: transparent;
+    color: #999;
+}
+
+.confirm-btn--cancel:active {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.confirm-btn--ok {
+    background: transparent;
+    color: #ff5252;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.confirm-btn--ok:active {
+    background: rgba(255, 82, 82, 0.1);
+}
+
 .devtools-toast {
     position: fixed;
     top: 50%;

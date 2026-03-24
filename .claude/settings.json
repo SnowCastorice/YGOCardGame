@@ -2,5 +2,17 @@
   "enabledMcpjsonServers": [
     "chrome-devtools"
   ],
-  "enableAllProjectMcpServers": true
+  "enableAllProjectMcpServers": true,
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/session-end-check.sh"
+          }
+        ]
+      }
+    ]
+  }
 }
