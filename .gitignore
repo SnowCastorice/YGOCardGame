@@ -10,6 +10,10 @@ NUL
 *.swp
 *.swo
 
+# AI 工具本地配置（不跟踪）
+.claude/settings.local.json
+.codebuddy/
+
 # 依赖
 node_modules/
 
