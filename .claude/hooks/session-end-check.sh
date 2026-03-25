@@ -15,7 +15,7 @@ problems=""
 code_changed=false
 changed_files=$(git diff --name-only HEAD 2>/dev/null; git diff --cached --name-only 2>/dev/null; git ls-files --others --exclude-standard 2>/dev/null)
 if [ -n "$changed_files" ]; then
-  other_changes=$(echo "$changed_files" | grep -v '^docs/CHANGELOG.md$' | grep -v '^data/changelog.json$' | grep -v '^DEVELOPMENT.md$' | head -1)
+  other_changes=$(echo "$changed_files" | grep -v '^docs/CHANGELOG.md$' | grep -v '^data/changelog.json$' | grep -v '^DEVELOPMENT.md$' | grep -v '^\.claude/' | grep -v '^\.agents/' | grep -v '^skills-lock\.json$' | head -1)
   [ -n "$other_changes" ] && code_changed=true
 fi
 
