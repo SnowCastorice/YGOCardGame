@@ -705,7 +705,13 @@ function renderPackList() {
                 return dateB.localeCompare(dateA);
             });
     } else {
-        filteredPacks = modeConfig.packs.filter(pack => pack.category === currentPackCategory);
+        // 按发售日期从新到旧排序，与「近期发售」一致
+        filteredPacks = modeConfig.packs.filter(pack => pack.category === currentPackCategory)
+            .sort((a, b) => {
+                const dateA = a.releaseDate || '0000-00-00';
+                const dateB = b.releaseDate || '0000-00-00';
+                return dateB.localeCompare(dateA);
+            });
     }
     if (filteredPacks.length === 0) {
         packListEl.innerHTML = '<p style="text-align:center;color:var(--text-secondary);padding:40px 0;">该分类暂无卡包，敬请期待 🌟</p>';
