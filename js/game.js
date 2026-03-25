@@ -2928,6 +2928,8 @@ function showInventory() {
 /** 关闭背包弹窗 */
 function hideInventory() {
     document.getElementById('inventory-modal').classList.remove('active');
+    // 清理事件监听器，防止内存泄漏
+    InventorySystem.cleanupModal();
 }
 
 // ============================================

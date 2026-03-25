@@ -27,6 +27,10 @@ const InventorySystem = (function () {
     let inventory = {};
     let initialized = false;
 
+    // 事件监听器引用（用于清理，防止内存泄漏）
+    let _scrollHandler = null;
+    let _clickHandler = null;
+
     // 当前排序状态
     let currentSortBy = 'rarity';   // 当前排序维度
     let currentSortOrder = 'desc';  // 当前排序方向：desc=降序, asc=升序
@@ -348,6 +352,16 @@ const InventorySystem = (function () {
         const contentEl = document.getElementById('inventory-content');
         if (!contentEl) return;
 
+        // 清理上一次的事件监听器（防止重复绑定导致内存泄漏）
+        if (_scrollHandler) {
+            contentEl.removeEventListener('scroll', _scrollHandler);
+            _scrollHandler = null;
+        }
+        if (_clickHandler) {
+            contentEl.removeEventListener('click', _clickHandler);
+            _clickHandler = null;
+        }
+
         // 更新排序状态
         if (sortBy) currentSortBy = sortBy;
         if (sortOrder) currentSortOrder = sortOrder;
@@ -451,29 +465,38 @@ const InventorySystem = (function () {
         let renderedCount = Math.min(BATCH_SIZE, sortedCards.length);
         const gridEl = contentEl.querySelector('.inventory-grid');
 
-        // 滚动懒加载：距底部 200px 时追加下一批
+        // 滚动懒加载：距底部 200px 时追加下一批（带 rAF 节流）
         if (sortedCards.length > BATCH_SIZE) {
-            contentEl.addEventListener('scroll', function onScroll() {
-                if (renderedCount >= sortedCards.length) {
-                    contentEl.removeEventListener('scroll', onScroll);
-                    return;
-                }
-                if (contentEl.scrollTop + contentEl.clientHeight >= contentEl.scrollHeight - 200) {
-                    const nextBatch = sortedCards.slice(renderedCount, renderedCount + BATCH_SIZE);
-                    const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = buildCardItemsHtml(nextBatch);
-                    const fragment = document.createDocumentFragment();
-                    while (tempDiv.firstChild) {
-                        fragment.appendChild(tempDiv.firstChild);
+            let _scrollTicking = false;
+            _scrollHandler = function () {
+                if (_scrollTicking) return;
+                _scrollTicking = true;
+                requestAnimationFrame(function () {
+                    if (renderedCount >= sortedCards.length) {
+                        contentEl.removeEventListener('scroll', _scrollHandler);
+                        _scrollHandler = null;
+                        _scrollTicking = false;
+                        return;
                     }
-                    gridEl.appendChild(fragment);
-                    renderedCount += nextBatch.length;
-                }
-            });
+                    if (contentEl.scrollTop + contentEl.clientHeight >= contentEl.scrollHeight - 200) {
+                        const nextBatch = sortedCards.slice(renderedCount, renderedCount + BATCH_SIZE);
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = buildCardItemsHtml(nextBatch);
+                        const fragment = document.createDocumentFragment();
+                        while (tempDiv.firstChild) {
+                            fragment.appendChild(tempDiv.firstChild);
+                        }
+                        gridEl.appendChild(fragment);
+                        renderedCount += nextBatch.length;
+                    }
+                    _scrollTicking = false;
+                });
+            };
+            contentEl.addEventListener('scroll', _scrollHandler);
         }
 
-        // 事件委托：排序按钮（在 contentEl 上统一监听）
-        contentEl.addEventListener('click', function (e) {
+        // 事件委托：排序按钮和卡片点击（保存引用以便清理）
+        _clickHandler = function (e) {
             // 排序按钮点击
             const sortBtn = e.target.closest('.sort-btn');
             if (sortBtn) {
@@ -506,7 +529,8 @@ const InventorySystem = (function () {
                     showCardViewer(viewerCard);
                 }
             }
-        });
+        };
+        contentEl.addEventListener('click', _clickHandler);
     }
 
     /**
@@ -737,6 +761,22 @@ const InventorySystem = (function () {
     // ====== 调试/管理接口 ======
 
     /**
+     * 清理背包弹窗的事件监听器（关闭弹窗时调用，防止内存泄漏）
+     */
+    function cleanupModal() {
+        const contentEl = document.getElementById('inventory-content');
+        if (!contentEl) return;
+        if (_scrollHandler) {
+            contentEl.removeEventListener('scroll', _scrollHandler);
+            _scrollHandler = null;
+        }
+        if (_clickHandler) {
+            contentEl.removeEventListener('click', _clickHandler);
+            _clickHandler = null;
+        }
+    }
+
+    /**
      * 清空背包（调试用）
      */
     function clearAll() {
@@ -776,6 +816,7 @@ const InventorySystem = (function () {
 
         updateBadge: updateBadge,
         renderInventoryModal: renderInventoryModal,
+        cleanupModal: cleanupModal,
         clearAll: clearAll
     };
 

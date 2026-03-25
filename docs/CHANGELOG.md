@@ -2,6 +2,18 @@
 
 > 从 DEVELOPMENT.md 拆分，记录各版本的变更和待处理事项。
 
+## v1.7.9（2026-03-25）— 内存泄漏修复 + 卡包排序优化
+
+### 背包弹窗内存泄漏修复（`js/inventory.js`、`js/game.js`）
+- **根因**：每次打开背包弹窗都添加新的 scroll/click 事件监听器，关闭时从不清理，导致监听器和闭包中的卡片数据持续堆积
+- 新增 `_scrollHandler` / `_clickHandler` 模块级变量，保存监听器引用
+- `renderInventoryModal()` 开头先移除旧监听器再绑定新的
+- scroll 事件添加 `requestAnimationFrame` 节流，避免每帧高频触发 DOM 操作
+- 新增 `cleanupModal()` 方法，`hideInventory()` 关闭弹窗时调用
+
+### 卡包排序优化（`js/game.js`）
+- 所有标签页（特殊包/补充包/主题卡组/系列补充包）按发售日期从新到旧排序，与「近期发售」一致
+
 ## 文档整理 + INP 性能优化 + Stop Hook（2026-03-25）
 
 ### 说明文件查漏补缺
