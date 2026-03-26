@@ -9,7 +9,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/session-end-check.sh"
+            "command": "bash .claude/hooks/version-check.sh"
           }
         ]
       }

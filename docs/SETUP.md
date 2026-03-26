@@ -48,6 +48,17 @@
 当前已授予的权限：
 - `Bash(npx skills:*)` — 允许执行 npx skills 相关命令
 
+### 安装 Git pre-commit Hook
+
+版本号一致性检查脚本已提交到 `tools/version-check.sh`，需要在每台设备上手动安装到 Git hooks：
+
+```bash
+printf '#!/bin/bash\nexec bash tools/version-check.sh\n' > .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+```
+
+安装后，每次 `git commit` 会自动检查 `APP_VERSION`、`changelog.json`、`CHANGELOG.md` 三处版本号是否一致。不一致则阻止提交。
+
 ## 第三步：验证一切就绪
 
 在 Claude Code 中输入任意问题，确认：
@@ -65,6 +76,9 @@
 | .mcp.json | ✅ Git | MCP 配置 |
 | .claude/settings.json | ✅ Git | 项目共享设置 |
 | .claude/skills/ | ✅ Git | 2 个 Skill |
+| .claude/hooks/ | ✅ Git | Claude Stop Hook（版本号检查） |
+| tools/version-check.sh | ✅ Git | Git pre-commit Hook 脚本 |
+| .git/hooks/pre-commit | ❌ 本地 | 需手动安装（见上方步骤） |
 | 语言 chinese | ❌ 本地 | `/config` 设置 |
 | 输出风格 Explanatory | ❌ 本地 | `/config` 设置 |
 | 模型 Opus 4.6 | ❌ 本地 | `/model` 设置 |
