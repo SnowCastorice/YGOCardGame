@@ -53,7 +53,8 @@
 版本号一致性检查脚本已提交到 `tools/version-check.sh`，需要在每台设备上手动安装到 Git hooks：
 
 ```bash
-printf '#!/bin/bash\nexec bash tools/version-check.sh\n' > .git/hooks/pre-commit
+echo '#!/bin/bash' > .git/hooks/pre-commit
+echo 'exec bash tools/version-check.sh' >> .git/hooks/pre-commit
 chmod +x .git/hooks/pre-commit
 ```
 
