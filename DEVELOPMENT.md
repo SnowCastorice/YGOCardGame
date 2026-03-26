@@ -2,7 +2,7 @@
 
 > 本文件记录 CLAUDE.md 未覆盖的设备特定信息。核心开发规范、架构、命令等请参阅 [CLAUDE.md](CLAUDE.md)。
 
-## 🔖 当前版本：v1.7.8（2026-03-21）
+## 🔖 当前版本：v1.7.9（2026-03-26）
 
 最新变更：LOSP 拆分 + LOCR 临时密码兼容 + GMR-OF 价格规则。详见 [CHANGELOG.md](docs/CHANGELOG.md)。
 
@@ -10,26 +10,35 @@
 
 ## 🐍 双设备 OCR 环境
 
-项目在两台设备上交替开发，虚拟环境路径统一为 `local/venv/`。
+项目在两台设备上交替开发，OCR 使用系统级 Python 3.11（非虚拟环境）。
 
-| | 设备 A | 设备 B |
+| | 设备 A（CHIHAYADU-PC1） | 设备 B |
 |---|---|---|
-| **用户名** | `chihayadu` | `snow9` |
+| **OS** | Windows 11 (22631) | 待更新 |
 | **GPU** | RTX 4060 (8GB VRAM) | RTX 3070 (8GB VRAM) |
-| **Python** | 3.11 | 3.11 |
-| **PaddlePaddle-GPU** | 3.0.0 (CUDA 12.6) | 3.0.0 (CUDA 12.6) |
-| **PaddleOCR** | 3.4.0 | 3.4.0 |
+| **NVIDIA 驱动** | 591.74 | 待更新 |
+| **CUDA Version** | 13.1 | 待更新 |
+| **Python (OCR)** | 3.11.9（系统安装） | 待更新 |
+| **PaddlePaddle-GPU** | 3.3.1 (cu126) | 待更新 |
+| **PaddleOCR** | 3.4.0 | 待更新 |
 
-> 虚拟环境目录 `local/` 在 `.gitignore` 中，不会被提交。每台设备需各自安装依赖。
 
-## 🔌 PaddleOCR MCP Server（仅设备 A）
+### OCR 安装命令（两台设备统一）
 
-- **功能**：让 AI 编辑器直接调用本地 OCR 能力识别图片中的文字
-- **配置文件**：`C:\Users\chihayadu\.gongfeng-copilot\mcp.json`（服务名: `paddleocr`）
-- **启动方式**：CodeBuddy 自动通过 STDIO 模式管理进程，使用 GPU 加速
-- **包版本**：`paddleocr-mcp 0.5.0`（pip 安装在 local/venv 中）
-- **验证**：重启 CodeBuddy 后，MCP 工具列表中应出现 PaddleOCR 相关工具
-- **设备 B 不配置此 MCP**，OCR 工作流通过命令行脚本执行即可
+```bash
+# 1. 安装 PaddlePaddle GPU（通过飞桨官方源，cu126）
+python -m pip install paddlepaddle-gpu -i https://www.paddlepaddle.org.cn/packages/stable/cu126/
+
+# 2. 安装 PaddleOCR
+python -m pip install paddleocr
+
+# 3. 验证
+python -c "import paddle; print(paddle.__version__, 'CUDA:', paddle.is_compiled_with_cuda())"
+python -c "import paddleocr; print(paddleocr.__version__)"
+```
+
+> ⚠️ PaddlePaddle GPU 版必须通过飞桨官方源安装（PyPI 默认源只有 2.x 旧版）
+> ⚠️ OCR 使用系统级 Python 3.11，不使用 local/venv/（那个是 3.14，不兼容 PaddleOCR）
 
 ## 📚 文档索引
 

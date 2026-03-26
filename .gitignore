@@ -31,6 +31,8 @@ __pycache__/
 
 # 测试截图和输出文件
 test_output/
+screenshots/
+*.bak
 
 # 本地大文件资源（Python虚拟环境、OCR图片、先行卡卡图等，不提交到 Git）
 local/

@@ -703,15 +703,15 @@ def main(date_str=None, parsed_path=None):
         print(f"  LOCH 包=¥{loch_prices['packPrices']['LOCH'].get('pack', '?')} (沿用旧价，OCR未识别)")
         csv_rows.append(['卡包价格', 'LOCH', '', '包', '', '', '', '', f"¥{loch_prices['packPrices']['LOCH'].get('pack', '?')}", '沿用旧价'])
 
-    # LOSP 包价格
+    # LOSP vol1 包价格
     losp_pack = ocr_pack_prices.get('losp', {})
     if 'pack' in losp_pack:
-        loch_prices['packPrices']['LOSP']['pack'] = losp_pack['pack']
-        print(f"  LOSP 包=¥{losp_pack['pack']} ✅ (OCR识别)")
-        csv_rows.append(['卡包价格', 'LOSP', '', '包', f"¥{loch_prices['packPrices']['LOSP'].get('pack', '-')}", '', '', '', f"¥{losp_pack['pack']}", 'OCR识别'])
+        loch_prices['packPrices']['LOSP-vol1']['pack'] = losp_pack['pack']
+        print(f"  LOSP-vol1 包=¥{losp_pack['pack']} ✅ (OCR识别)")
+        csv_rows.append(['卡包价格', 'LOSP-vol1', '', '包', f"¥{loch_prices['packPrices']['LOSP-vol1'].get('pack', '-')}", '', '', '', f"¥{losp_pack['pack']}", 'OCR识别'])
     else:
-        print(f"  LOSP 包=¥{loch_prices['packPrices']['LOSP'].get('pack', '?')} (沿用旧价，OCR未识别)")
-        csv_rows.append(['卡包价格', 'LOSP', '', '包', '', '', '', '', f"¥{loch_prices['packPrices']['LOSP'].get('pack', '?')}", '沿用旧价'])
+        print(f"  LOSP-vol1 包=¥{loch_prices['packPrices']['LOSP-vol1'].get('pack', '?')} (沿用旧价，OCR未识别)")
+        csv_rows.append(['卡包价格', 'LOSP-vol1', '', '包', '', '', '', '', f"¥{loch_prices['packPrices']['LOSP-vol1'].get('pack', '?')}", '沿用旧价'])
 
     # BLZD 盒/包价格
     blzd_pack = ocr_pack_prices.get('blzd', {})
@@ -751,9 +751,9 @@ def main(date_str=None, parsed_path=None):
 
     # LOSP vol2 包价格（存在 locr_prices 中）
     losp_vol2_pack = ocr_pack_prices.get('losp', {})
-    if 'pack' in losp_vol2_pack and 'LOSP' in locr_prices.get('packPrices', {}):
-        locr_prices['packPrices']['LOSP']['pack'] = losp_vol2_pack['pack']
-        print(f"  LOSP vol2 包=¥{losp_vol2_pack['pack']} ✅ (OCR识别)")
+    if 'pack' in losp_vol2_pack and 'LOSP-vol2' in locr_prices.get('packPrices', {}):
+        locr_prices['packPrices']['LOSP-vol2']['pack'] = losp_vol2_pack['pack']
+        print(f"  LOSP-vol2 包=¥{losp_vol2_pack['pack']} ✅ (OCR识别)")
 
     # 保存更新后的价格文件
     loch_out = os.path.join(base_dir, 'data', 'ocg', 'prices', 'loch_prices.json')
