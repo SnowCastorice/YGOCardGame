@@ -141,7 +141,16 @@ tools/db/cards.json (YGOCDB 全量, 12MB, 需提交到git)
 
 ### 版本号管理
 
-`index.html` 中的 `window.APP_VERSION` 是**唯一控制点**，所有资源的 `?v=` 参数自动使用此值。更新版本时只需修改这一处，同时在 `data/changelog.json` 添加对应更新日志。
+`index.html` 中的 `window.APP_VERSION` 是**唯一权威来源**。每次提交包含代码变更时，Claude 必须：
+
+1. **递增 `APP_VERSION`**（`index.html` 第 8 行）
+2. **同步 `data/changelog.json`**：新增版本条目，写面向玩家的更新说明（通俗、简短）
+3. **同步 `docs/CHANGELOG.md`**：新增版本条目，写面向开发者的详细变更记录
+4. **同步 `README.md`**：更新 badge 中的版本号
+
+以下变更**不需要**更新版本号：价格数据、工具脚本、文档、配置文件、.claude/ 目录。
+
+> ⚠️ 有 Git pre-commit Hook（`tools/version-check.sh`）和 Claude Stop Hook（`.claude/hooks/version-check.sh`）自动检查四处版本号一致性。
 
 ### 外部 API 限流
 
@@ -190,7 +199,7 @@ tools/db/cards.json (YGOCDB 全量, 12MB, 需提交到git)
 
 | 文档 | 内容 |
 |------|------|
-| `DEVELOPMENT.md` | 双设备 OCR 环境配置、PaddleOCR MCP Server |
+| `docs/SETUP.md` | 设备配置、OCR 环境、文档索引 |
 | `docs/CHANGELOG.md` | 近期变更记录 |
 | `docs/ARCHITECTURE.md` | 数据源架构、API 限流、服务端代理 |
 | `docs/FEATURES.md` | 背包、图鉴、货币、开包系统详细规格 |

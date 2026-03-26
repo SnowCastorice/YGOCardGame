@@ -1,7 +1,7 @@
 #!/bin/bash
 # Claude Stop Hook：版本号一致性检查
 # 触发时机：Claude 每次回复结束时
-# 检查 APP_VERSION、changelog.json、CHANGELOG.md 三处版本号是否一致
+# 检查 APP_VERSION、changelog.json、CHANGELOG.md、README.md 四处版本号是否一致
 
 input=$(cat)
 
@@ -19,7 +19,7 @@ code_changed=false
 while IFS= read -r file; do
   case "$file" in
     .claude/*|.agents/*|skills-lock.json) continue ;;
-    docs/CHANGELOG.md|data/changelog.json|DEVELOPMENT.md) continue ;;
+    docs/CHANGELOG.md|data/changelog.json) continue ;;
     docs/SETUP.md|docs/TODO.md|docs/TOOLS.md) continue ;;
     data/ocg/prices/*) continue ;;
     tools/*) continue ;;
@@ -33,22 +33,23 @@ done <<< "$changed_files"
 
 [ "$code_changed" = false ] && exit 0
 
-# === 提取三处版本号 ===
+# === 提取四处版本号 ===
 app_ver=$(grep -o "APP_VERSION = '[^']*'" index.html 2>/dev/null | head -1 | sed "s/APP_VERSION = '//;s/'//")
 json_ver=$(grep -o '"version": "[^"]*"' data/changelog.json 2>/dev/null | head -1 | sed 's/"version": "//;s/"//')
 md_ver=$(grep -m1 '^## v\?[0-9]' docs/CHANGELOG.md 2>/dev/null | grep -o '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*' | head -1)
+readme_ver=$(grep -o 'version-v[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*' README.md 2>/dev/null | head -1 | sed 's/version-v//')
 
 # === 检查一致性 ===
 problems=""
 
-if [ -z "$app_ver" ] || [ -z "$json_ver" ] || [ -z "$md_ver" ]; then
-  problems="版本号提取失败 — APP_VERSION=${app_ver:-空}, changelog.json=${json_ver:-空}, CHANGELOG.md=${md_ver:-空}"
-elif [ "$app_ver" != "$json_ver" ] || [ "$app_ver" != "$md_ver" ]; then
-  problems="版本号不一致 — APP_VERSION=${app_ver}, changelog.json=${json_ver}, CHANGELOG.md=${md_ver}"
+if [ -z "$app_ver" ] || [ -z "$json_ver" ] || [ -z "$md_ver" ] || [ -z "$readme_ver" ]; then
+  problems="版本号提取失败 — APP_VERSION=${app_ver:-空}, changelog.json=${json_ver:-空}, CHANGELOG.md=${md_ver:-空}, README.md=${readme_ver:-空}"
+elif [ "$app_ver" != "$json_ver" ] || [ "$app_ver" != "$md_ver" ] || [ "$app_ver" != "$readme_ver" ]; then
+  problems="版本号不一致 — APP_VERSION=${app_ver}, changelog.json=${json_ver}, CHANGELOG.md=${md_ver}, README.md=${readme_ver}"
 fi
 
 if [ -n "$problems" ]; then
-  printf "⚠️ 版本号检查未通过：%s\n请确保三处版本号一致，并编写对应的更新日志。\n" "$problems" >&2
+  printf "⚠️ 版本号检查未通过：%s\n请确保四处版本号一致，并编写对应的更新日志。\n" "$problems" >&2
   exit 2
 fi
 

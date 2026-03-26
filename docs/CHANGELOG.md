@@ -1,16 +1,26 @@
 # 📝 近期变更记录
 
-> 从 DEVELOPMENT.md 拆分，记录各版本的变更和待处理事项。
+> 所有版本变更的详细记录。待办事项见 [TODO.md](TODO.md)，面向玩家的更新日志见 `data/changelog.json`。
 
-## v1.7.9（2026-03-26）— 内存泄漏修复 + 卡包排序优化 + TODO 更新
+## v1.7.9（2026-03-26）— 内存泄漏修复 + 卡包排序优化 + 价格更新 + Hook 体系
 
-### .gitignore 更新
-- 新增 `screenshots/` 和 `*.bak` 忽略规则
+### LOCR+LOSP vol2 价格更新
+- LOCR 80张卡 + LOSP vol2 10张卡价格更新至集换社最新数据（330条价格记录）
+- 修复 `merge_prices.py` 中 LOSP 键名 bug（`LOSP` → `LOSP-vol1`/`LOSP-vol2`）
+- PaddlePaddle GPU 3.3.1 + PaddleOCR 3.4.0 环境配置（设备 A）
 
-### TODO 更新（`docs/TODO.md`）
-- 新增第 9 条：修复连点页面时触发双击缩放的问题（快速连续点击导致页面放大）
+### 版本号一致性 Hook
+- 新增 Claude Stop Hook（`.claude/hooks/version-check.sh`）：回复结束时检查三处版本号一致性
+- 新增 Git pre-commit Hook（`tools/version-check.sh`）：提交前兜底检查，不一致则阻止提交
+- 新增 self-improvement hooks（activator + error-detector）
 
-## v1.7.9（2026-03-25）— 内存泄漏修复 + 卡包排序优化
+### 多设备协作配置
+- 添加 `CLAUDE.md`、`.mcp.json`、`.claude/settings.json` 到 Git 跟踪
+- 安装 skill-global-search 和 self-improvement skills
+- 新增 `docs/SETUP.md` 新设备配置指南
+- 更新 `DEVELOPMENT.md` 设备配置信息表
+- `.gitignore` 新增 `screenshots/`、`*.bak`、`.codebuddy/` 忽略规则
+- 删除 `.codebuddy/` 旧工具配置
 
 ### 背包弹窗内存泄漏修复（`js/inventory.js`、`js/game.js`）
 - **根因**：每次打开背包弹窗都添加新的 scroll/click 事件监听器，关闭时从不清理，导致监听器和闭包中的卡片数据持续堆积
@@ -21,6 +31,10 @@
 
 ### 卡包排序优化（`js/game.js`）
 - 所有标签页（特殊包/补充包/主题卡组/系列补充包）按发售日期从新到旧排序，与「近期发售」一致
+
+### TODO.md 职责清理
+- 删除"已完成"区域，已完成工作统一记录在本文件
+- TODO.md 只保留待办事项和技术问题
 
 ## 文档整理 + INP 性能优化 + Stop Hook（2026-03-25）
 

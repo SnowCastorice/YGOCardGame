@@ -1,6 +1,6 @@
 # 📋 YGOCardGame 待办事项
 
-> 本文件记录项目的待办事项和规划，按优先级和状态分类管理。
+> 本文件只记录待办事项和待解决的技术问题。已完成的工作记录在 [CHANGELOG.md](CHANGELOG.md)。
 
 ---
 
@@ -44,12 +44,6 @@
 - 可能方案：通过 CSS `touch-action: manipulation` 禁用双击缩放（推荐，保留捏合缩放能力）；或在 viewport meta 中添加 `user-scalable=no, maximum-scale=1.0`（更彻底但会完全禁止用户手动缩放）
 - 影响范围：全局触摸交互，重点关注开包按钮、快速再开、背包卡片点击等高频操作区域
 
-### 10. 版本号唯一来源改造
-- 将 `changelog.json` 作为版本号唯一来源，`APP_VERSION` 启动时自动从中读取
-- 问题：CSS/JS 的 `?v=` 缓存参数在 `<head>` 中同步注入，此时 `changelog.json` 还未 fetch
-- 可能方案：保留 `APP_VERSION` 仅作缓存参数，展示版本号统一从 `changelogData` 读取；或改用其他缓存策略
-- 目标：更新版本号只需修改 `changelog.json` 一处，消除三处手动同步的维护负担
-
 ---
 
 ## 🔵 已记录的技术问题
@@ -59,49 +53,3 @@
 - 原因：YGOProDeck 启用了 Cloudflare Turnstile 人机验证，程序化请求被拦截
 - 影响范围：仅影响 CDN 测试工具中的 YGOProDeck 图源对比，不影响游戏正常功能
 - 待后续决策：是否从 CDN 测试工具中移除 YGOProDeck 图源
-
----
-
-## ✅ 已完成
-
-### 三包价格全部更新完成（2026-03-21）
-- BLZD 主包价格更新（卡盒 ¥370、单包 ¥9.9 + 全卡价格）
-- LOCH 主包价格更新（卡盒 ¥345、单包 ¥9.5 + LOSP-vol1 包 ¥70 + 全卡价格）
-- LOCR 主包价格更新（卡盒 ¥370、单包 ¥9.9 + LOSP-vol2 包 ¥88.88 + 90张卡/322条价格）
-- OCR 工具链增强（extract_prices.py / merge_prices.py / ocr_workflow.py 支持三包）
-
-### LOSP 辅助包拆分为 vol1 / vol2（2026-03-21）
-- LOCH 的 LOSP 包价键名改为 `LOSP-vol1`
-- LOCR 的 LOSP 包价键名改为 `LOSP-vol2`
-- priceSystem.js 自动回退查找机制
-
-### LOCH 卡片密码更新（2026-03-21）
-- LOCH-JP001~JP018 的 cardId 从临时密码更新为百鸽已收录的真实密码
-- LOCR 临时密码兼容方案（setNumber 反向索引）
-
-### 管理后台统计修复（2026-03-21）
-- 修复管理后台缺少 LOCR 的问题
-- 新卡包上报时自动注册到 index:packs 索引
-
-### KV 写入限流参数调整（2026-03-21）
-- 升级 Cloudflare 付费计划后，DAILY_WRITE_THRESHOLD 从 900 → 100,000
-- 采样持久化间隔从 50 → 500
-
-### GMR-OF 亚洲版价格规则（2026-03-21）
-- 所有 36 张 GMR-OF 卡片（LOCH 18张 + LOCR 18张）亚洲版价格已确认正确
-- 价格文件中添加 `_GMR-OF价格规则` 元数据字段
-
-### LOCR 卡图本地化（2026-03-20）
-- 新增 171 张 LOCR 本地卡图
-- 新增 locr_image_map.json 映射表
-- 卡图系统重构（新增 localImages 模式）
-- 修复 LOSP 辅助包卡图显示问题
-
-### LOCR 价格数据首次填充（2026-03-21）
-- OCR 识别 77 张卡片，286 条价格记录
-- 盒价 ¥370.0，包价 ¥9.9
-- OCR 工具链扩展支持 LOCR
-
-### LOCH/LOSP 卡图 CDN 切换（2026-03-04）
-- S3 CDN 作为主图源，Cloudflare Pages 本地图片作为备份
-- 已验证通过
