@@ -1017,9 +1017,20 @@ async function selectPack(pack) {
             const cardFileData = await cardFileResponse.json();
             // 将 cardIds 注入到 pack 对象中，供 API 模块使用
             pack.cardIds = cardFileData.cardIds;
-            // 将辅助包数据也注入到 pack 对象中（如果存在）
+            // 将辅助包数据注入到 pack 对象中
             if (cardFileData.supplementPack) {
+                // 旧格式：辅助包数据内嵌在母包文件中
                 pack.supplementPack = cardFileData.supplementPack;
+            } else if (cardFileData.supplementPackFile) {
+                // 新格式：辅助包数据在独立文件中，额外加载
+                const suppUrl = `data/ocg/cards/${cardFileData.supplementPackFile}?v=${window.APP_VERSION || '0'}`;
+                const suppResponse = await fetch(suppUrl);
+                if (suppResponse.ok) {
+                    pack.supplementPack = await suppResponse.json();
+                    console.log(`📄 已加载辅助包文件 [${cardFileData.supplementPackFile}]`);
+                } else {
+                    console.warn(`⚠️ 辅助包文件加载失败: ${suppUrl}`);
+                }
             }
             console.log(`📄 已加载独立卡牌文件 [${pack.cardFile}]，共 ${pack.cardIds.length} 张卡`);
         }
@@ -4176,9 +4187,20 @@ async function showCardPreview(pack) {
             }
             var cardFileData = await cardFileResponse.json();
             targetPack.cardIds = cardFileData.cardIds;
-            // 将辅助包数据也注入到 pack 对象中（如果存在）
+            // 将辅助包数据注入到 pack 对象中
             if (cardFileData.supplementPack) {
+                // 旧格式：辅助包数据内嵌在母包文件中
                 targetPack.supplementPack = cardFileData.supplementPack;
+            } else if (cardFileData.supplementPackFile) {
+                // 新格式：辅助包数据在独立文件中，额外加载
+                var suppUrl = 'data/ocg/cards/' + cardFileData.supplementPackFile + '?v=' + (window.APP_VERSION || '0');
+                var suppResponse = await fetch(suppUrl);
+                if (suppResponse.ok) {
+                    targetPack.supplementPack = await suppResponse.json();
+                    console.log('📄 [预览] 已加载辅助包文件 [' + cardFileData.supplementPackFile + ']');
+                } else {
+                    console.warn('⚠️ [预览] 辅助包文件加载失败: ' + suppUrl);
+                }
             }
             console.log('📄 [预览] 已加载独立卡牌文件 [' + targetPack.cardFile + ']，共 ' + targetPack.cardIds.length + ' 张卡');
         }
