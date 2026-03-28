@@ -58,6 +58,7 @@ while IFS= read -r file; do
     docs/*|data/changelog.json) continue ;;
     data/ocg/prices/*) continue ;;
     tools/*) continue ;;
+    admin/*) continue ;;
     CloudflareReport/*) continue ;;
     .gitignore|.mcp.json|CLAUDE.md|README.md) continue ;;
     screenshots/*|test_output/*|pack_references/*) continue ;;

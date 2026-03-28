@@ -23,6 +23,7 @@ while IFS= read -r file; do
     docs/SETUP.md|docs/TODO.md|docs/TOOLS.md) continue ;;
     data/ocg/prices/*) continue ;;
     tools/*) continue ;;
+    admin/*) continue ;;
     CloudflareReport/*) continue ;;
     .gitignore|.mcp.json|CLAUDE.md|README.md) continue ;;
     screenshots/*|test_output/*) continue ;;

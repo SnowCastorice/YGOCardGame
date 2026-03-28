@@ -31,8 +31,6 @@
             color: #f5c842;
         }
 
-        
-
         .stats-card {
             background: #1a1a2e;
             border-radius: 12px;
@@ -87,9 +85,20 @@
             border-radius: 8px;
         }
 
+        .pack-info {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
         .pack-row .pack-name {
             font-weight: bold;
             color: #4a9eff;
+        }
+
+        .pack-date {
+            font-size: .75rem;
+            color: #888;
         }
 
         .pack-row .pack-data {
@@ -104,6 +113,40 @@
 
         .pack-row .pack-data strong {
             color: #f5c842;
+        }
+
+        /* 排序栏 */
+        .sort-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .sort-bar span {
+            font-size: .85rem;
+            color: #999;
+        }
+
+        .sort-btn {
+            padding: 4px 12px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: transparent;
+            color: #ccc;
+            cursor: pointer;
+            font-size: .8rem;
+        }
+
+        .sort-btn:hover {
+            background: rgba(255, 255, 255, .05);
+        }
+
+        .sort-btn.active {
+            background: #f5c842;
+            color: #0a0a1a;
+            border-color: #f5c842;
+            font-weight: bold;
         }
 
         .status-msg {
@@ -153,8 +196,15 @@
     <script>
         // 每种卡包每盒的包数映射（从 packs.json 动态加载）
         let packsPerBoxMap = {};
+        // 每种卡包的发售日期映射
+        let packReleaseDateMap = {};
 
-        // 加载卡包配置，获取每盒包数
+        // 缓存最近一次 API 返回的数据，切换排序时复用
+        let cachedStatsData = null;
+        // 当前排序方式（date=发售时间, packs=开包数）
+        let currentSort = 'date';
+
+        // 加载卡包配置，获取每盒包数和发售日期
         async function loadPackConfig() {
             try {
                 const configs = [
@@ -170,6 +220,7 @@
                             const code = p.packCode || p.setCode || p.packId;
                             if (code) {
                                 packsPerBoxMap[code] = p.packsPerBox || cfg.fallback;
+                                packReleaseDateMap[code] = p.releaseDate || '';
                             }
                         }
                     } catch (e) {
@@ -184,6 +235,31 @@
         // 获取指定卡包每盒包数（默认30）
         function getPacksPerBox(packCode) {
             return packsPerBoxMap[packCode] || 30;
+        }
+
+        // 计算卡包的实际开包总数
+        function getRealPacks(code, packs) {
+            const ps = packs[code] || { totalPacks: 0, totalBoxes: 0 };
+            return ps.totalPacks + ps.totalBoxes * getPacksPerBox(code);
+        }
+
+        // 对卡包列表排序
+        function getSortedPackList(packList, packs, sortBy) {
+            var sorted = packList.slice();
+            if (sortBy === 'packs') {
+                // 按总开包数降序
+                sorted.sort(function(a, b) {
+                    return getRealPacks(b, packs) - getRealPacks(a, packs);
+                });
+            } else {
+                // 按发售日期降序（新→旧），无日期的排最后
+                sorted.sort(function(a, b) {
+                    var da = packReleaseDateMap[a] || '0000-00-00';
+                    var db = packReleaseDateMap[b] || '0000-00-00';
+                    return db.localeCompare(da);
+                });
+            }
+            return sorted;
         }
 
         async function loadStats() {
@@ -201,6 +277,7 @@
                     return;
                 }
 
+                cachedStatsData = data;
                 renderStats(data);
             } catch (e) {
                 area.innerHTML = '<div class="error-msg">❌ 请求失败: ' + e.message + '</div>';
@@ -218,8 +295,7 @@
             // 计算总开包数 = 纯开包 + 各卡包（开盒数 × 每盒包数）
             let totalPacksFromBoxes = 0;
             for (const code of packList) {
-                const ps = packs[code] || { totalPacks: 0, totalBoxes: 0 };
-                totalPacksFromBoxes += ps.totalBoxes * getPacksPerBox(code);
+                totalPacksFromBoxes += (packs[code] || { totalBoxes: 0 }).totalBoxes * getPacksPerBox(code);
             }
             const realTotalPacks = g.totalPacks + totalPacksFromBoxes;
 
@@ -239,13 +315,26 @@
             if (packList.length > 0) {
                 html += '<div class="stats-card">';
                 html += '<h2>📦 各卡包明细</h2>';
+                // 排序栏
+                html += '<div class="sort-bar">';
+                html += '<span>排序：</span>';
+                html += '<button class="sort-btn' + (currentSort === 'date' ? ' active' : '') + '" onclick="switchSort(\'date\')">发售时间</button>';
+                html += '<button class="sort-btn' + (currentSort === 'packs' ? ' active' : '') + '" onclick="switchSort(\'packs\')">开包数</button>';
+                html += '</div>';
+                // 卡包列表
                 html += '<div class="pack-list">';
-                for (const code of packList) {
+                var sortedList = getSortedPackList(packList, packs, currentSort);
+                for (const code of sortedList) {
                     const ps = packs[code] || { totalPacks: 0, totalBoxes: 0 };
+                    const realPacks = getRealPacks(code, packs);
+                    const releaseDate = packReleaseDateMap[code] || '';
                     html += '<div class="pack-row">';
+                    html += '<div class="pack-info">';
                     html += '<span class="pack-name">' + code + '</span>';
-                    const ppb = getPacksPerBox(code);
-                    const realPacks = ps.totalPacks + ps.totalBoxes * ppb;
+                    if (releaseDate) {
+                        html += '<span class="pack-date">' + releaseDate + '</span>';
+                    }
+                    html += '</div>';
                     html += '<div class="pack-data">';
                     html += '<span>开包: <strong>' + formatNum(realPacks) + '</strong></span>';
                     html += '<span>开盒: <strong>' + formatNum(ps.totalBoxes) + '</strong></span>';
@@ -262,7 +351,17 @@
             area.innerHTML = html;
         }
 
+        // 切换排序方式（不重新请求 API，复用缓存数据）
+        function switchSort(sortBy) {
+            currentSort = sortBy;
+            if (cachedStatsData) {
+                renderStats(cachedStatsData);
+            }
+        }
+
+        // 数字格式化：支持亿级、万级
         function formatNum(n) {
+            if (n >= 100000000) return (n / 100000000).toFixed(2) + '亿';
             if (n >= 10000) return (n / 10000).toFixed(1) + '万';
             return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
         }
