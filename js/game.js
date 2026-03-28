@@ -4253,11 +4253,9 @@ function renderCardPreview(sortBy, cards, pack, supplementCards) {
     // 获取当前卡包的所有卡片
     let allCards = previewCards.slice();
 
-    // --- LOCH 卡包图鉴特殊处理：每种稀有度单独展示为一个卡位 ---
+    // --- 图鉴默认展开模式：每种稀有度单独展示为一个卡位 ---
     // 同编号下，稀有度权重更大的排在前面
-    // 所有卡包图鉴均按稀有度展开：每个稀有度版本独立展示为一个卡位
-    const isLochSpecial = previewPack && (previewPack.packScheme === 'loch_special' || previewPack.packScheme === 'ocg_default');
-    if (isLochSpecial) {
+    {
         const expandedCards = [];
         allCards.forEach(function(card) {
             let versions = card.rarityVersions || ['N'];
@@ -4325,7 +4323,7 @@ function renderCardPreview(sortBy, cards, pack, supplementCards) {
     switch (sortBy) {
         case 'id':
             // 按卡包内编号序号（如 BLZD-JP001 → 1, JP002 → 2）从小到大排序
-            // LOCH 展开后同编号下按稀有度权重从高到低排列
+            // 展开后同编号下按稀有度权重从高到低排列
             sortedCards.sort(function (a, b) {
                 const numDiff = (Number(a.setNumber) || 0) - (Number(b.setNumber) || 0);
                 if (numDiff !== 0) return numDiff;
