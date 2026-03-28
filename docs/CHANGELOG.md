@@ -2,6 +2,25 @@
 
 > 所有版本变更的详细记录。待办事项见 [TODO.md](TODO.md)，面向玩家的更新日志见 `data/changelog.json`。
 
+## v1.8.1（2026-03-28）— BLZD 图鉴展开优化
+
+### BLZD 图鉴展开（`js/game.js`）
+- BLZD 图鉴从堆叠模式改为展开模式：每个稀有度版本独立展示为单独卡位（与 LOCH/LOCR 一致）
+- 收集进度按稀有度版本分别统计
+
+### 文档整理
+- TODO #2（+1包拆分）和 #8（BLZD图鉴）标记为已完成，编号顺延
+- 新增 PreToolUse hook：git commit/push 前自动检查版本号和游戏日志
+
+## v1.8.0（2026-03-28）— +1 包独立拆分
+
+### +1 包数据拆分（`data/ocg/cards/`、`js/game.js`）
+- BLZD 的 +1 包（BLZDS）拆分为独立文件 `ocg_blzds.json`
+- LOCH 的 LOSP vol1 拆分为独立文件 `ocg_losp_vol1.json`
+- LOCR 的 LOSP vol2 拆分为独立文件 `ocg_losp_vol2.json`
+- 原母包（`ocg_blzd.json`、`ocg_loch.json`、`ocg_locr.json`）中移除 +1 包数据
+- `packs.json` 和 `game.js` 相应更新引用逻辑
+
 ## v1.7.9（2026-03-26）— 内存泄漏修复 + 卡包排序优化 + 价格更新 + Hook 体系
 
 ### LOCR+LOSP vol2 价格更新

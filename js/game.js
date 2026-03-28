@@ -4255,7 +4255,8 @@ function renderCardPreview(sortBy, cards, pack, supplementCards) {
 
     // --- LOCH 卡包图鉴特殊处理：每种稀有度单独展示为一个卡位 ---
     // 同编号下，稀有度权重更大的排在前面
-    const isLochSpecial = previewPack && previewPack.packScheme === 'loch_special';
+    // 所有卡包图鉴均按稀有度展开：每个稀有度版本独立展示为一个卡位
+    const isLochSpecial = previewPack && (previewPack.packScheme === 'loch_special' || previewPack.packScheme === 'ocg_default');
     if (isLochSpecial) {
         const expandedCards = [];
         allCards.forEach(function(card) {
