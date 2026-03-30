@@ -37,6 +37,7 @@
      - twitter  : 官方推特/X 账号发布的图片
      - ygojp    : ygojp.com 等第三方游戏王数据站点
      - ygometa  : ygometa.com 游戏王元数据站点
+     - tcgcorner: tcgcorner.com 卡牌商店（实卡照片）
 
   4. 卡图类型（格式: {来源方式}_{处理状态}）
      - render_art    : 渲染图成品（来自官方渲染图，可直接导入游戏使用）
@@ -77,18 +78,21 @@
   LOCR-JP018_UR_twitter_render_art.jpg
     → LOCR-JP018 的普通UR版本（无OF = 传统卡框），来源于官推，渲染图成品
 
+  LOCR-JP012_GMR-OF_tcgcorner_photo_art.webp
+    → LOCR-JP012 的超框GMR版本，来源于tcgcorner，实卡照片成品
+
 四、目录结构说明
 --------------------------------------------------------------------------------
 
   PreviewCards/
-  ├── NAMING_CONVENTION.txt    ← 本文件（命名规范）
   ├── {卡包代号}/
   │   ├── cards/               ← 最终整理好的卡图（按命名规范命名）
   │   └── origin/              ← 原始素材（按来源分类存放）
   │       ├── ygojp/           ← 来自 ygojp 的原始图片
-  │       ├── twitter/         ← 来自官方推特的原始图片（原"官方推特"目录）
+  │       ├── twitter/         ← 来自官方推特的原始图片
   │       ├── official/        ← 来自官方网站的原始图片
-  │       └── ygometa/         ← 来自 ygometa.com 的原始图片
+  │       ├── ygometa/         ← 来自 ygometa.com 的原始图片
+  │       └── tcgcorner/       ← 来自 tcgcorner.com 的原始图片
 
 五、注意事项
 --------------------------------------------------------------------------------
