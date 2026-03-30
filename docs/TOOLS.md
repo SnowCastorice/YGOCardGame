@@ -694,7 +694,7 @@ NR 是非官方定义的稀有度（封入率更低的 N 卡）。集换社和 N
 local/
 ├── venv/                    ← Python 虚拟环境（每台设备各自安装）
 ├── PreviewCards/            ← 先行卡图素材（发售前收集的卡图）
-│   ├── NAMING_CONVENTION.txt
+│   ├── NAMING_CONVENTION.md
 │   └── {卡包代号}/          ← 如 LOCR+LOSP/、LOCH/
 │       ├── FinalCardArt/    ← 最终整理好的卡图（按命名规范命名）
 │       ├── ProcessedCardArt/← 经 resize_preview_cards.py 处理后的输出
@@ -711,39 +711,7 @@ local/
 
 ### PreviewCards 卡图命名规范
 
-#### 命名格式
-
-```
-{卡片编号}_{稀有度}_{卡图来源}_{卡图类型}.{扩展名}
-```
-
-- 分隔符：`_`（下划线）
-- 卡片编号内部保留 `-`（连字符），这是官方卡号的固有格式
-
-#### 各字段说明
-
-| 字段 | 可选值 | 说明 |
-|------|--------|------|
-| **卡片编号** | `LOCR-JP001`、`LOCH-JP038` 等 | `{卡包代号}-{地区}{编号}` |
-| **稀有度** | `SR`、`UR`、`UR-OF`、`PSER`、`PSER-OF`、`GMR`、`GMR-OF` 等 | `-OF` 后缀 = Over Frame（超框），非 Official |
-| **卡图来源** | `official`、`twitter`、`ygojp`、`ygometa` | 图片出处 |
-| **卡图类型** | `render_art`、`photo_art`、`render_source`、`photo_source` | 见下方说明 |
-
-**卡图类型**：
-- `render_art` — 渲染图成品，可直接导入使用
-- `photo_art` — 实卡照片成品，可直接导入使用
-- `render_source` — 渲染图素材，含背景/介绍，需裁切
-- `photo_source` — 实卡照片素材，含背景/介绍，需裁切
-
-**命名示例**：
-
-```
-LOCR-JP001_GMR-OF_twitter_render_art.jpg    ← 超框GMR，官推渲染图成品
-LOCR-JP019_UR_ygojp_render_art.webp         ← 普通UR，ygojp渲染图成品
-LOCR-JP018_UR_twitter_render_art.jpg        ← 普通UR（传统卡框），官推渲染图成品
-```
-
-**重复文件名处理**：同名但 MD5 不同时，在扩展名前追加 `_0`、`_1` 后缀。无冲突时不加后缀。
+详见 [NAMING_CONVENTION.md](NAMING_CONVENTION.md)。
 
 #### origin 子目录
 
