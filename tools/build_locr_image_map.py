@@ -46,15 +46,16 @@ OUTPUT_FILE = os.path.join(PROJECT_ROOT, "data", "ocg", "locr_image_map.json")
 # === 卡图来源优先级（数字越大越优先） ===
 # 来源 + 类型组合的优先级（twitter + photo_art 最高）
 SOURCE_TYPE_PRIORITY = {
-    ("twitter", "photo_art"): 5,
-    ("twitter", "render_art"): 4,
-    ("tcgcorner", "photo_art"): 3.5,
-    ("ygojp", "render_art"): 3,
-    ("ygojp", "photo_art"): 3,
-    ("official", "render_art"): 2,
-    ("official", "photo_art"): 2,
+    ("twitter", "photo_art"): 10,
+    ("twitter", "render_art"): 9,
+    ("tcgcorner", "photo_art"): 8,
+    ("tcgcorner", "render_art"): 7,
+    ("ygojp", "photo_art"): 6,
+    ("ygojp", "render_art"): 5,
+    ("official", "photo_art"): 4,
+    ("official", "render_art"): 3,
+    ("ygometa", "photo_art"): 2,
     ("ygometa", "render_art"): 1,
-    ("ygometa", "photo_art"): 1,
 }
 
 # === 文件名解析正则 ===
@@ -219,7 +220,7 @@ def main():
     print(f"  卡片数据: {CARD_DATA_FILE}")
     print(f"  图片目录: {IMAGES_DIR}")
     print(f"  输出文件: {OUTPUT_FILE}")
-    print(f"  来源优先级: twitter+photo > twitter+render > tcgcorner+photo > ygojp > official > ygometa")
+    print(f"  来源优先级: twitter > tcgcorner > ygojp > official > ygometa（同来源 photo > render）")
     print()
 
     # 1. 加载卡片数据
@@ -244,7 +245,7 @@ def main():
     output = {
         "_说明": "LOCR 卡图映射表 — 卡片密码(password) -> 本地卡图文件名（按稀有度）",
         "_格式": "localImages 中每个稀有度对应一个本地 webp 文件名",
-        "_来源优先级": "twitter_photo > twitter_render > tcgcorner_photo > ygojp > official > ygometa",
+        "_来源优先级": "twitter > tcgcorner > ygojp > official > ygometa（同来源 photo > render）",
         "_生成方式": "由 tools/build_locr_image_map.py 自动生成",
         "cards": cards,
     }
