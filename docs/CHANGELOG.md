@@ -2,6 +2,13 @@
 
 > 所有版本变更的详细记录。待办事项见 [TODO.md](TODO.md)，面向玩家的更新日志见 `data/changelog.json`。
 
+## v1.8.4（2026-03-31）— LOCR GMR-OF 卡图补充
+
+### 新增卡图（`data/ocg/images/locr/`）
+- 新增 LOCR JP012-015 四张 GMR-OF 实卡照片（来源 tcgcorner，缩放至 420px webp）
+- `build_locr_image_map.py` 新增 tcgcorner 来源支持（优先级介于 twitter 和 ygojp 之间）
+- 重建 `locr_image_map.json`（192 张图 → 138 条映射）
+
 ## v1.8.3（2026-03-30）— 修复连点触发缩放问题
 
 ### 禁止双击缩放（`css/style.css`）

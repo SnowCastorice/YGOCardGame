@@ -1,7 +1,7 @@
 {
   "_说明": "LOCR 卡图映射表 — 卡片密码(password) -> 本地卡图文件名（按稀有度）",
   "_格式": "localImages 中每个稀有度对应一个本地 webp 文件名",
-  "_来源优先级": "twitter_photo > twitter_render > ygojp > official > ygometa",
+  "_来源优先级": "twitter_photo > twitter_render > tcgcorner_photo > ygojp > official > ygometa",
   "_生成方式": "由 tools/build_locr_image_map.py 自动生成",
   "cards": {
     "100257001": {
@@ -109,6 +109,7 @@
       "setNumber": "LOCR-JP012",
       "name": "银河防卫机器人·轨道 7",
       "localImages": {
+        "GMR-OF": "LOCR-JP012_GMR-OF_tcgcorner_photo_art.webp",
         "PSER-OF": "LOCR-JP012_PSER-OF_twitter_photo_art.webp",
         "UR": "LOCR-JP012_UR_ygometa_render_art.webp",
         "UR-OF": "LOCR-JP012_UR-OF_twitter_render_art.webp"
@@ -118,6 +119,7 @@
       "setNumber": "LOCR-JP013",
       "name": "四天之龙 凶饿毒融合龙",
       "localImages": {
+        "GMR-OF": "LOCR-JP013_GMR-OF_tcgcorner_photo_art.webp",
         "PSER-OF": "LOCR-JP013_PSER-OF_twitter_photo_art.webp",
         "UR": "LOCR-JP013_UR_ygometa_render_art.webp",
         "UR-OF": "LOCR-JP013_UR-OF_twitter_render_art.webp"
@@ -127,6 +129,7 @@
       "setNumber": "LOCR-JP014",
       "name": "四天之龙 幻透翼同调龙",
       "localImages": {
+        "GMR-OF": "LOCR-JP014_GMR-OF_tcgcorner_photo_art.webp",
         "PSER-OF": "LOCR-JP014_PSER-OF_twitter_photo_art.webp",
         "UR": "LOCR-JP014_UR_ygometa_render_art.webp",
         "UR-OF": "LOCR-JP014_UR-OF_twitter_render_art.webp"
@@ -136,6 +139,7 @@
       "setNumber": "LOCR-JP015",
       "name": "四天之龙 暗叛逆超量龙",
       "localImages": {
+        "GMR-OF": "LOCR-JP015_GMR-OF_tcgcorner_photo_art.webp",
         "PSER-OF": "LOCR-JP015_PSER-OF_twitter_photo_art.webp",
         "UR": "LOCR-JP015_UR_ygometa_render_art.webp",
         "UR-OF": "LOCR-JP015_UR-OF_twitter_render_art.webp"
@@ -616,76 +620,6 @@
       "name": "御前试合",
       "localImages": {
         "SR": "LOCR-JP080_SR_ygojp_render_art.webp"
-      }
-    },
-    "12381100": {
-      "setNumber": "LOSP-JP011",
-      "name": "究极龙魔导师",
-      "localImages": {
-        "PSER-OF": "LOSP-JP011_PSER-OF_twitter_photo_art.webp"
-      }
-    },
-    "87116928": {
-      "setNumber": "LOSP-JP012",
-      "name": "嵌合巨舰龙",
-      "localImages": {
-        "PSER-OF": "LOSP-JP012_PSER-OF_twitter_photo_art.webp"
-      }
-    },
-    "99585850": {
-      "setNumber": "LOSP-JP013",
-      "name": "真红莲超新星龙",
-      "localImages": {
-        "PSER-OF": "LOSP-JP013_PSER-OF_twitter_photo_art.webp"
-      }
-    },
-    "31801517": {
-      "setNumber": "LOSP-JP014",
-      "name": "No.62 银河眼光子龙皇",
-      "localImages": {
-        "PSER-OF": "LOSP-JP014_PSER-OF_twitter_photo_art.webp"
-      }
-    },
-    "13331639": {
-      "setNumber": "LOSP-JP015",
-      "name": "霸王龙 扎克",
-      "localImages": {
-        "PSER-OF": "LOSP-JP015_PSER-OF_twitter_render_art.webp"
-      }
-    },
-    "98630720": {
-      "setNumber": "LOSP-JP016",
-      "name": "前托枪管龙",
-      "localImages": {
-        "PSER-OF": "LOSP-JP016_PSER-OF_twitter_photo_art.webp"
-      }
-    },
-    "22850702": {
-      "setNumber": "LOSP-JP017",
-      "name": "混沌之双翼",
-      "localImages": {
-        "PSER-OF": "LOSP-JP017_PSER-OF_twitter_photo_art.webp"
-      }
-    },
-    "98127546": {
-      "setNumber": "LOSP-JP018",
-      "name": "闭锁世界的冥神",
-      "localImages": {
-        "PSER-OF": "LOSP-JP018_PSER-OF_twitter_photo_art.webp"
-      }
-    },
-    "91530236": {
-      "setNumber": "LOSP-JP019",
-      "name": "精灵术的术使",
-      "localImages": {
-        "PSER-OF": "LOSP-JP019_PSER-OF_twitter_photo_art.webp"
-      }
-    },
-    "40366667": {
-      "setNumber": "LOSP-JP020",
-      "name": "灵王的波动",
-      "localImages": {
-        "PSER-OF": "LOSP-JP020_PSER-OF_twitter_photo_art.webp"
       }
     }
   }
