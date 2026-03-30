@@ -694,7 +694,6 @@ NR 是非官方定义的稀有度（封入率更低的 N 卡）。集换社和 N
 local/
 ├── venv/                    ← Python 虚拟环境（每台设备各自安装）
 ├── PreviewCards/            ← 先行卡图素材（发售前收集的卡图）
-│   ├── NAMING_CONVENTION.md
 │   └── {卡包代号}/          ← 如 LOCR+LOSP/、LOCH/
 │       ├── FinalCardArt/    ← 最终整理好的卡图（按命名规范命名）
 │       ├── ProcessedCardArt/← 经 resize_preview_cards.py 处理后的输出
