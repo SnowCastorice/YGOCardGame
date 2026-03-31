@@ -1655,6 +1655,42 @@ body {
     background: linear-gradient(135deg, #1e8449, #196f3d) !important;
 }
 
+/* 分段导航区 */
+.export-segment-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+.export-segment-info {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e0e0e0;
+    min-width: 80px;
+    text-align: center;
+}
+.btn-segment-nav {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-segment-nav:active {
+    background: rgba(255,255,255,0.2);
+}
+.btn-segment-nav:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
 /* 存档预览区 */
 .save-preview {
     margin-top: 12px;

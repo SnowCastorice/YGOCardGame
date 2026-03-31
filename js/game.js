@@ -3491,38 +3491,189 @@ const SAVE_DATA_KEYS = [
     'ygo_pack_stats'        // 开包统计
 ];
 
+// ====== Gzip 压缩/解压工具（使用浏览器原生 CompressionStream API） ======
+
 /**
- * 导出存档：收集数据 → JSON + 时间戳 → Base64 → 显示弹窗
+ * 从 ReadableStream 读取所有数据并合并为一个 Uint8Array
+ * @param {ReadableStream} stream - 可读流
+ * @returns {Promise<Uint8Array>} 合并后的二进制数据
  */
-function exportSaveData() {
+async function readAllBytes(stream) {
+    var reader = stream.getReader();
+    var chunks = [];
+    var totalLength = 0;
+    while (true) {
+        var result = await reader.read();
+        if (result.done) break;
+        chunks.push(result.value);
+        totalLength += result.value.length;
+    }
+    var output = new Uint8Array(totalLength);
+    var offset = 0;
+    for (var i = 0; i < chunks.length; i++) {
+        output.set(chunks[i], offset);
+        offset += chunks[i].length;
+    }
+    return output;
+}
+
+/**
+ * 将字符串进行 Gzip 压缩
+ * @param {string} str - 要压缩的字符串
+ * @returns {Promise<Uint8Array>} 压缩后的二进制数据
+ */
+async function gzipCompress(str) {
+    var encoder = new TextEncoder();
+    var inputBytes = encoder.encode(str);
+    var cs = new CompressionStream('gzip');
+    var writer = cs.writable.getWriter();
+    // 写入和关闭不能 await（会死锁），让它们异步执行，同时开始读取输出
+    writer.write(inputBytes);
+    writer.close();
+    return readAllBytes(cs.readable);
+}
+
+/**
+ * 将 Gzip 压缩的二进制数据解压为字符串
+ * @param {Uint8Array} compressedData - Gzip 压缩的二进制数据
+ * @returns {Promise<string>} 解压后的字符串
+ */
+async function gzipDecompress(compressedData) {
+    var ds = new DecompressionStream('gzip');
+    var writer = ds.writable.getWriter();
+    // 写入和关闭不能 await（会死锁），让它们异步执行，同时开始读取输出
+    writer.write(compressedData);
+    writer.close();
+    var bytes = await readAllBytes(ds.readable);
+    var decoder = new TextDecoder();
+    return decoder.decode(bytes);
+}
+
+/**
+ * Uint8Array → Base64 字符串（分块处理避免大数组性能问题）
+ * @param {Uint8Array} bytes - 二进制数据
+ * @returns {string} Base64 编码字符串
+ */
+function uint8ArrayToBase64(bytes) {
+    var CHUNK = 8192;
+    var parts = [];
+    for (var i = 0; i < bytes.length; i += CHUNK) {
+        parts.push(String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK)));
+    }
+    return btoa(parts.join(''));
+}
+
+/**
+ * Base64 字符串 → Uint8Array
+ * @param {string} base64 - Base64 编码字符串
+ * @returns {Uint8Array} 二进制数据
+ */
+function base64ToUint8Array(base64) {
+    var binary = atob(base64);
+    var bytes = new Uint8Array(binary.length);
+    for (var i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes;
+}
+
+/**
+ * 导出存档：收集数据 → 精简 inventory → JSON → Gzip 压缩 → Base64 → 显示弹窗
+ * v2 精简格式：inventory 每张卡只保留 c(count)、r(rarityVersionsOwned)、t(firstObtained)
+ * 其余字段（卡名、图片URL等）导入时从卡包数据库重建
+ */
+async function exportSaveData() {
+    // 浏览器兼容性检查
+    if (typeof CompressionStream === 'undefined') {
+        showDevtoolsToast('❌ 当前浏览器不支持压缩功能，请更新浏览器');
+        return;
+    }
+
+    try {
     // 收集所有需要导出的数据
     var saveObj = {
-        _version: 1,                       // 存档格式版本号，方便未来兼容
+        _version: 2,                       // v2 = 精简格式
         _exportTime: new Date().toISOString(),
         _appVersion: window.APP_VERSION || 'unknown'
     };
+
     SAVE_DATA_KEYS.forEach(function (key) {
         var raw = localStorage.getItem(key);
-        if (raw !== null) {
-            saveObj[key] = raw;             // 保存原始字符串，避免二次序列化
+        if (raw === null) return;
+
+        // inventory 数据需要精简，其他 key 原样保存
+        if (key === 'ygo_inventory_data') {
+            try {
+                var fullInv = JSON.parse(raw);
+                var slimInv = {};
+                Object.keys(fullInv).forEach(function (cardId) {
+                    var card = fullInv[cardId];
+                    if (!card) return;
+                    var slim = {};
+                    slim.c = card.count || 0;
+                    if (card.rarityVersionsOwned && Object.keys(card.rarityVersionsOwned).length > 0) {
+                        slim.r = card.rarityVersionsOwned;
+                    }
+                    if (card.firstObtained) {
+                        slim.t = card.firstObtained;
+                    }
+                    slimInv[cardId] = slim;
+                });
+                saveObj[key] = JSON.stringify(slimInv);
+            } catch (e) {
+                console.warn('⚠️ 存档精简失败，使用原始数据:', e);
+                saveObj[key] = raw;
+            }
+        } else {
+            saveObj[key] = raw;
         }
     });
 
-    // JSON → Base64
+    // JSON → Gzip 压缩 → Base64
     var jsonStr = JSON.stringify(saveObj);
-    var base64Str = btoa(unescape(encodeURIComponent(jsonStr)));
+    var compressed = await gzipCompress(jsonStr);
+    var base64Str = uint8ArrayToBase64(compressed);
 
-    // 填充到导出弹窗的文本框
+    // 分段处理：超过 3000 字符时自动分割
+    var SEGMENT_LIMIT = 2800;  // 每段内容上限（留余量给前缀标识）
+    var segmentNav = document.getElementById('export-segment-nav');
     var textarea = document.getElementById('export-text');
-    textarea.value = base64Str;
+    var copyBtn = document.getElementById('btn-copy-export');
+
+    if (base64Str.length <= 3000) {
+        // 短文本：不分段，直接显示
+        window._exportSegments = null;
+        window._exportSegmentIndex = 0;
+        textarea.value = base64Str;
+        segmentNav.style.display = 'none';
+    } else {
+        // 长文本：分段
+        var totalSegments = Math.ceil(base64Str.length / SEGMENT_LIMIT);
+        var segments = [];
+        for (var i = 0; i < totalSegments; i++) {
+            var chunk = base64Str.substring(i * SEGMENT_LIMIT, (i + 1) * SEGMENT_LIMIT);
+            segments.push('[' + (i + 1) + '/' + totalSegments + ']' + chunk);
+        }
+        window._exportSegments = segments;
+        window._exportSegmentIndex = 0;
+        textarea.value = segments[0];
+        segmentNav.style.display = '';
+        document.getElementById('export-segment-info').textContent = '第 1/' + totalSegments + ' 段';
+        document.getElementById('btn-export-prev').disabled = true;
+        document.getElementById('btn-export-next').disabled = (totalSegments <= 1);
+    }
 
     // 重置复制按钮状态
-    var copyBtn = document.getElementById('btn-copy-export');
     copyBtn.textContent = '📋 一键复制';
     copyBtn.classList.remove('copied');
 
     // 显示导出弹窗
     document.getElementById('export-modal').classList.add('active');
+
+    } catch (e) {
+        console.error('❌ 导出失败:', e);
+        showDevtoolsToast('❌ 导出失败，请重试');
+    }
 }
 
 /**
@@ -3532,30 +3683,67 @@ function copyExportText() {
     var textarea = document.getElementById('export-text');
     var copyBtn = document.getElementById('btn-copy-export');
 
+    // 复制成功后的提示文本（分段模式下显示段号）
+    var segments = window._exportSegments;
+    var successText = '✅ 已复制到剪贴板';
+    if (segments && segments.length > 1) {
+        successText = '✅ 第 ' + (window._exportSegmentIndex + 1) + ' 段已复制';
+    }
+
     // 优先使用现代 Clipboard API，兼容降级到 execCommand
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(textarea.value).then(function () {
-            copyBtn.textContent = '✅ 已复制到剪贴板';
+            copyBtn.textContent = successText;
             copyBtn.classList.add('copied');
         }).catch(function () {
-            fallbackCopy(textarea, copyBtn);
+            fallbackCopy(textarea, copyBtn, successText);
         });
     } else {
-        fallbackCopy(textarea, copyBtn);
+        fallbackCopy(textarea, copyBtn, successText);
     }
 }
 
 /** 降级复制方案（用于不支持 Clipboard API 的浏览器） */
-function fallbackCopy(textarea, copyBtn) {
+function fallbackCopy(textarea, copyBtn, successText) {
     textarea.select();
     textarea.setSelectionRange(0, textarea.value.length);
     try {
         document.execCommand('copy');
-        copyBtn.textContent = '✅ 已复制到剪贴板';
+        copyBtn.textContent = successText || '✅ 已复制到剪贴板';
         copyBtn.classList.add('copied');
     } catch (e) {
         copyBtn.textContent = '❌ 复制失败，请手动全选复制';
     }
+}
+
+/**
+ * 切换导出分段显示
+ * @param {string} direction - 'prev' 或 'next'
+ */
+function showExportSegment(direction) {
+    var segments = window._exportSegments;
+    if (!segments || segments.length <= 1) return;
+
+    var idx = window._exportSegmentIndex || 0;
+    if (direction === 'prev') idx--;
+    else if (direction === 'next') idx++;
+
+    // 边界限制
+    if (idx < 0) idx = 0;
+    if (idx >= segments.length) idx = segments.length - 1;
+
+    window._exportSegmentIndex = idx;
+
+    // 更新 UI
+    document.getElementById('export-text').value = segments[idx];
+    document.getElementById('export-segment-info').textContent = '第 ' + (idx + 1) + '/' + segments.length + ' 段';
+    document.getElementById('btn-export-prev').disabled = (idx === 0);
+    document.getElementById('btn-export-next').disabled = (idx === segments.length - 1);
+
+    // 重置复制按钮
+    var copyBtn = document.getElementById('btn-copy-export');
+    copyBtn.textContent = '📋 一键复制';
+    copyBtn.classList.remove('copied');
 }
 
 /**
@@ -3574,9 +3762,9 @@ function openImportModal() {
 }
 
 /**
- * 解析存档：Base64 → JSON → 校验 → 显示预览
+ * 解析存档：Base64 → Gzip 解压 → JSON → 校验 → 显示预览
  */
-function parseImportData() {
+async function parseImportData() {
     var textarea = document.getElementById('import-text');
     var previewDiv = document.getElementById('import-preview');
     var confirmBtn = document.getElementById('btn-confirm-import');
@@ -3588,21 +3776,68 @@ function parseImportData() {
         return;
     }
 
-    // 尝试 Base64 解码
-    var jsonStr;
-    try {
-        jsonStr = decodeURIComponent(escape(atob(rawText)));
-    } catch (e) {
-        showDevtoolsToast('❌ 存档格式无效，无法解码');
+    // 浏览器兼容性检查
+    if (typeof DecompressionStream === 'undefined') {
+        showDevtoolsToast('❌ 当前浏览器不支持解压功能，请更新浏览器');
         return;
     }
 
-    // 尝试 JSON 解析
+    // 分段拼接：检测是否包含 [X/N] 格式的分段标记
+    var hasSegments = /\[\d+\/\d+\]/.test(rawText);
+    if (hasSegments) {
+        // 按分段前缀边界分割（支持无换行连续粘贴）
+        var allMatches = [];
+        var parts = rawText.split(/(?=\[\d+\/\d+\])/);
+        for (var li = 0; li < parts.length; li++) {
+            var part = parts[li].trim();
+            if (!part) continue;
+            var match = part.match(/^\[(\d+)\/(\d+)\](.+)$/);
+            if (match) {
+                allMatches.push({
+                    index: parseInt(match[1], 10),
+                    total: parseInt(match[2], 10),
+                    data: match[3].trim()
+                });
+            }
+        }
+        if (allMatches.length > 0) {
+            var total = allMatches[0].total;
+            // 校验所有段的总数是否一致
+            var totalsMatch = allMatches.every(function (m) { return m.total === total; });
+            if (!totalsMatch) {
+                showDevtoolsToast('❌ 段落总数不一致，请检查是否混入了其他存档');
+                return;
+            }
+            // 检查是否收齐所有段
+            var collected = {};
+            for (var mi = 0; mi < allMatches.length; mi++) {
+                collected[allMatches[mi].index] = allMatches[mi].data;
+            }
+            var missing = [];
+            for (var si = 1; si <= total; si++) {
+                if (!collected[si]) missing.push(si);
+            }
+            if (missing.length > 0) {
+                showDevtoolsToast('❌ 缺少第 ' + missing.join('、') + ' 段，请补充后重试');
+                return;
+            }
+            // 按段号顺序拼接
+            var combined = '';
+            for (var ci = 1; ci <= total; ci++) {
+                combined += collected[ci];
+            }
+            rawText = combined;
+        }
+    }
+
+    // Base64 解码 → Gzip 解压 → JSON 解析
     var saveObj;
     try {
+        var compressedData = base64ToUint8Array(rawText);
+        var jsonStr = await gzipDecompress(compressedData);
         saveObj = JSON.parse(jsonStr);
     } catch (e) {
-        showDevtoolsToast('❌ 存档数据损坏，解析失败');
+        showDevtoolsToast('❌ 存档格式无效，无法解码');
         return;
     }
 
@@ -3621,16 +3856,15 @@ function parseImportData() {
     var totalSpent = 0;
     var packStatsCount = 0;
 
-    // 解析背包数据
+    // 解析背包数据（v2 精简格式，字段名为 c）
     if (saveObj['ygo_inventory_data']) {
         try {
             var inv = JSON.parse(saveObj['ygo_inventory_data']);
-            // inventory 是扁平对象：{ "cardId": { count, copies/rarityVersionsOwned, ... } }
             if (inv) {
                 Object.keys(inv).forEach(function (cardId) {
                     var card = inv[cardId];
-                    if (card && typeof card.count === 'number') {
-                        cardCount += card.count;
+                    if (card && typeof card.c === 'number') {
+                        cardCount += card.c;
                     }
                 });
             }
@@ -3654,7 +3888,6 @@ function parseImportData() {
     if (saveObj['ygo_pack_stats']) {
         try {
             var stats = JSON.parse(saveObj['ygo_pack_stats']);
-            // pack-stats 是扁平对象：{ "packCode": { totalPacks, totalBoxes } }
             if (stats) {
                 Object.keys(stats).forEach(function (packCode) {
                     var packStat = stats[packCode];
@@ -3698,9 +3931,157 @@ function parseImportData() {
 }
 
 /**
- * 确认导入：覆盖 localStorage → 刷新页面
+ * 从卡包数据重建完整 inventory（用于精简存档导入）
+ *
+ * 精简存档中每张卡只有 { c, r, t }，需要从卡包 JSON 重建卡名、图片URL 等字段
+ *
+ * @param {object} slimInventory - 精简格式的 inventory 对象，如 { "89631139": { c:3, r:{UR:1}, t:1711856400000 } }
+ * @returns {Promise<string>} 重建后的完整 inventory JSON 字符串
  */
-function confirmImport() {
+async function rebuildInventoryFromPacks(slimInventory) {
+    // 第1步：加载 packs.json 获取所有卡包配置
+    var packsResp = await fetch('data/ocg/packs.json');
+    var packsData = await packsResp.json();
+    var packs = packsData.packs || [];
+
+    // 第2步：并行加载所有卡包的 cardFile 和 imageMapFile（每包一对）
+    var fetchPairs = packs.map(function (pack) {
+        return Promise.all([
+            pack.cardFile
+                ? fetch('data/ocg/cards/' + pack.cardFile).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+                : Promise.resolve(null),
+            pack.imageMapFile
+                ? fetch('data/ocg/' + pack.imageMapFile).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+                : Promise.resolve(null)
+        ]);
+    });
+
+    var results = await Promise.all(fetchPairs);
+
+    // 第3步：构建全局卡牌索引 cardId → 卡牌完整信息
+    var cardIndex = {};
+    packs.forEach(function (pack, i) {
+        var packData = results[i][0];
+        var imageMapRaw = results[i][1];
+
+        if (!packData) return;
+
+        // 处理 imageMap：统一为以卡密为 key 的对象
+        var imageMap = null;
+        if (imageMapRaw && imageMapRaw.cards) {
+            imageMap = {};
+            // 添加 _localDir 属性（如果卡包配置了本地图片目录）
+            if (pack.localImagesDir) {
+                imageMap._localDir = pack.localImagesDir + '/';
+            }
+            Object.keys(imageMapRaw.cards).forEach(function (pw) {
+                imageMap[pw] = imageMapRaw.cards[pw];
+            });
+        }
+
+        // 遍历卡包中的每张卡
+        var cardIds = packData.cardIds || packData;
+        if (!Array.isArray(cardIds)) return;
+
+        cardIds.forEach(function (cardDef) {
+            var cardId = String(cardDef.id);
+            if (cardIndex[cardId]) return;  // 已有则跳过
+
+            var d = cardDef.cardData || {};
+            var cnName = d.cn_name || '';
+            var jpName = d.jp_name || '';
+            var enName = d.en_name || '';
+            var displayName = cnName || jpName || enName || ('ID:' + cardDef.id);
+            var foreignName = jpName || enName || '';
+
+            // 获取默认卡图 URL
+            var imgSmallUrl = '';
+            var imgLargeUrl = '';
+            if (typeof getCardImageUrl === 'function' && imageMap) {
+                var smallResult = getCardImageUrl(cardDef.id, imageMap, 'small');
+                var largeResult = getCardImageUrl(cardDef.id, imageMap, 'large');
+                if (smallResult && smallResult.url) imgSmallUrl = smallResult.url;
+                if (largeResult && largeResult.url) imgLargeUrl = largeResult.url;
+            }
+
+            cardIndex[cardId] = {
+                id: cardDef.id,
+                name: displayName,
+                nameCN: cnName,
+                nameOriginal: foreignName,
+                rarityVersions: cardDef.rarityVersions || ['N'],
+                imageUrl: imgSmallUrl,
+                imageLargeUrl: imgLargeUrl,
+                _imageMap: imageMap  // 保留映射表引用，用于重建 rarityImageUrls
+            };
+        });
+    });
+
+    // 第4步：遍历精简 inventory，重建完整字段
+    var fullInventory = {};
+    Object.keys(slimInventory).forEach(function (cardId) {
+        var slim = slimInventory[cardId];
+        var info = cardIndex[cardId];
+
+        if (info) {
+            // 重建 rarityImageUrls：为每个已拥有的稀有度版本计算卡图 URL
+            var rarityImageUrls = {};
+            var versionsOwned = slim.r || {};
+            Object.keys(versionsOwned).forEach(function (rarity) {
+                if (typeof getCardImageUrl === 'function' && info._imageMap) {
+                    var smallResult = getCardImageUrl(info.id, info._imageMap, 'small', rarity);
+                    var largeResult = getCardImageUrl(info.id, info._imageMap, 'large', rarity);
+                    rarityImageUrls[rarity] = {
+                        imageUrl: (smallResult && smallResult.url) || info.imageUrl,
+                        imageLargeUrl: (largeResult && largeResult.url) || info.imageLargeUrl
+                    };
+                } else {
+                    rarityImageUrls[rarity] = {
+                        imageUrl: info.imageUrl,
+                        imageLargeUrl: info.imageLargeUrl
+                    };
+                }
+            });
+
+            fullInventory[cardId] = {
+                id: info.id,
+                name: info.name,
+                nameCN: info.nameCN,
+                nameOriginal: info.nameOriginal,
+                rarityVersions: info.rarityVersions,
+                imageUrl: info.imageUrl,
+                imageLargeUrl: info.imageLargeUrl,
+                count: slim.c || 0,
+                rarityVersionsOwned: slim.r || {},
+                rarityImageUrls: rarityImageUrls,
+                firstObtained: slim.t || Date.now()
+            };
+        } else {
+            // 卡包数据中找不到（如已下架卡包），用占位信息
+            console.warn('⚠️ 重建存档时未找到卡牌 ID:', cardId);
+            fullInventory[cardId] = {
+                id: parseInt(cardId, 10) || 0,
+                name: '未知卡牌 #' + cardId,
+                nameCN: '',
+                nameOriginal: '',
+                rarityVersions: Object.keys(slim.r || { 'N': 1 }),
+                imageUrl: '',
+                imageLargeUrl: '',
+                count: slim.c || 0,
+                rarityVersionsOwned: slim.r || {},
+                rarityImageUrls: {},
+                firstObtained: slim.t || Date.now()
+            };
+        }
+    });
+
+    return JSON.stringify(fullInventory);
+}
+
+/**
+ * 确认导入：精简存档重建 → 覆盖 localStorage → 刷新页面
+ */
+async function confirmImport() {
     var confirmBtn = document.getElementById('btn-confirm-import');
     var saveObj = confirmBtn._pendingSaveObj;
 
@@ -3709,19 +4090,37 @@ function confirmImport() {
         return;
     }
 
-    // 写入 localStorage
-    SAVE_DATA_KEYS.forEach(function (key) {
-        if (saveObj[key] !== undefined) {
-            localStorage.setItem(key, saveObj[key]);
+    // 禁用按钮防止重复点击
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = '⏳ 正在重建卡牌数据...';
+
+    try {
+        // 精简格式 inventory 需要从卡包数据重建完整字段
+        if (saveObj['ygo_inventory_data']) {
+            var slimInv = JSON.parse(saveObj['ygo_inventory_data']);
+            var rebuiltInvJson = await rebuildInventoryFromPacks(slimInv);
+            saveObj['ygo_inventory_data'] = rebuiltInvJson;
         }
-    });
 
-    showDevtoolsToast('✅ 存档导入成功，即将刷新页面...');
+        // 写入 localStorage
+        SAVE_DATA_KEYS.forEach(function (key) {
+            if (saveObj[key] !== undefined) {
+                localStorage.setItem(key, saveObj[key]);
+            }
+        });
 
-    // 延迟刷新，让用户看到提示
-    setTimeout(function () {
-        location.reload();
-    }, 1500);
+        showDevtoolsToast('✅ 存档导入成功，即将刷新页面...');
+
+        // 延迟刷新，让用户看到提示
+        setTimeout(function () {
+            location.reload();
+        }, 1500);
+    } catch (e) {
+        console.error('❌ 存档导入失败:', e);
+        showDevtoolsToast('❌ 存档导入失败：' + (e.message || '未知错误'));
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = '✅ 确认导入';
+    }
 }
 
 /**

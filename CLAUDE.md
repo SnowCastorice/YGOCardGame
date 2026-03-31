@@ -127,8 +127,8 @@ tools/              ← Python 开发工具（OCR、数据库更新、卡包构�
 | `ygo_inventory_spent` | 累计花费 | 纯数字字符串 |
 | `ygo_pack_stats` | 开包统计 | 扁平对象 `{ "packCode": { totalPacks, totalBoxes } }` |
 
-导出流程：收集 → JSON（含时间戳+版本号） → Base64 → 文本复制
-导入流程：粘贴 → Base64 解码 → JSON 校验 → 预览确认 → 覆盖写入 → 刷新页面
+导出流程（v2 精简格式）：inventory 精简为 `{ "cardId": { c, r, t } }` → 合并其他 key → JSON → Gzip 压缩 → Base64 → 超 3000 字符自动分段（`[X/N]` 前缀）
+导入流程：粘贴（支持多段拼接） → 分段检测拼接 → Base64 解码 → Gzip 解压 → JSON 校验 → 预览确认 → `rebuildInventoryFromPacks()` 重建 → 覆盖写入 → 刷新页面
 
 ### 数据流：开包过程
 

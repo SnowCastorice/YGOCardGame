@@ -2,6 +2,39 @@
 
 > 所有版本变更的详细记录。待办事项见 [TODO.md](TODO.md)，面向玩家的更新日志见 `data/changelog.json`。
 
+## v1.9.3（2026-04-01）— 存档压缩 + 分段发送
+
+### 功能优化（`js/game.js` / `index.html` / `css/style.css`）
+- 新增浏览器原生 Gzip 压缩（`CompressionStream` / `DecompressionStream`），存档体积在精简基础上再缩小约 88%
+- 工具函数：`gzipCompress()`、`gzipDecompress()`、`readAllBytes()`、`uint8ArrayToBase64()`、`base64ToUint8Array()`
+- 超长存档自动分段：超过 3000 字符时按 2800 字符/段分割，每段加 `[X/N]` 前缀标识
+- 导出弹窗新增翻页导航区（◀ 第 X/N 段 ▶），逐段复制，复制提示显示段号
+- 导入时自动检测 `[X/N]` 前缀并拼接分段（支持无换行连续粘贴），缺段提示具体缺哪段
+- `exportSaveData()` 和 `parseImportData()` 改为 async 函数
+- 浏览器兼容性检查：不支持 CompressionStream 时提示更新浏览器
+- 删除 v1 完整格式兼容代码，仅保留 v2 精简格式
+
+### 体积对比（277 种卡全收集场景）
+| 方案 | Base64 字符数 |
+|------|-------------|
+| v1 完整格式 | ~140,000 |
+| v1.9.2 精简格式 | ~25,000 |
+| v1.9.3 精简 + Gzip | ~6,000（自动分 2-3 段，每段 <3,000） |
+
+## v1.9.2（2026-03-31）— 存档导出体积优化（精简字段方案）
+
+### 功能优化（`js/game.js`）
+- `exportSaveData()` 导出时对 inventory 数据精简：每张卡只保留 `c`(count)、`r`(rarityVersionsOwned)、`t`(firstObtained)，丢弃卡名、图片URL等可重建字段
+- 存档格式版本号从 `_version: 1` 升级为 `_version: 2`
+- 新增 `rebuildInventoryFromPacks()` 函数：导入精简存档时自动加载所有卡包数据，重建完整卡牌信息（卡名、图片URL、稀有度卡图等）
+- `confirmImport()` 改为 async 函数，导入时先重建再写入 localStorage
+- `parseImportData()` 适配精简字段名 `c`，预览中新增存档格式标识
+- 找不到的卡牌 ID 用占位信息填充，不会报错
+
+### 体积缩减
+- 每张卡从 ~500 字节降至 ~50 字节，整体缩小约 90%
+- 当前全收集 280 张卡，Base64 导出约 28 KB（原约 280 KB）
+
 ## v1.9.1（2026-03-31）— 游戏公告弹窗
 
 ### 新增功能（`js/game.js` / `css/style.css` / `data/changelog.json`）

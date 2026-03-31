@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>YGO Pack Opener - 游戏王开包模拟器</title>
     <!-- 全局版本号：所有资源的缓存破坏参数、页脚版本号等都从这里读取，更新时只改这一处 -->
-<script>window.APP_VERSION = '1.9.1';</script>
+<script>window.APP_VERSION = '1.9.3';</script>
     <!-- CSS 版本号自动跟随 APP_VERSION -->
     <script>document.write('<link rel="stylesheet" href="css/style.css?v=' + window.APP_VERSION + '">');</script>
 </head>
@@ -252,8 +252,14 @@
             </div>
             <div class="modal-body">
                 <p class="save-modal-desc">复制下方文本，发送到其他设备导入即可恢复数据。</p>
+                <!-- 分段导航区（仅长文本分段时显示） -->
+                <div id="export-segment-nav" class="export-segment-nav" style="display:none;">
+                    <button id="btn-export-prev" class="btn-segment-nav" onclick="showExportSegment('prev')">◀</button>
+                    <span id="export-segment-info" class="export-segment-info">第 1/1 段</span>
+                    <button id="btn-export-next" class="btn-segment-nav" onclick="showExportSegment('next')">▶</button>
+                </div>
                 <textarea id="export-text" class="save-textarea" readonly></textarea>
-                <button id="btn-copy-export" class="btn-devtools-action btn-save-copy">📋 一键复制</button>
+                <button id="btn-copy-export" class="btn-devtools-action btn-save-copy" onclick="copyExportText()">📋 一键复制</button>
             </div>
         </div>
     </div>

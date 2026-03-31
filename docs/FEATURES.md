@@ -177,20 +177,45 @@
 
 > 设置项（语言、游戏模式等）和临时状态（上报队列、限流）不包含在内。
 
+### 精简导出格式（v1.9.2+）
+
+导出使用 v2 精简格式，inventory 每张卡只保留 3 个核心字段：
+
+| 精简字段 | 原字段 | 说明 |
+|---------|--------|------|
+| `c` | count | 拥有数量 |
+| `r` | rarityVersionsOwned | 各稀有度版本数量，如 `{ "UR": 1, "SR": 2 }` |
+| `t` | firstObtained | 首次获得时间戳 |
+
+丢弃的字段（导入时从卡包数据重建）：`id`、`name`、`nameCN`、`nameOriginal`、`rarityVersions`、`imageUrl`、`imageLargeUrl`、`rarityImageUrls`
+
+体积缩减约 90%（每张卡从 ~500 字节降至 ~50 字节）。叠加 Gzip 压缩后再缩小约 88%。
+
 ### 导出流程
 
 1. 设置面板 → 数据管理 → 导出存档
-2. 收集 4 个 key 的数据，附加格式版本号、导出时间、APP 版本号
-3. JSON 序列化 → Base64 编码 → 显示在弹窗文本框中
-4. 用户点击"一键复制"将文本发送到其他设备
+2. 收集 4 个 key 的数据，inventory 精简为 `{ "cardId": { c, r, t } }`
+3. 附加 `_version: 2`、导出时间、APP 版本号
+4. JSON 序列化 → Gzip 压缩 → Base64 编码
+5. 若 Base64 长度 > 3000 字符，自动分段（每段 ≤ 2800 字符 + `[X/N]` 前缀）
+6. 弹窗显示分段导航（翻页 + 逐段复制），短文本直接显示
 
 ### 导入流程
 
 1. 设置面板 → 数据管理 → 导入存档
-2. 粘贴存档文本 → 点击"解析存档"
-3. Base64 解码 → JSON 解析 → 校验数据有效性
+2. 粘贴存档文本（支持多段连续粘贴，无需换行分隔）
+3. 自动检测 `[X/N]` 分段标记 → 拼接 → Base64 解码 → Gzip 解压 → JSON 解析
 4. 显示存档概览（导出时间、卡牌数、金币、花费、开包次数）
-5. 用户确认后覆盖 localStorage，自动刷新页面
+5. 用户确认后，调用 `rebuildInventoryFromPacks()` 从卡包数据重建完整 inventory
+6. 覆盖 localStorage，自动刷新页面
+
+### 重建逻辑（`rebuildInventoryFromPacks`）
+
+1. 加载 `data/ocg/packs.json` 获取所有卡包配置
+2. 并行 fetch 所有 `cardFile` + `imageMapFile`
+3. 构建全局索引 `cardId → { name, nameCN, imageUrl, ... }`
+4. 遍历精简 inventory，从索引重建完整字段
+5. 找不到的卡 → 用占位信息填充（`name: "未知卡牌 #cardId"`）
 
 ### 错误处理
 
@@ -198,3 +223,4 @@
 - 无效 Base64 → 提示"存档格式无效"
 - JSON 解析失败 → 提示"存档数据损坏"
 - 无有效数据 key → 提示"没有有效的游戏数据"
+- 重建失败 → 提示错误信息，按钮恢复可点击
