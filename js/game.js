@@ -139,6 +139,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         const latestVer = window.APP_VERSION || '?';
         console.log(`🂴 YGO Pack Opener v${latestVer} 初始化完成！当前模式: ${currentGameMode.toUpperCase()}`);
+
+        // 检查是否需要显示版本更新公告
+        checkAnnouncement();
     } catch (error) {
         console.error('❌ 加载配置文件失败:', error);
         hideLoadingState();
@@ -2759,6 +2762,94 @@ function showChangelog() {
 /** 关闭更新日志弹窗 */
 function hideChangelog() {
     document.getElementById('changelog-modal').classList.remove('active');
+}
+
+// ====== 版本更新公告 ======
+
+/**
+ * 检查是否需要显示版本更新公告
+ * 对比 localStorage 中记录的"上次看过的版本号"与当前 APP_VERSION：
+ * - 不一致 → 在比上次版本更新的所有条目中，查找最近一条有 announcement 的 → 弹出
+ * - 不一致但所有新版本都无 announcement → 静默更新版本号
+ * - 一致 → 不做任何事
+ */
+function checkAnnouncement() {
+    var currentVersion = window.APP_VERSION || '';
+    var lastSeenVersion = localStorage.getItem('ygo_last_seen_version') || '';
+
+    // 版本号一致，无需弹窗
+    if (currentVersion === lastSeenVersion) return;
+
+    // 更新"已看过"的版本号
+    localStorage.setItem('ygo_last_seen_version', currentVersion);
+
+    // 在 changelog 中查找最近一条有 announcement 的条目
+    // changelog.versions 按版本从新到旧排列，遍历到上次看过的版本为止
+    var announcementEntry = null;
+    if (changelogData && changelogData.versions) {
+        for (var i = 0; i < changelogData.versions.length; i++) {
+            var entry = changelogData.versions[i];
+            // 遇到上次看过的版本就停止（更早的公告用户已看过）
+            if (entry.version === lastSeenVersion) break;
+            // 找到第一条（最新的）有公告的条目
+            if (entry.announcement && !announcementEntry) {
+                announcementEntry = entry;
+            }
+        }
+    }
+
+    // 无公告内容则静默跳过
+    if (!announcementEntry) return;
+
+    // 延迟弹出，确保页面渲染完毕，体验更好
+    setTimeout(function () {
+        showAnnouncement(announcementEntry.version, announcementEntry.announcement);
+    }, 800);
+}
+
+/**
+ * 显示公告弹窗
+ * 复用 confirm-modal 结构，单按钮"我知道了"
+ */
+function showAnnouncement(version, message) {
+    var titleEl = document.getElementById('confirm-modal-title');
+    var messageEl = document.getElementById('confirm-modal-message');
+    var cancelBtn = document.getElementById('btn-confirm-cancel');
+    var cancelXBtn = document.getElementById('btn-confirm-cancel-x');
+    var okBtn = document.getElementById('btn-confirm-ok');
+
+    // 设置内容
+    titleEl.textContent = '🎉 版本更新';
+    titleEl.style.textAlign = 'center';
+    titleEl.style.width = '100%';
+    // 支持 \n 换行：将换行符转为 <br>
+    var htmlMessage = message.replace(/\n/g, '<br>');
+    messageEl.innerHTML = '<p class="announcement-text">' + htmlMessage + '</p>';
+
+    // 隐藏取消按钮，只保留确认按钮
+    cancelBtn.style.display = 'none';
+    okBtn.textContent = '我知道了';
+    okBtn.style.color = 'var(--accent-blue)';
+    okBtn.style.borderLeft = 'none';
+
+    // 绑定关闭事件
+    var closeModal = function () {
+        document.getElementById('confirm-modal').classList.remove('active');
+        // 恢复 confirm-modal 的默认状态，避免影响后续使用
+        cancelBtn.style.display = '';
+        okBtn.style.color = '';
+        okBtn.style.borderLeft = '';
+        titleEl.style.textAlign = '';
+        titleEl.style.width = '';
+        okBtn.onclick = null;
+        cancelXBtn.onclick = null;
+    };
+
+    okBtn.onclick = closeModal;
+    cancelXBtn.onclick = closeModal;
+
+    // 显示弹窗
+    document.getElementById('confirm-modal').classList.add('active');
 }
 
 // ============================================

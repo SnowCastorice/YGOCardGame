@@ -1489,6 +1489,14 @@ body {
     background: rgba(255, 82, 82, 0.1);
 }
 
+/* 版本更新公告文字 */
+.announcement-text {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    padding: 8px 0;
+}
+
 .devtools-toast {
     position: fixed;
     top: 50%;

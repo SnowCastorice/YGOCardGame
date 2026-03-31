@@ -2,6 +2,14 @@
 
 > 所有版本变更的详细记录。待办事项见 [TODO.md](TODO.md)，面向玩家的更新日志见 `data/changelog.json`。
 
+## v1.9.1（2026-03-31）— 游戏公告弹窗
+
+### 新增功能（`js/game.js` / `css/style.css` / `data/changelog.json`）
+- 版本更新后首次访问自动弹出公告弹窗，通知玩家重要更新内容
+- 通过 `changelog.json` 中的 `announcement` 字段控制是否弹窗（无该字段则静默更新）
+- 使用 `localStorage` 记录已读版本号（`ygo_last_seen_version`），不会重复弹出
+- 复用 `confirm-modal` 弹窗结构，无需额外 HTML
+
 ## v1.9.0（2026-03-31）— 数据管理：导出/导入存档
 
 ### 新增功能（`index.html` / `css/style.css` / `js/game.js`）
