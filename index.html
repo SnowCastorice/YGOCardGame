@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>YGO Pack Opener - 游戏王开包模拟器</title>
     <!-- 全局版本号：所有资源的缓存破坏参数、页脚版本号等都从这里读取，更新时只改这一处 -->
-<script>window.APP_VERSION = '1.8.4';</script>
+<script>window.APP_VERSION = '1.9.0';</script>
     <!-- CSS 版本号自动跟随 APP_VERSION -->
     <script>document.write('<link rel="stylesheet" href="css/style.css?v=' + window.APP_VERSION + '">');</script>
 </head>
@@ -178,8 +178,15 @@
                     </div>
                 </div>
 
-
-
+                <!-- ▸ 板块：数据管理（导出/导入存档） -->
+                <div class="devtools-section-card">
+                    <h3 class="devtools-section-title">📋 数据管理</h3>
+                    <div class="devtools-actions-btns" style="flex-direction:row;">
+                        <button id="btn-export-save" class="btn-devtools-action btn-dev-export">📤 导出存档</button>
+                        <button id="btn-import-save" class="btn-devtools-action btn-dev-import">📥 导入存档</button>
+                    </div>
+                    <p class="devtools-note">💡 将游戏数据导出为文本，可复制到其他设备导入恢复。</p>
+                </div>
 
 
 <!-- ▸ 隐藏板块：卡图调试选项（需点击设置标题5次解锁） -->
@@ -231,6 +238,42 @@
                         <button id="btn-dev-open-stats" class="btn-devtools-action btn-dev-stats" onclick="window.open('/admin/stats.html', '_blank')">📊 打开统计后台</button>
                     </div>
                     <p class="devtools-note">💡 查看全球玩家开包统计数据，需要管理员密钥。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== 导出存档弹窗 ====== -->
+    <div id="export-modal" class="modal-overlay">
+        <div class="modal-content save-modal-content">
+            <div class="modal-header">
+                <h2>📤 导出存档</h2>
+                <button class="modal-close" onclick="document.getElementById('export-modal').classList.remove('active')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="save-modal-desc">复制下方文本，发送到其他设备导入即可恢复数据。</p>
+                <textarea id="export-text" class="save-textarea" readonly></textarea>
+                <button id="btn-copy-export" class="btn-devtools-action btn-save-copy">📋 一键复制</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== 导入存档弹窗 ====== -->
+    <div id="import-modal" class="modal-overlay">
+        <div class="modal-content save-modal-content">
+            <div class="modal-header">
+                <h2>📥 导入存档</h2>
+                <button class="modal-close" onclick="document.getElementById('import-modal').classList.remove('active')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="save-modal-desc">粘贴从其他设备导出的存档文本。</p>
+                <textarea id="import-text" class="save-textarea" placeholder="在此粘贴存档文本..."></textarea>
+                <div id="import-preview" class="save-preview" style="display:none;">
+                    <!-- 存档概览由 JS 动态生成 -->
+                </div>
+                <div class="save-modal-actions">
+                    <button id="btn-parse-import" class="btn-devtools-action">🔍 解析存档</button>
+                    <button id="btn-confirm-import" class="btn-devtools-action btn-dev-reset" style="display:none;">⚠️ 确认导入（覆盖当前数据）</button>
                 </div>
             </div>
         </div>

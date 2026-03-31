@@ -116,6 +116,20 @@ tools/              ← Python 开发工具（OCR、数据库更新、卡包构�
 - `api.js`：数据和图片加载，含 IndexedDB 缓存（7 天过期）
 - `currency.js` / `inventory.js` / `pack-stats.js` / `priceSystem.js`：各管理自己的 localStorage 状态
 
+### 数据管理：导出/导入存档
+
+`game.js` 中实现存档的导出和导入功能，涉及以下 4 个 localStorage key：
+
+| Key | 内容 | 数据结构 |
+|-----|------|---------|
+| `ygo_inventory_data` | 背包卡牌 | 扁平对象 `{ "cardId": { count, rarityVersionsOwned, ... } }` |
+| `ygo_currency_data` | 金币余额 | `{ "gold": number }` |
+| `ygo_inventory_spent` | 累计花费 | 纯数字字符串 |
+| `ygo_pack_stats` | 开包统计 | 扁平对象 `{ "packCode": { totalPacks, totalBoxes } }` |
+
+导出流程：收集 → JSON（含时间戳+版本号） → Base64 → 文本复制
+导入流程：粘贴 → Base64 解码 → JSON 校验 → 预览确认 → 覆盖写入 → 刷新页面
+
 ### 数据流：开包过程
 
 ```

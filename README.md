@@ -3,7 +3,7 @@
 > 复刻游戏王实体卡包的开包体验！选择经典卡包，撕开包装，看看你能抽到什么稀有卡牌！
 
 [![Deploy Status](https://img.shields.io/badge/deploy-Cloudflare%20Pages-orange?logo=cloudflare)](https://ygocardgame.pages.dev/)
-[![Version](https://img.shields.io/badge/version-v1.8.4-blue)](#)
+[![Version](https://img.shields.io/badge/version-v1.9.0-blue)](#)
 [![License](https://img.shields.io/badge/license-非商业用途-green)](#版权声明)
 
 👉 **[点击这里在线体验！](https://ygocardgame.pages.dev/)**
@@ -26,6 +26,7 @@
 - **背包系统** — 自动记录所有开到的卡片，支持多种排序和统计
 - **图鉴系统** — 卡包预览 + 收集进度追踪
 - **开包统计** — 显示个人开包数 / 全球开包数
+- **数据管理** — 导出/导入存档，支持跨设备迁移游戏数据
 
 ---
 

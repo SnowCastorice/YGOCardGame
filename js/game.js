@@ -3259,6 +3259,22 @@ function showDevTools() {
     const clearCacheBtn = document.getElementById('btn-devtools-clear-cache');
     if (clearCacheBtn) clearCacheBtn.onclick = handleClearCache;
 
+    // 绑定数据管理按钮（导出/导入存档）
+    var exportBtn = document.getElementById('btn-export-save');
+    var importBtn = document.getElementById('btn-import-save');
+    if (exportBtn) exportBtn.onclick = exportSaveData;
+    if (importBtn) importBtn.onclick = openImportModal;
+
+    // 绑定导出弹窗的复制按钮
+    var copyExportBtn = document.getElementById('btn-copy-export');
+    if (copyExportBtn) copyExportBtn.onclick = copyExportText;
+
+    // 绑定导入弹窗的解析和确认按钮
+    var parseImportBtn = document.getElementById('btn-parse-import');
+    var confirmImportBtn = document.getElementById('btn-confirm-import');
+    if (parseImportBtn) parseImportBtn.onclick = parseImportData;
+    if (confirmImportBtn) confirmImportBtn.onclick = confirmImport;
+
     // 绑定标题点击事件（5次连击解锁隐藏功能：TCG 测试模式、CDN 卡图对比、管理后台）
     const devtoolsHeader = modal.querySelector('.modal-header h2');
     if (devtoolsHeader && !devtoolsHeader._adminUnlockBound) {
@@ -3369,6 +3385,252 @@ function showDevTools() {
 /** 关闭开发者工具弹窗 */
 function hideDevTools() {
     document.getElementById('devtools-modal').classList.remove('active');
+}
+
+// ====== 数据管理：导出/导入存档 ======
+
+/**
+ * 需要导出的 localStorage key 列表
+ * 只包含玩家游戏进度数据，不包含设置和临时状态
+ */
+const SAVE_DATA_KEYS = [
+    'ygo_inventory_data',   // 背包卡牌
+    'ygo_currency_data',    // 金币余额
+    'ygo_inventory_spent',  // 累计花费
+    'ygo_pack_stats'        // 开包统计
+];
+
+/**
+ * 导出存档：收集数据 → JSON + 时间戳 → Base64 → 显示弹窗
+ */
+function exportSaveData() {
+    // 收集所有需要导出的数据
+    var saveObj = {
+        _version: 1,                       // 存档格式版本号，方便未来兼容
+        _exportTime: new Date().toISOString(),
+        _appVersion: window.APP_VERSION || 'unknown'
+    };
+    SAVE_DATA_KEYS.forEach(function (key) {
+        var raw = localStorage.getItem(key);
+        if (raw !== null) {
+            saveObj[key] = raw;             // 保存原始字符串，避免二次序列化
+        }
+    });
+
+    // JSON → Base64
+    var jsonStr = JSON.stringify(saveObj);
+    var base64Str = btoa(unescape(encodeURIComponent(jsonStr)));
+
+    // 填充到导出弹窗的文本框
+    var textarea = document.getElementById('export-text');
+    textarea.value = base64Str;
+
+    // 重置复制按钮状态
+    var copyBtn = document.getElementById('btn-copy-export');
+    copyBtn.textContent = '📋 一键复制';
+    copyBtn.classList.remove('copied');
+
+    // 显示导出弹窗
+    document.getElementById('export-modal').classList.add('active');
+}
+
+/**
+ * 一键复制导出文本到剪贴板
+ */
+function copyExportText() {
+    var textarea = document.getElementById('export-text');
+    var copyBtn = document.getElementById('btn-copy-export');
+
+    // 优先使用现代 Clipboard API，兼容降级到 execCommand
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textarea.value).then(function () {
+            copyBtn.textContent = '✅ 已复制到剪贴板';
+            copyBtn.classList.add('copied');
+        }).catch(function () {
+            fallbackCopy(textarea, copyBtn);
+        });
+    } else {
+        fallbackCopy(textarea, copyBtn);
+    }
+}
+
+/** 降级复制方案（用于不支持 Clipboard API 的浏览器） */
+function fallbackCopy(textarea, copyBtn) {
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+    try {
+        document.execCommand('copy');
+        copyBtn.textContent = '✅ 已复制到剪贴板';
+        copyBtn.classList.add('copied');
+    } catch (e) {
+        copyBtn.textContent = '❌ 复制失败，请手动全选复制';
+    }
+}
+
+/**
+ * 打开导入弹窗
+ */
+function openImportModal() {
+    // 重置导入弹窗的所有状态
+    document.getElementById('import-text').value = '';
+    document.getElementById('import-preview').style.display = 'none';
+    document.getElementById('import-preview').innerHTML = '';
+    document.getElementById('btn-confirm-import').style.display = 'none';
+    document.getElementById('btn-parse-import').style.display = '';
+
+    // 显示导入弹窗
+    document.getElementById('import-modal').classList.add('active');
+}
+
+/**
+ * 解析存档：Base64 → JSON → 校验 → 显示预览
+ */
+function parseImportData() {
+    var textarea = document.getElementById('import-text');
+    var previewDiv = document.getElementById('import-preview');
+    var confirmBtn = document.getElementById('btn-confirm-import');
+    var parseBtn = document.getElementById('btn-parse-import');
+    var rawText = textarea.value.trim();
+
+    if (!rawText) {
+        showDevtoolsToast('❌ 请先粘贴存档文本');
+        return;
+    }
+
+    // 尝试 Base64 解码
+    var jsonStr;
+    try {
+        jsonStr = decodeURIComponent(escape(atob(rawText)));
+    } catch (e) {
+        showDevtoolsToast('❌ 存档格式无效，无法解码');
+        return;
+    }
+
+    // 尝试 JSON 解析
+    var saveObj;
+    try {
+        saveObj = JSON.parse(jsonStr);
+    } catch (e) {
+        showDevtoolsToast('❌ 存档数据损坏，解析失败');
+        return;
+    }
+
+    // 校验：至少包含一个有效数据 key
+    var hasAnyData = SAVE_DATA_KEYS.some(function (key) {
+        return saveObj[key] !== undefined;
+    });
+    if (!hasAnyData) {
+        showDevtoolsToast('❌ 存档中没有有效的游戏数据');
+        return;
+    }
+
+    // 提取预览信息
+    var cardCount = 0;
+    var goldBalance = 0;
+    var totalSpent = 0;
+    var packStatsCount = 0;
+
+    // 解析背包数据
+    if (saveObj['ygo_inventory_data']) {
+        try {
+            var inv = JSON.parse(saveObj['ygo_inventory_data']);
+            // inventory 是扁平对象：{ "cardId": { count, copies/rarityVersionsOwned, ... } }
+            if (inv) {
+                Object.keys(inv).forEach(function (cardId) {
+                    var card = inv[cardId];
+                    if (card && typeof card.count === 'number') {
+                        cardCount += card.count;
+                    }
+                });
+            }
+        } catch (e) { /* 忽略解析错误 */ }
+    }
+
+    // 解析金币数据
+    if (saveObj['ygo_currency_data']) {
+        try {
+            var curr = JSON.parse(saveObj['ygo_currency_data']);
+            goldBalance = (curr && curr.gold) || 0;
+        } catch (e) { /* 忽略解析错误 */ }
+    }
+
+    // 解析累计花费
+    if (saveObj['ygo_inventory_spent']) {
+        totalSpent = parseInt(saveObj['ygo_inventory_spent'], 10) || 0;
+    }
+
+    // 解析开包统计
+    if (saveObj['ygo_pack_stats']) {
+        try {
+            var stats = JSON.parse(saveObj['ygo_pack_stats']);
+            // pack-stats 是扁平对象：{ "packCode": { totalPacks, totalBoxes } }
+            if (stats) {
+                Object.keys(stats).forEach(function (packCode) {
+                    var packStat = stats[packCode];
+                    if (packStat && typeof packStat.totalPacks === 'number') {
+                        packStatsCount += packStat.totalPacks;
+                    }
+                });
+            }
+        } catch (e) { /* 忽略解析错误 */ }
+    }
+
+    // 格式化导出时间
+    var exportTime = '未知';
+    if (saveObj._exportTime) {
+        try {
+            var d = new Date(saveObj._exportTime);
+            exportTime = d.getFullYear() + '-' +
+                String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                String(d.getDate()).padStart(2, '0') + ' ' +
+                String(d.getHours()).padStart(2, '0') + ':' +
+                String(d.getMinutes()).padStart(2, '0');
+        } catch (e) { /* 使用默认值 */ }
+    }
+
+    // 渲染预览
+    previewDiv.innerHTML =
+        '<div class="save-preview-title">📦 存档概览</div>' +
+        '<div class="save-preview-item"><span class="save-preview-label">导出时间</span><span class="save-preview-value">' + exportTime + '</span></div>' +
+        '<div class="save-preview-item"><span class="save-preview-label">背包卡牌</span><span class="save-preview-value">' + cardCount.toLocaleString() + ' 张</span></div>' +
+        '<div class="save-preview-item"><span class="save-preview-label">金币余额</span><span class="save-preview-value">' + goldBalance.toLocaleString() + '</span></div>' +
+        '<div class="save-preview-item"><span class="save-preview-label">累计花费</span><span class="save-preview-value">' + totalSpent.toLocaleString() + '</span></div>' +
+        '<div class="save-preview-item"><span class="save-preview-label">累计开包</span><span class="save-preview-value">' + packStatsCount.toLocaleString() + ' 次</span></div>';
+    previewDiv.style.display = '';
+
+    // 将解析后的数据暂存到按钮上，确认时直接使用
+    confirmBtn._pendingSaveObj = saveObj;
+    confirmBtn.style.display = '';
+    parseBtn.style.display = 'none';
+
+    showDevtoolsToast('✅ 存档解析成功，请确认后导入');
+}
+
+/**
+ * 确认导入：覆盖 localStorage → 刷新页面
+ */
+function confirmImport() {
+    var confirmBtn = document.getElementById('btn-confirm-import');
+    var saveObj = confirmBtn._pendingSaveObj;
+
+    if (!saveObj) {
+        showDevtoolsToast('❌ 没有待导入的数据');
+        return;
+    }
+
+    // 写入 localStorage
+    SAVE_DATA_KEYS.forEach(function (key) {
+        if (saveObj[key] !== undefined) {
+            localStorage.setItem(key, saveObj[key]);
+        }
+    });
+
+    showDevtoolsToast('✅ 存档导入成功，即将刷新页面...');
+
+    // 延迟刷新，让用户看到提示
+    setTimeout(function () {
+        location.reload();
+    }, 1500);
 }
 
 /**

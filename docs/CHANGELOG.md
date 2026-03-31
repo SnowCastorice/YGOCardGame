@@ -2,6 +2,20 @@
 
 > 所有版本变更的详细记录。待办事项见 [TODO.md](TODO.md)，面向玩家的更新日志见 `data/changelog.json`。
 
+## v1.9.0（2026-03-31）— 数据管理：导出/导入存档
+
+### 新增功能（`index.html` / `css/style.css` / `js/game.js`）
+- 设置面板新增"📋 数据管理"区域，包含"导出存档"和"导入存档"按钮
+- 导出功能：将背包卡牌、金币余额、累计花费、开包统计 4 项数据打包为 Base64 文本，支持一键复制
+- 导入功能：粘贴文本 → 解析校验 → 存档概览预览（卡牌数/金币/花费/开包次数）→ 二次确认后覆盖写入
+- 错误处理：空输入、无效 Base64、JSON 损坏、无有效数据均有 toast 提示
+- 剪贴板兼容：优先 Clipboard API，降级到 execCommand
+
+### 文档更新
+- `docs/FEATURES.md`：新增"数据管理"功能规格章节
+- `CLAUDE.md`：补充数据管理相关的 localStorage key 和数据结构说明
+- `README.md`：功能列表中添加"数据管理"条目
+
 ## v1.8.4（2026-03-31）— LOCR GMR-OF 卡图补充
 
 ### 新增卡图（`data/ocg/images/locr/`）

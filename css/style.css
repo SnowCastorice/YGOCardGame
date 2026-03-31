@@ -1568,6 +1568,137 @@ body {
 }
 
 /* ============================================
+   数据管理：导出/导入存档
+   ============================================ */
+
+/* 导出按钮 — 蓝色（默认 accent-blue，无需额外覆盖） */
+/* 导入按钮 — 绿色渐变，表示"恢复/写入" */
+.btn-dev-import {
+    background: linear-gradient(135deg, #2ecc71, #27ae60) !important;
+}
+
+.btn-dev-import:hover,
+.btn-dev-import:active {
+    background: linear-gradient(135deg, #27ae60, #1e8449) !important;
+    box-shadow: 0 0 12px rgba(46, 204, 113, 0.4);
+}
+
+/* 弹窗内容容器 */
+.save-modal-content {
+    max-width: 400px;
+    width: 92%;
+}
+
+/* 弹窗说明文字 */
+.save-modal-desc {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+
+/* 文本框（导出只读 + 导入粘贴） */
+.save-textarea {
+    width: 100%;
+    min-height: 120px;
+    max-height: 200px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    resize: vertical;
+    word-break: break-all;
+}
+
+.save-textarea:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 8px rgba(74, 158, 255, 0.2);
+}
+
+/* 只读文本框的视觉区分 */
+.save-textarea[readonly] {
+    border-style: solid;
+    cursor: default;
+    opacity: 0.9;
+}
+
+/* 一键复制按钮 */
+.btn-save-copy {
+    width: 100%;
+    margin-top: 10px;
+    background: linear-gradient(135deg, #2ecc71, #27ae60) !important;
+    font-weight: 600;
+    min-height: 44px;
+}
+
+.btn-save-copy:hover,
+.btn-save-copy:active {
+    background: linear-gradient(135deg, #27ae60, #1e8449) !important;
+    box-shadow: 0 0 12px rgba(46, 204, 113, 0.4);
+}
+
+/* 复制成功状态 */
+.btn-save-copy.copied {
+    background: linear-gradient(135deg, #1e8449, #196f3d) !important;
+}
+
+/* 存档预览区 */
+.save-preview {
+    margin-top: 12px;
+    padding: 12px;
+    background: rgba(255, 215, 0, 0.05);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 8px;
+}
+
+.save-preview-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent-gold);
+    margin-bottom: 8px;
+}
+
+.save-preview-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 0.82rem;
+    color: var(--text-primary);
+}
+
+.save-preview-item + .save-preview-item {
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.save-preview-label {
+    color: var(--text-secondary);
+}
+
+.save-preview-value {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+/* 导入弹窗操作按钮组 */
+.save-modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.save-modal-actions .btn-devtools-action {
+    width: 100%;
+    text-align: center;
+    min-height: 44px;
+}
+
+/* ============================================
    更新日志样式
    ============================================ */
 .changelog-version {
