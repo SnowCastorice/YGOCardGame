@@ -150,6 +150,14 @@ def load_card_name_map():
         for card in sp.get('cards', []):
             _process_card(card, name_map['LOSP'])
 
+    # 加载 LOSP 独立文件（supplementPack 可能为空，LOSP 数据在独立 JSON 中）
+    for vol_file in ['ocg_losp_vol1.json', 'ocg_losp_vol2.json']:
+        vol_path = os.path.join(BASE_DIR, 'data', 'ocg', 'cards', vol_file)
+        if os.path.exists(vol_path):
+            vol_data = json.load(open(vol_path, 'r', encoding='utf-8'))
+            for card in vol_data.get('cards', []):
+                _process_card(card, name_map['LOSP'])
+
     # 加载 BLZD 系列
     blzd_path = os.path.join(BASE_DIR, 'data', 'ocg', 'cards', 'ocg_blzd.json')
     if os.path.exists(blzd_path):
@@ -580,9 +588,11 @@ def parse_rarity_precise(text_lines):
             if text.strip().upper() == rarity:
                 return rarity
     
-    # 最后兜底：在所有文本中简单搜索
+    # 最后兜底：在所有文本中搜索（排除卡包名中的子串误匹配，如 "LOCR" 中的 "CR"）
+    # 先从 combined 中移除卡包编号前缀，避免 LOCR/LOCH/BLZD 等包名干扰
+    combined_no_pack = re.sub(r'(?:LOCR|LOCH|LOSP|BLZD|BLZDS)[-—]?JP\d{0,3}', '', combined, flags=re.IGNORECASE)
     for rarity in RARITIES:
-        if rarity.upper() in combined.upper():
+        if re.search(r'(?<![A-Z])' + re.escape(rarity) + r'(?![A-Z])', combined_no_pack, re.IGNORECASE):
             return rarity
     
     # 特殊兜底：编号末尾只有单个字母，可能是 N 或 R

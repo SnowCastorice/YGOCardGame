@@ -62,7 +62,7 @@ EXPECTED_WIDTH = 2064
 EXPECTED_HEIGHT = 2752
 
 # 支持的卡包列表（按长度降序排列，避免 BLZD 先匹配 BLZDS）
-SUPPORTED_PACKS = ['BLZDS', 'BLZD', 'LOCH', 'LOCR', 'LOSP']
+SUPPORTED_PACKS = ['BLZDS', 'BLZD', 'LOCH', 'LOCR', 'LOSP-Vol2', 'LOSP-Vol1']
 
 # 截图根目录
 PICS_ROOT = os.path.join(BASE_DIR, 'local', 'OCRPricePics')
@@ -206,7 +206,7 @@ def _detect_pack_from_filename(filename):
     从文件名提取卡包前缀
 
     支持格式:
-      - 以卡包名开头: LOCH01.png, BLZD02.png, BLZDS01.png, LOSP01.png
+      - 以卡包名开头: LOCH01.png, BLZD02.png, BLZDS01.png, LOSP-Vol201.png
       - MuMu模拟器默认命名: MuMu-20260312-xxx.png（返回None，需OCR识别）
     """
     fn = filename.upper()
@@ -222,7 +222,7 @@ def _detect_pack_from_ocr(ocr_items):
 
     对整张截图做一次快速OCR，通过编号文本判断卡包前缀。
 
-    返回: 'LOCH', 'BLZD', 'BLZDS', 'LOSP', 'LOCR' 或 'UNKNOWN'
+    返回: 'LOCH', 'BLZD', 'BLZDS', 'LOSP-Vol1', 'LOSP-Vol2', 'LOCR' 或 'UNKNOWN'
     其中 'BLZD' 为主包(BLZD-JPXXX), 'BLZDS' 为+1辅助包(BLZD-JPSXX)
     """
     pack_counts = {'LOCH': 0, 'BLZD': 0, 'LOSP': 0, 'LOCR': 0}
@@ -1049,7 +1049,7 @@ def main():
     )
     parser.add_argument('--pack', required=True,
                        choices=[p.upper() for p in SUPPORTED_PACKS],
-                       help='卡包名称 (如 BLZDS, BLZD, LOCH, LOCR, LOSP)')
+                       help='卡包名称 (如 BLZDS, BLZD, LOCH, LOCR, LOSP-Vol1, LOSP-Vol2)')
     parser.add_argument('--date', required=True,
                        help='截图日期 (如 20260321)')
     parser.add_argument('--step', choices=['organize', 'rename', 'cut', 'card_cut', 'ocr_cards', 'parse', 'review', 'merge'],

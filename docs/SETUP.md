@@ -65,36 +65,68 @@ chmod +x .git/hooks/pre-commit
 
 ---
 
-## 🐍 双设备 OCR 环境
+## 🐍 Python 虚拟环境与 OCR 环境
 
-项目在两台设备上交替开发，OCR 使用系统级 Python 3.11（非虚拟环境）。
+项目在两台设备上交替开发。OCR 工具链运行在 `local/venv/`（Python 3.11）虚拟环境中。
+
+> ⚠️ PaddleOCR 仅支持 Python ≤ 3.12，**不支持 3.13/3.14**。系统 Python 版本不影响，只需 venv 为 3.11 即可。
+
+### 设备信息
 
 | | 设备 A（CHIHAYADU-PC1） | 设备 B |
 |---|---|---|
 | **OS** | Windows 11 (22631) | 待更新 |
 | **GPU** | RTX 4060 (8GB VRAM) | RTX 3070 (8GB VRAM) |
 | **NVIDIA 驱动** | 591.74 | 待更新 |
-| **CUDA Version** | 13.1 | 待更新 |
-| **Python (OCR)** | 3.11.9（系统安装） | 待更新 |
-| **PaddlePaddle-GPU** | 3.3.1 (cu126) | 待更新 |
+| **系统 Python** | 3.14.3 | 待更新 |
+| **venv Python** | 3.11.9（`local/venv/`） | 待更新 |
+| **PaddlePaddle-GPU** | 3.2.0 (cu126) | 待更新 |
 | **PaddleOCR** | 3.4.0 | 待更新 |
 
-### OCR 安装命令（两台设备统一）
+### 新设备安装步骤
 
 ```bash
-# 1. 安装 PaddlePaddle GPU（通过飞桨官方源，cu126）
-python -m pip install paddlepaddle-gpu -i https://www.paddlepaddle.org.cn/packages/stable/cu126/
+# ========== 1. 创建虚拟环境（需先安装 Python 3.11） ==========
+# 下载 Python 3.11：https://www.python.org/downloads/release/python-3119/
+# 安装时勾选 "Add to PATH" 不是必须的，只需记住安装路径
 
-# 2. 安装 PaddleOCR
-python -m pip install paddleocr
+# 用 Python 3.11 创建 venv（示例路径，按实际替换）
+"C:\Python311\python.exe" -m venv local/venv
 
-# 3. 验证
-python -c "import paddle; print(paddle.__version__, 'CUDA:', paddle.is_compiled_with_cuda())"
-python -c "import paddleocr; print(paddleocr.__version__)"
+# ========== 2. 安装 PaddlePaddle GPU ==========
+# ⚠️ 必须通过飞桨官方源安装，PyPI 默认源只有旧版
+# ⚠️ 必须指定版本号，避免安装到不兼容的版本
+
+# 显卡驱动 ≥ 550.54 → 用 cu126（推荐）
+local/venv/Scripts/python.exe -m pip install paddlepaddle-gpu==3.2.0 -i https://www.paddlepaddle.org.cn/packages/stable/cu126/
+
+# 显卡驱动 ≥ 452.39 但 < 550 → 用 cu118
+# local/venv/Scripts/python.exe -m pip install paddlepaddle-gpu==3.2.0 -i https://www.paddlepaddle.org.cn/packages/stable/cu118/
+
+# ========== 3. 安装其他依赖 ==========
+local/venv/Scripts/python.exe -m pip install -r tools/requirements.txt
+
+# ========== 4. 验证安装 ==========
+local/venv/Scripts/python.exe -c "import paddle; print('版本:', paddle.__version__); print('GPU:', paddle.device.is_compiled_with_cuda()); print('设备:', paddle.device.get_device())"
+local/venv/Scripts/python.exe -c "import paddleocr; print('PaddleOCR:', paddleocr.__version__)"
 ```
 
-> ⚠️ PaddlePaddle GPU 版必须通过飞桨官方源安装（PyPI 默认源只有 2.x 旧版）
-> ⚠️ OCR 使用系统级 Python 3.11，不使用 local/venv/（那个是 3.14，不兼容 PaddleOCR）
+### 常见问题
+
+| 问题 | 原因 | 解决 |
+|------|------|------|
+| `GPU: False` | 安装了 CPU 版 paddlepaddle | 先 `pip uninstall paddlepaddle`，再用飞桨官方源装 GPU 版 |
+| `ModuleNotFoundError: paddle` | venv 未安装 | 按上方步骤 2 安装 |
+| OCR 速度很慢（8-10s/卡） | 用了 CPU 版 | 确认 `paddle.device.is_compiled_with_cuda()` 为 True |
+| `No module named '_papi'` | Python 版本不兼容 | 确认 venv 是 Python 3.11，不是 3.13/3.14 |
+
+### 调用方式
+
+所有 Python 脚本必须通过 venv 执行，**不要用系统 Python**：
+
+```bash
+local/venv/Scripts/python.exe tools/<脚本名>.py <参数>
+```
 
 ---
 
@@ -113,7 +145,7 @@ python -c "import paddleocr; print(paddleocr.__version__)"
 | 输出风格 Explanatory | ❌ 本地 | `/config` 设置 |
 | 模型 Opus 4.6 | ❌ 本地 | `/model` 设置 |
 | 权限 npx skills | ❌ 本地 | 首次使用时授权 |
-| Python 虚拟环境 | ❌ 本地 | 需手动创建 `local/venv/` |
+| Python 虚拟环境 | ❌ 本地 | Python 3.11 venv，见上方 OCR 环境章节 |
 | .claude/settings.local.json | ❌ 本地 | 自动生成，无需手动创建 |
 
 ---
