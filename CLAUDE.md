@@ -65,18 +65,75 @@ python tools/fetch_packs.py list ocg
 **工作流**：在 `dev` 分支开发 → 本地测试 → 用户确认 → 合并到 `main` 上线。
 ⚠️ 不得未经测试和用户确认就推送到 `main`。
 
-### 发布流程
+### 发布流程（MR）
 
 > 本项目已上线运营，任何代码推送到 `main` 都会自动部署到线上环境。
 
-1. **在 dev 分支开发** — `git checkout dev`
-2. **本地修改** — 完成代码编辑，提交到 `dev`
-3. **本地测试** — 通过浏览器截图 / 脚本验证修改效果正确
-4. **展示确认** — 将测试结果展示给用户查看，等待用户确认
-5. **合并上线** — 用户确认后：`git checkout main && git merge dev && git push`
-6. **切回开发** — `git checkout dev` 继续后续开发
+```
+dev 开发提交 → CR & 测试 → 展示确认 → 合并到 main → 自动部署
+```
 
-❌ **严禁**：未经测试和用户确认就直接推送代码
+**详细步骤**：
+
+1. **在 dev 分支开发** — `git checkout dev`
+2. **本地修改** — 完成代码编辑，提交到 `dev`，推送到远程
+3. **CR & 测试** — 按「Code Review & 测试流程」执行全部 4 步
+4. **展示确认** — 将测试结果展示给用户查看，**等待用户明确说"确认"**
+5. **合并上线** — 用户确认后：`git checkout main && git merge dev && git push`
+6. **线上验证** — 合并后访问 https://ygocardgame.pages.dev/ 确认线上正常
+7. **切回开发** — `git checkout dev` 继续后续开发
+
+**合并前检查清单**（Claude 必须在合并前逐项确认）：
+
+| # | 检查项 | 说明 |
+|---|--------|------|
+| 1 | `git diff main..dev --stat` 只包含预期文件 | 无多余文件被修改 |
+| 2 | 版本号四处一致（如需更新） | index.html、changelog.json、CHANGELOG.md、README.md |
+| 3 | 浏览器验证通过 | 无控制台报错、核心功能正常 |
+| 4 | 用户已明确确认 | 不可跳过 |
+
+❌ **严禁**：
+- 未经测试和用户确认就推送到 `main`
+- 合并后不做线上验证
+- 一次性合并大量未经验证的改动（应分批合并，每批验证）
+
+### 回退流程（线上出问题时）
+
+```bash
+# 1. 确认要回退到的稳定版本
+git log --oneline main
+
+# 2. 回退 main（需用户确认目标版本）
+git checkout main
+git reset --hard <稳定版本hash>
+git push origin main --force
+
+# 3. 切回 dev 排查问题
+git checkout dev
+```
+
+### 版本号管理
+
+`index.html` 中的 `window.APP_VERSION` 是**唯一权威来源**。
+
+**版本号递增规则**：
+
+| 变更类型 | 版本递增 | 示例 |
+|----------|----------|------|
+| 新功能（用户可感知的） | minor | 1.9.0 → 1.10.0 |
+| bug 修复 / 小优化 | patch | 1.9.0 → 1.9.1 |
+| 价格数据、工具脚本、文档、配置文件、.claude/ | **不更新** | — |
+
+**每次需要更新版本号时，Claude 必须同步修改 4 处**：
+
+| # | 文件 | 修改内容 |
+|---|------|----------|
+| 1 | `index.html` 第 8 行 | `window.APP_VERSION = 'x.y.z'` |
+| 2 | `data/changelog.json` | 新增版本条目（面向玩家，通俗简短） |
+| 3 | `docs/CHANGELOG.md` | 新增版本条目（面向开发者，详细技术描述） |
+| 4 | `README.md` | 更新 badge 中的版本号 |
+
+> ⚠️ 有 Git pre-commit Hook（`tools/version-check.sh`）和 Claude Stop Hook（`.claude/hooks/version-check.sh`）自动检查四处版本号一致性。不一致会阻止提交/结束。
 
 ## 代码架构
 
@@ -152,19 +209,6 @@ tools/db/cards.json (YGOCDB 全量, 12MB, 需提交到git)
   → data/ocg/cards/ocg_xxx.json 的 cardData 节点
   → 运行时 buildOCGCardsFromLocalData() 本地解析
 ```
-
-### 版本号管理
-
-`index.html` 中的 `window.APP_VERSION` 是**唯一权威来源**。每次提交包含代码变更时，Claude 必须：
-
-1. **递增 `APP_VERSION`**（`index.html` 第 8 行）
-2. **同步 `data/changelog.json`**：新增版本条目，写面向玩家的更新说明（通俗、简短）
-3. **同步 `docs/CHANGELOG.md`**：新增版本条目，写面向开发者的详细变更记录
-4. **同步 `README.md`**：更新 badge 中的版本号
-
-以下变更**不需要**更新版本号：价格数据、工具脚本、文档、配置文件、.claude/ 目录。
-
-> ⚠️ 有 Git pre-commit Hook（`tools/version-check.sh`）和 Claude Stop Hook（`.claude/hooks/version-check.sh`）自动检查四处版本号一致性。
 
 ### 外部 API 限流
 
