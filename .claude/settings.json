@@ -14,16 +14,6 @@
         ]
       }
     ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/skills/self-improvement/scripts/activator.sh"
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
@@ -31,17 +21,6 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/pre-push-check.sh"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/skills/self-improvement/scripts/error-detector.sh"
           }
         ]
       }
