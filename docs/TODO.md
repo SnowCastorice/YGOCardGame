@@ -37,30 +37,9 @@
 - 建立从原始图片到标准化卡图的自动化 pipeline
 
 ### 7. 建立完整的开发流程规范
-
-**目标**：规范化 Claude Code 辅助开发的全流程，提高代码质量和发布稳定性。
-
-**Code Review 流程**：
-- 每次功能开发完成后、测试前，执行 Code Review 检查清单
-- 检查项：调用链完整性、DOM 元素存在性、CSS 匹配、数据结构匹配、移动端兼容、边界情况
-- 考虑使用子 agent 并行执行 Review（如一个 agent 查 HTML/CSS 一致性，一个 agent 查 JS 逻辑）
-
-**测试流程**：
-- 功能测试：启动本地服务器 → Chrome DevTools 模拟小米 14（400×890px）→ 截图验证 UI + 交互
-- 边界测试：空输入、无效数据、异常格式等错误场景
-- 回归测试：确认新功能不影响已有功能（开包、背包、金币等核心流程）
-- 考虑使用子 agent 并行执行不同模块的测试
-
-**合并/发布流程（MR）**：
-- dev 分支开发 → Code Review → 测试通过 → 展示给用户确认
-- 用户确认后合并到 main → Cloudflare Pages 自动部署
-- 发布前检查清单：版本号四处一致、changelog 已更新、文档已同步
-
-**版本号更新流程**：
-- 新功能 → minor 版本（如 1.8.x → 1.9.0）
-- 小修复/优化 → patch 版本（如 1.9.0 → 1.9.1）
-- 四处同步：`index.html` APP_VERSION、`data/changelog.json`、`docs/CHANGELOG.md`、`README.md` badge
-- 已有 pre-commit hook 自动检查一致性（`tools/version-check.sh`）
+- ✅ CR & 测试流程已写入 `CLAUDE.md`（Claude 自检 → 浏览器验证 → 展示确认 → 合并上线）
+- ✅ 版本号检查已自动化（pre-commit hook + Claude Stop hook）
+- 待完善：数据一致性自动检查脚本化
 
 ## 🔵 低优先级（长期规划 / 条件未满足）
 
