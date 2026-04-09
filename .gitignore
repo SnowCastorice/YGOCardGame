@@ -12,6 +12,7 @@ NUL
 
 # AI 工具本地配置（不跟踪）
 .claude/settings.local.json
+.claude/memory/
 .codebuddy/
 
 # 依赖
