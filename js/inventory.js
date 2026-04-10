@@ -124,6 +124,10 @@ const InventorySystem = (function () {
             if (inventory[cardId]) {
                 // 已有该卡：总数量+1，并记录对应稀有度版本+1
                 inventory[cardId].count += 1;
+                // 补充 cardSetCode（兼容旧存档中没有此字段的卡片）
+                if (!inventory[cardId].cardSetCode && card.cardSetCode) {
+                    inventory[cardId].cardSetCode = card.cardSetCode;
+                }
                 if (!inventory[cardId].rarityVersionsOwned) {
                     inventory[cardId].rarityVersionsOwned = {};
                 }
@@ -224,6 +228,7 @@ const InventorySystem = (function () {
                         var imgUrls = rarityImages[rarity] || {};
                         expandedList.push({
                             id: card.id,
+                            cardSetCode: card.cardSetCode,
                             name: card.name,
                             nameCN: card.nameCN,
                             nameOriginal: card.nameOriginal,
@@ -239,6 +244,7 @@ const InventorySystem = (function () {
                 // 兼容旧数据：使用第一个稀有度
                 expandedList.push({
                     id: card.id,
+                    cardSetCode: card.cardSetCode,
                     name: card.name,
                     nameCN: card.nameCN,
                     nameOriginal: card.nameOriginal,
