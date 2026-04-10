@@ -1,0 +1,75 @@
+{
+  "_说明": "LOSP vol1 特殊+1包市场价格数据（集换社）",
+  "_单位": "人民币/元",
+  "_数据来源": "集换社App截图 OCR 识别",
+  "_更新时间": "2026-03-21",
+  "_价格说明": "所有价格为集换社'起'价（最低在售价）",
+  "_归属": "LOSP vol1（JP001-010）属于 LOCH，购买3盒赠送1包",
+  "packPrices": {
+    "LOSP-vol1": {
+      "pack": 70.0
+    }
+  },
+  "cards": {
+    "LOSP-JP001": {
+      "name": "超魔导龙骑士-真红眼龙骑士",
+      "prices": {
+        "PSER-OF": 120.0
+      }
+    },
+    "LOSP-JP002": {
+      "name": "唤醒你沉睡的元素英雄",
+      "prices": {
+        "PSER-OF": 13.98
+      }
+    },
+    "LOSP-JP003": {
+      "name": "流天类星龙",
+      "prices": {
+        "PSER-OF": 59.0
+      }
+    },
+    "LOSP-JP004": {
+      "name": "No.99 希望皇 霍普德拉戈纳",
+      "prices": {
+        "PSER-OF": 18.88
+      }
+    },
+    "LOSP-JP005": {
+      "name": "霸王天龙 异色眼霸弧光迹龙",
+      "prices": {
+        "PSER-OF": 8.0
+      }
+    },
+    "LOSP-JP006": {
+      "name": "防火龙·奇点",
+      "prices": {
+        "PSER-OF": 14.0
+      }
+    },
+    "LOSP-JP007": {
+      "name": "俱利伽罗天童",
+      "prices": {
+        "PSER-OF": 137.99
+      }
+    },
+    "LOSP-JP008": {
+      "name": "冰剑龙 幻冰龙",
+      "prices": {
+        "PSER-OF": 92.0
+      }
+    },
+    "LOSP-JP009": {
+      "name": "超融合",
+      "prices": {
+        "PSER-OF": 98.99
+      }
+    },
+    "LOSP-JP010": {
+      "name": "圣王的粉碎",
+      "prices": {
+        "PSER-OF": 148.0
+      }
+    }
+  }
+}

@@ -1,30 +1,32 @@
 /**
  * ============================================
  * YGO Pack Opener - 市场价格系统模块
- * 版本: 1.0.0
+ * 版本: 1.1.0
  *
  * 【文件说明】
  * 负责管理卡片的真实市场价格（集换社数据）：
  * 1. 从独立价格文件加载市场价格数据
- * 2. 提供按卡片密码 + 稀有度查询价格的接口
+ * 2. 提供按卡片编号（setNumber）+ 稀有度查询价格的接口
  * 3. 支持多卡包价格文件（可扩展）
  * 4. 价格数据与卡片数据分离，便于独立更新
  *
  * 【价格文件位置】
  * data/ocg/prices/{packCode}_prices.json
  * 例如：data/ocg/prices/loch_prices.json
+ *
+ * 【key 机制】
+ * 价格文件的 cards 对象使用 setNumber（如 LOCH-JP001）作为 key，
+ * 前端查价格时传入 card.cardSetCode（等于 setNumber）。
+ * 这样即使卡片密码（password）因数据库更新而变化，价格匹配也不受影响。
  * ============================================
  */
 const PriceSystem = (function () {
 
     // ====== 内部状态 ======
-    // 价格缓存：{ "卡片密码": { "UR": 0.5, "SER": 1.5, ... } }
+    // 价格缓存：{ "LOCH-JP001": { "UR": 0.5, "SER": 1.5, ... } }
     let priceCache = {};
-    // 卡包价格：{ "LOCH": { box: 385, pack: 22 }, "LOSP": { pack: 77 } }
+    // 卡包价格：{ "LOCH": { box: 385, pack: 22 }, "LOSP-vol1": { pack: 70 } }
     let packPrices = {};
-    // setNumber → 价格文件中的 cardId 反向索引（兼容临时密码卡片）
-    // 当卡片数据 id 更新为真实密码后，仍能通过 setNumber 回退查找价格
-    let setNumberIndex = {};
     // 已加载的价格文件列表
     let loadedFiles = [];
     // 是否已初始化
@@ -34,8 +36,10 @@ const PriceSystem = (function () {
     // packCode（小写）→ 价格文件路径
     const PRICE_FILES = {
         'loch': 'data/ocg/prices/loch_prices.json',
+        'locr': 'data/ocg/prices/locr_prices.json',
         'blzd': 'data/ocg/prices/blzd_prices.json',
-        'locr': 'data/ocg/prices/locr_prices.json'
+        'losp-vol1': 'data/ocg/prices/losp_vol1_prices.json',
+        'losp-vol2': 'data/ocg/prices/losp_vol2_prices.json'
     };
 
     // ====== 初始化 ======
@@ -82,16 +86,12 @@ const PriceSystem = (function () {
                 Object.assign(packPrices, data.packPrices);
             }
 
-            // 加载卡片价格到缓存
+            // 加载卡片价格到缓存（key 已经是 setNumber，如 LOCH-JP001）
             if (data.cards) {
-                Object.keys(data.cards).forEach(function (cardId) {
-                    var cardPrice = data.cards[cardId];
+                Object.keys(data.cards).forEach(function (setNumber) {
+                    var cardPrice = data.cards[setNumber];
                     if (cardPrice && cardPrice.prices) {
-                        priceCache[cardId] = cardPrice.prices;
-                        // 建立 setNumber → cardId 反向索引（用于临时密码兼容）
-                        if (cardPrice.setNumber) {
-                            setNumberIndex[cardPrice.setNumber] = cardId;
-                        }
+                        priceCache[setNumber] = cardPrice.prices;
                     }
                 });
             }
@@ -106,28 +106,24 @@ const PriceSystem = (function () {
     // ====== 查询接口 ======
 
     /**
-     * 解析卡片ID：优先直接匹配 priceCache，查不到时通过 setNumber 反向索引回退
-     * 用于兼容临时密码卡片（如 LOCR JP001-JP028 使用临时编号，未来 ygocdb 更新后 id 会变）
-     * @param {number|string} cardId - 卡片密码或 setNumber
+     * 解析卡片编号：在 priceCache 中查找匹配的 key
+     * @param {string} cardSetCode - 卡片编号（如 'LOCH-JP001'）
      * @returns {string|null} 价格缓存中的有效 key，未找到返回 null
      */
-    function resolveCardId(cardId) {
-        var key = String(cardId);
+    function resolveCardId(cardSetCode) {
+        var key = String(cardSetCode);
         if (priceCache[key]) return key;
-        // 回退：尝试通过 setNumber 索引查找
-        var mappedId = setNumberIndex[key];
-        if (mappedId && priceCache[mappedId]) return mappedId;
         return null;
     }
 
     /**
      * 获取指定卡片指定稀有度的市场价格
-     * @param {number|string} cardId - 卡片密码
+     * @param {string} cardSetCode - 卡片编号（如 'LOCH-JP001'）
      * @param {string} rarity - 稀有度代码（如 'UR', 'SER', 'PSER' 等）
      * @returns {number|null} 价格（人民币），未找到返回 null
      */
-    function getCardPrice(cardId, rarity) {
-        var resolvedId = resolveCardId(cardId);
+    function getCardPrice(cardSetCode, rarity) {
+        var resolvedId = resolveCardId(cardSetCode);
         if (!resolvedId) return null;
         var prices = priceCache[resolvedId];
         var price = prices[rarity];
@@ -136,23 +132,23 @@ const PriceSystem = (function () {
 
     /**
      * 获取指定卡片所有稀有度版本的价格
-     * @param {number|string} cardId - 卡片密码
+     * @param {string} cardSetCode - 卡片编号（如 'LOCH-JP001'）
      * @returns {object|null} 价格映射 如 { "UR": 0.5, "SER": 1.5 }，未找到返回 null
      */
-    function getCardPrices(cardId) {
-        var resolvedId = resolveCardId(cardId);
+    function getCardPrices(cardSetCode) {
+        var resolvedId = resolveCardId(cardSetCode);
         if (!resolvedId) return null;
         return Object.assign({}, priceCache[resolvedId]);
     }
 
     /**
-     * 获取卡片最高稀有度版本的价格（用于排序展示）
-     * @param {number|string} cardId - 卡片密码
+     * 获取卡片指定稀有度的市场价格（用于排序展示）
+     * @param {string} cardSetCode - 卡片编号（如 'LOCH-JP001'）
      * @param {string} rarity - 卡片当前持有的稀有度
      * @returns {number} 价格（人民币），未找到返回 0
      */
-    function getCardMarketPrice(cardId, rarity) {
-        var price = getCardPrice(cardId, rarity);
+    function getCardMarketPrice(cardSetCode, rarity) {
+        var price = getCardPrice(cardSetCode, rarity);
         return price !== null ? price : 0;
     }
 
@@ -172,11 +168,11 @@ const PriceSystem = (function () {
 
     /**
      * 检查价格系统是否已加载指定卡片的价格
-     * @param {number|string} cardId - 卡片密码
+     * @param {string} cardSetCode - 卡片编号（如 'LOCH-JP001'）
      * @returns {boolean}
      */
-    function hasPrice(cardId) {
-        return resolveCardId(cardId) !== null;
+    function hasPrice(cardSetCode) {
+        return resolveCardId(cardSetCode) !== null;
     }
 
     /**

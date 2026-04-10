@@ -10,101 +10,87 @@
     }
   },
   "cards": {
-    "83445539": {
-      "setNumber": "BLZD-JP001",
+    "BLZD-JP001": {
       "name": "暗冥共鸣者",
       "prices": {
         "N": 0.5
       }
     },
-    "19434243": {
-      "setNumber": "BLZD-JP002",
+    "BLZD-JP002": {
       "name": "强力恶龙",
       "prices": {
         "SR": 0.5,
         "SER": 4.0
       }
     },
-    "56838842": {
-      "setNumber": "BLZD-JP003",
+    "BLZD-JP003": {
       "name": "魔块石人",
       "prices": {
         "N": 0.5
       }
     },
-    "82323997": {
-      "setNumber": "BLZD-JP004",
+    "BLZD-JP004": {
       "name": "真红莲新星龙/爆裂体",
       "prices": {
         "R": 0.5
       }
     },
-    "18711696": {
-      "setNumber": "BLZD-JP005",
+    "BLZD-JP005": {
       "name": "爆裂音速战士",
       "prices": {
         "N": 0.5
       }
     },
-    "45116390": {
-      "setNumber": "BLZD-JP006",
+    "BLZD-JP006": {
       "name": "重装骑士 通天双层列车",
       "prices": {
         "N": 0.5
       }
     },
-    "81101309": {
-      "setNumber": "BLZD-JP007",
+    "BLZD-JP007": {
       "name": "夜光列车 蓝色旅人列车",
       "prices": {
         "N": 0.5
       }
     },
-    "18595008": {
-      "setNumber": "BLZD-JP008",
+    "BLZD-JP008": {
       "name": "捕食植物 喷瓜蜥蜴",
       "prices": {
         "N": 0.5
       }
     },
-    "44994712": {
-      "setNumber": "BLZD-JP009",
+    "BLZD-JP009": {
       "name": "捕食植物 长叶挖耳草络新妇",
       "prices": {
         "N": 0.5
       }
     },
-    "70488851": {
-      "setNumber": "BLZD-JP010",
+    "BLZD-JP010": {
       "name": "混绝狱神 比托利姆",
       "prices": {
         "UR": 0.5,
         "PSER": 90.0
       }
     },
-    "17473466": {
-      "setNumber": "BLZD-JP011",
+    "BLZD-JP011": {
       "name": "狱神影兽-涅瓦红化兽",
       "prices": {
         "R": 0.5
       }
     },
-    "43871165": {
-      "setNumber": "BLZD-JP012",
+    "BLZD-JP012": {
       "name": "狱神影机-宙斯黑化机",
       "prices": {
         "R": 0.5
       }
     },
-    "10266279": {
-      "setNumber": "BLZD-JP013",
+    "BLZD-JP013": {
       "name": "狱神影精-朱诺白化精",
       "prices": {
         "R": 0.5
       }
     },
-    "56651978": {
-      "setNumber": "BLZD-JP014",
+    "BLZD-JP014": {
       "name": "耀圣之风诗 蕾吉娜",
       "prices": {
         "SR": 1.0,
@@ -112,16 +98,14 @@
         "SER": 13.0
       }
     },
-    "82159583": {
-      "setNumber": "BLZD-JP015",
+    "BLZD-JP015": {
       "name": "道化一座 白脸小丑",
       "prices": {
         "UR": 1.0,
         "PSER": 135.0
       }
     },
-    "19144622": {
-      "setNumber": "BLZD-JP016",
+    "BLZD-JP016": {
       "name": "妖精传姬-玛奇莉勒",
       "prices": {
         "SR": 0.5,
@@ -129,38 +113,33 @@
         "PSER": 60.0
       }
     },
-    "82933935": {
-      "setNumber": "BLZD-JP017",
+    "BLZD-JP017": {
       "name": "迷拟宝箱鬼·食人花",
       "prices": {
         "N": 0.5
       }
     },
-    "18321034": {
-      "setNumber": "BLZD-JP018",
+    "BLZD-JP018": {
       "name": "不可见之手 诱招天手",
       "prices": {
         "SR": 0.5,
         "SER": 1.0
       }
     },
-    "44716748": {
-      "setNumber": "BLZD-JP019",
+    "BLZD-JP019": {
       "name": "纠罪巧γ'-欺瞒\"exapatisIA\"",
       "prices": {
         "N": 0.5
       }
     },
-    "71801447": {
-      "setNumber": "BLZD-JP020",
+    "BLZD-JP020": {
       "name": "纠罪巧-欲蛛 Atilε.SPIA",
       "prices": {
         "SR": 0.5,
         "SER": 5.0
       }
     },
-    "17209452": {
-      "setNumber": "BLZD-JP021",
+    "BLZD-JP021": {
       "name": "杀手级调整曲·旋钮手",
       "prices": {
         "PSER": 177.0,
@@ -168,22 +147,19 @@
         "SER": 15.0
       }
     },
-    "45538320": {
-      "setNumber": "BLZD-JP022",
+    "BLZD-JP022": {
       "name": "精灵术的使魔",
       "prices": {
         "N": 0.5
       }
     },
-    "44694191": {
-      "setNumber": "BLZD-JP023",
+    "BLZD-JP023": {
       "name": "假初之幻脸师",
       "prices": {
         "N": 0.5
       }
     },
-    "70088809": {
-      "setNumber": "BLZD-JP024",
+    "BLZD-JP024": {
       "name": "调和之天救龙",
       "prices": {
         "UTR": 190.0,
@@ -191,22 +167,19 @@
         "PSER": 880.0
       }
     },
-    "6083904": {
-      "setNumber": "BLZD-JP025",
+    "BLZD-JP025": {
       "name": "妖光之布罗肯恶魔",
       "prices": {
         "N": 0.5
       }
     },
-    "43471513": {
-      "setNumber": "BLZD-JP026",
+    "BLZD-JP026": {
       "name": "钢卷尺骑士",
       "prices": {
         "N": 0.5
       }
     },
-    "79966218": {
-      "setNumber": "BLZD-JP027",
+    "BLZD-JP027": {
       "name": "血树龙姬 龙血树鬼",
       "prices": {
         "SR": 0.5,
@@ -214,8 +187,7 @@
         "SER": 3.0
       }
     },
-    "6361316": {
-      "setNumber": "BLZD-JP028",
+    "BLZD-JP028": {
       "name": "睡醒一杯！玉露茶",
       "prices": {
         "PSER": 29.0,
@@ -223,8 +195,7 @@
         "N": 0.5
       }
     },
-    "42759961": {
-      "setNumber": "BLZD-JP029",
+    "BLZD-JP029": {
       "name": "道化一座 花式火小丑",
       "prices": {
         "SR": 0.5,
@@ -232,39 +203,34 @@
         "PSER": 120.0
       }
     },
-    "78744660": {
-      "setNumber": "BLZD-JP030",
+    "BLZD-JP030": {
       "name": "死亡女王恶魔",
       "prices": {
         "R": 0.5,
         "SER": 0.99
       }
     },
-    "5148778": {
-      "setNumber": "BLZD-JP031",
+    "BLZD-JP031": {
       "name": "霸王暴龙 凶饿毒辉翼龙",
       "prices": {
         "PSER": 35.0,
         "UR": 0.5
       }
     },
-    "31533473": {
-      "setNumber": "BLZD-JP032",
+    "BLZD-JP032": {
       "name": "道化一座 空竹魔小丑",
       "prices": {
         "N": 0.5
       }
     },
-    "78021082": {
-      "setNumber": "BLZD-JP033",
+    "BLZD-JP033": {
       "name": "妖精传姬的编写者",
       "prices": {
         "SER": 3.9,
         "R": 0.5
       }
     },
-    "4026187": {
-      "setNumber": "BLZD-JP034",
+    "BLZD-JP034": {
       "name": "妖精传姬的讲述者",
       "prices": {
         "UR": 0.5,
@@ -272,15 +238,13 @@
         "PSER": 38.0
       }
     },
-    "31411835": {
-      "setNumber": "BLZD-JP035",
+    "BLZD-JP035": {
       "name": "不可见之手 塔耳塔线手",
       "prices": {
         "R": 0.5
       }
     },
-    "67809530": {
-      "setNumber": "BLZD-JP036",
+    "BLZD-JP036": {
       "name": "红莲王者",
       "prices": {
         "UR": 0.5,
@@ -288,15 +252,13 @@
         "SER": 5.0
       }
     },
-    "3294539": {
-      "setNumber": "BLZD-JP037",
+    "BLZD-JP037": {
       "name": "深红剑龙",
       "prices": {
         "R": 0.5
       }
     },
-    "30698243": {
-      "setNumber": "BLZD-JP038",
+    "BLZD-JP038": {
       "name": "真红莲极超新星龙",
       "prices": {
         "UTR": 0.5,
@@ -304,29 +266,25 @@
         "PSER": 55.0
       }
     },
-    "66787942": {
-      "setNumber": "BLZD-JP039",
+    "BLZD-JP039": {
       "name": "捕食植物 羊角麻蝇王",
       "prices": {
         "N": 0.5
       }
     },
-    "93172951": {
-      "setNumber": "BLZD-JP040",
+    "BLZD-JP040": {
       "name": "道化一座 舞流星小丑",
       "prices": {
         "N": 0.5
       }
     },
-    "39576656": {
-      "setNumber": "BLZD-JP041",
+    "BLZD-JP041": {
       "name": "杀手级调整曲·噼啪削波手",
       "prices": {
         "N": 0.5
       }
     },
-    "65961304": {
-      "setNumber": "BLZD-JP042",
+    "BLZD-JP042": {
       "name": "杀手级调整曲 B2B",
       "prices": {
         "UR": 3.0,
@@ -334,61 +292,53 @@
         "PSER": 155.0
       }
     },
-    "92359409": {
-      "setNumber": "BLZD-JP043",
+    "BLZD-JP043": {
       "name": "超重型炮塔列车 古斯塔夫火箭大炮",
       "prices": {
         "UR": 0.5,
         "PSER": 28.0
       }
     },
-    "38354018": {
-      "setNumber": "BLZD-JP044",
+    "BLZD-JP044": {
       "name": "超重型炮塔列车 冲天火箭炮",
       "prices": {
         "R": 0.5,
         "PSER": 28.9
       }
     },
-    "65848113": {
-      "setNumber": "BLZD-JP045",
+    "BLZD-JP045": {
       "name": "终刻龙机13-格拉弗莱伊俄",
       "prices": {
         "R": 0.5
       }
     },
-    "91237821": {
-      "setNumber": "BLZD-JP046",
+    "BLZD-JP046": {
       "name": "道化一座 双魔棍小丑",
       "prices": {
         "N": 0.5
       }
     },
-    "27632520": {
-      "setNumber": "BLZD-JP047",
+    "BLZD-JP047": {
       "name": "妖精传姬-威凯特",
       "prices": {
         "R": 0.5,
         "SER": 3.0
       }
     },
-    "64626565": {
-      "setNumber": "BLZD-JP048",
+    "BLZD-JP048": {
       "name": "黑智天至 伊里斯斐尔",
       "prices": {
         "R": 0.5,
         "SER": 4.5
       }
     },
-    "90011273": {
-      "setNumber": "BLZD-JP049",
+    "BLZD-JP049": {
       "name": "后膛枪管龙",
       "prices": {
         "R": 0.5
       }
     },
-    "27519978": {
-      "setNumber": "BLZD-JP050",
+    "BLZD-JP050": {
       "name": "四花缭乱之灵使",
       "prices": {
         "UTR": 10.0,
@@ -396,193 +346,166 @@
         "PSER": 340.0
       }
     },
-    "53904087": {
-      "setNumber": "BLZD-JP051",
+    "BLZD-JP051": {
       "name": "神书的使者 拉哈穆",
       "prices": {
         "N": 0.5
       }
     },
-    "99398682": {
-      "setNumber": "BLZD-JP052",
+    "BLZD-JP052": {
       "name": "深红狱呼唤",
       "prices": {
         "N": 0.5
       }
     },
-    "26387390": {
-      "setNumber": "BLZD-JP053",
+    "BLZD-JP053": {
       "name": "废品信号",
       "prices": {
         "R": 0.5
       }
     },
-    "52782439": {
-      "setNumber": "BLZD-JP054",
+    "BLZD-JP054": {
       "name": "特别行车时间表",
       "prices": {
         "N": 0.5
       }
     },
-    "89176044": {
-      "setNumber": "BLZD-JP055",
+    "BLZD-JP055": {
       "name": "捕食原生",
       "prices": {
         "R": 0.5
       }
     },
-    "25661743": {
-      "setNumber": "BLZD-JP056",
+    "BLZD-JP056": {
       "name": "绝解的狱神门-忒耳弥努斯",
       "prices": {
         "R": 0.5
       }
     },
-    "51669847": {
-      "setNumber": "BLZD-JP057",
+    "BLZD-JP057": {
       "name": "绝无的狱神界-比托利亚",
       "prices": {
         "N": 0.5
       }
     },
-    "84054556": {
-      "setNumber": "BLZD-JP058",
+    "BLZD-JP058": {
       "name": "终刻反转『阿德剌斯忒亚』",
       "prices": {
         "N": 0.5
       }
     },
-    "20448151": {
-      "setNumber": "BLZD-JP059",
+    "BLZD-JP059": {
       "name": "道化一座『排练』",
       "prices": {
         "R": 0.5
       }
     },
-    "57847269": {
-      "setNumber": "BLZD-JP060",
+    "BLZD-JP060": {
       "name": "道化一座『开演』",
       "prices": {
         "N": 0.5
       }
     },
-    "83232904": {
-      "setNumber": "BLZD-JP061",
+    "BLZD-JP061": {
       "name": "道化一座『极艺』",
       "prices": {
         "SR": 0.5
       }
     },
-    "19326613": {
-      "setNumber": "BLZD-JP062",
+    "BLZD-JP062": {
       "name": "妖精传姬开始啦开始啦",
       "prices": {
         "N": 0.5
       }
     },
-    "56725612": {
-      "setNumber": "BLZD-JP063",
+    "BLZD-JP063": {
       "name": "妖精传姬的舞蹈会",
       "prices": {
         "N": 0.5
       }
     },
-    "82119326": {
-      "setNumber": "BLZD-JP064",
+    "BLZD-JP064": {
       "name": "妖精传姬的故事尾巴",
       "prices": {
         "N": 0.5
       }
     },
-    "19504025": {
-      "setNumber": "BLZD-JP065",
+    "BLZD-JP065": {
       "name": "纠罪巧-重置再巧",
       "prices": {
         "N": 0.5
       }
     },
-    "45508030": {
-      "setNumber": "BLZD-JP066",
+    "BLZD-JP066": {
       "name": "凭依共鸣",
       "prices": {
         "PSER": 44.5,
         "R": 0.5
       }
     },
-    "82997779": {
-      "setNumber": "BLZD-JP067",
+    "BLZD-JP067": {
       "name": "恶魔的篡夺",
       "prices": {
         "N": 0.5
       }
     },
-    "18482473": {
-      "setNumber": "BLZD-JP068",
+    "BLZD-JP068": {
       "name": "H·E·R·O 一闪！",
       "prices": {
         "N": 0.5
       }
     },
-    "44886582": {
-      "setNumber": "BLZD-JP069",
+    "BLZD-JP069": {
       "name": "超逸融合",
       "prices": {
         "UR": 5.0,
         "PSER": 87.0
       }
     },
-    "71275181": {
-      "setNumber": "BLZD-JP070",
+    "BLZD-JP070": {
       "name": "2选1",
       "prices": {
         "N": 0.5,
         "NR": 0.5
       }
     },
-    "17269895": {
-      "setNumber": "BLZD-JP071",
+    "BLZD-JP071": {
       "name": "霸者的鸣动",
       "prices": {
         "N": 0.5
       }
     },
-    "44654994": {
-      "setNumber": "BLZD-JP072",
+    "BLZD-JP072": {
       "name": "神艺学的厚涂-夺还-",
       "prices": {
         "N": 0.5
       }
     },
-    "70058649": {
-      "setNumber": "BLZD-JP073",
+    "BLZD-JP073": {
       "name": "道化一座『怪演』",
       "prices": {
         "N": 0.5
       }
     },
-    "6547248": {
-      "setNumber": "BLZD-JP074",
+    "BLZD-JP074": {
       "name": "道化一座『新加入』",
       "prices": {
         "N": 0.5
       }
     },
-    "43932352": {
-      "setNumber": "BLZD-JP075",
+    "BLZD-JP075": {
       "name": "不可见之导引手",
       "prices": {
         "N": 0.5
       }
     },
-    "79936051": {
-      "setNumber": "BLZD-JP076",
+    "BLZD-JP076": {
       "name": "北十字星火力",
       "prices": {
         "N": 0.5
       }
     },
-    "6325660": {
-      "setNumber": "BLZD-JP077",
+    "BLZD-JP077": {
       "name": "霆王的闪光",
       "prices": {
         "UTR": 140.0,
@@ -590,165 +513,142 @@
         "PSER": 799.9
       }
     },
-    "42719764": {
-      "setNumber": "BLZD-JP078",
+    "BLZD-JP078": {
       "name": "召唤电击",
       "prices": {
         "N": 0.5
       }
     },
-    "78114463": {
-      "setNumber": "BLZD-JP079",
+    "BLZD-JP079": {
       "name": "神之密告",
       "prices": {
         "SER": 65.0,
         "SR": 24.9
       }
     },
-    "5208118": {
-      "setNumber": "BLZD-JP080",
+    "BLZD-JP080": {
       "name": "动点的心慌灵摆",
       "prices": {
         "N": 0.5,
         "NR": 0.5
       }
     },
-    "77360173": {
-      "setNumber": "BLZD-JPS01",
+    "BLZD-JPS01": {
       "name": "同调克隆共鸣者",
       "prices": {
         "UR": 2.8
       }
     },
-    "34761841": {
-      "setNumber": "BLZD-JPS02",
+    "BLZD-JPS02": {
       "name": "深红共鸣者",
       "prices": {
         "UR": 1.4
       }
     },
-    "62991792": {
-      "setNumber": "BLZD-JPS03",
+    "BLZD-JPS03": {
       "name": "灵魂共鸣者",
       "prices": {
         "UR": 3.0
       }
     },
-    "98396890": {
-      "setNumber": "BLZD-JPS04",
+    "BLZD-JPS04": {
       "name": "视界共鸣者",
       "prices": {
         "UR": 5.0
       }
     },
-    "25784595": {
-      "setNumber": "BLZD-JPS05",
+    "BLZD-JPS05": {
       "name": "白骨恶魔",
       "prices": {
         "UR": 4.0
       }
     },
-    "97489701": {
-      "setNumber": "BLZD-JPS06",
+    "BLZD-JPS06": {
       "name": "真红莲新星龙",
       "prices": {
         "UR": 1.0,
         "PSER": 520.0
       }
     },
-    "23008320": {
-      "setNumber": "BLZD-JPS07",
+    "BLZD-JPS07": {
       "name": "呼唤共鸣者",
       "prices": {
         "UR": 3.0
       }
     },
-    "98173209": {
-      "setNumber": "BLZD-JPS08",
+    "BLZD-JPS08": {
       "name": "深红狱大地",
       "prices": {
         "UR": 18.0
       }
     },
-    "50056656": {
-      "setNumber": "BLZD-JPS09",
+    "BLZD-JPS09": {
       "name": "真红莲区域",
       "prices": {
         "UR": 0.5
       }
     },
-    "35272499": {
-      "setNumber": "BLZD-JPS10",
+    "BLZD-JPS10": {
       "name": "捕食植物 蜂兰蝎",
       "prices": {
         "UR": 6.0
       }
     },
-    "61677004": {
-      "setNumber": "BLZD-JPS11",
+    "BLZD-JPS11": {
       "name": "捕食植物 蛇瓶草眼镜蛇",
       "prices": {
         "UR": 1.0
       }
     },
-    "44932065": {
-      "setNumber": "BLZD-JPS12",
+    "BLZD-JPS12": {
       "name": "捕食植物 腺毛草胡蜂",
       "prices": {
         "UR": 2.0
       }
     },
-    "70427670": {
-      "setNumber": "BLZD-JPS13",
+    "BLZD-JPS13": {
       "name": "捕食植物 土瓶草蟾蜍",
       "prices": {
         "UR": 1.3
       }
     },
-    "17825378": {
-      "setNumber": "BLZD-JPS14",
+    "BLZD-JPS14": {
       "name": "捕食植物 黏菖蒲螳螂",
       "prices": {
         "UR": 1.0
       }
     },
-    "66309175": {
-      "setNumber": "BLZD-JPS15",
+    "BLZD-JPS15": {
       "name": "捕食植物 凤梨食虫谷精游走鲸",
       "prices": {
         "UR": 0.8
       }
     },
-    "44536921": {
-      "setNumber": "BLZD-JPS16",
+    "BLZD-JPS16": {
       "name": "捕食计划",
       "prices": {
         "UR": 2.0
       }
     },
-    "42921475": {
-      "setNumber": "BLZD-JPS17",
+    "BLZD-JPS17": {
       "name": "妖精传姬-塔利娅",
       "prices": {
         "UR": 0.5
       }
     },
-    "52022648": {
-      "setNumber": "BLZD-JPS18",
+    "BLZD-JPS18": {
       "name": "妖精传姬-辛德瑞拉",
       "prices": {
         "UR": 1.5
       }
     },
-    "65953423": {
-      "setNumber": "BLZD-JPS19",
+    "BLZD-JPS19": {
       "name": "妖精传姬-罗奇卡",
       "prices": {
         "UR": 0.5
       }
     },
-    "91957038": {
-      "setNumber": "BLZD-JPS20",
+    "BLZD-JPS20": {
       "name": "妖精的传姬",
       "prices": {
         "UR": 1.0

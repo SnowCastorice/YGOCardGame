@@ -1,0 +1,75 @@
+{
+  "_说明": "LOSP vol2 特殊+1包市场价格数据（集换社）",
+  "_单位": "人民币/元",
+  "_数据来源": "集换社App截图 OCR 识别",
+  "_更新时间": "2026-04-07",
+  "_价格说明": "所有价格为集换社'起'价（最低在售价）",
+  "_归属": "LOSP vol2（JP011-020）属于 LOCR，购买3盒赠送1包",
+  "packPrices": {
+    "LOSP-vol2": {
+      "pack": 75.0
+    }
+  },
+  "cards": {
+    "LOSP-JP011": {
+      "name": "究极龙魔导师",
+      "prices": {
+        "PSER-OF": 127.0
+      }
+    },
+    "LOSP-JP012": {
+      "name": "嵌合巨舰龙",
+      "prices": {
+        "PSER-OF": 17.98
+      }
+    },
+    "LOSP-JP013": {
+      "name": "真红莲超新星龙",
+      "prices": {
+        "PSER-OF": 45.0
+      }
+    },
+    "LOSP-JP014": {
+      "name": "No.62 银河眼光子龙皇",
+      "prices": {
+        "PSER-OF": 44.66
+      }
+    },
+    "LOSP-JP015": {
+      "name": "霸王龙 扎克",
+      "prices": {
+        "PSER-OF": 23.0
+      }
+    },
+    "LOSP-JP016": {
+      "name": "前托枪管龙",
+      "prices": {
+        "PSER-OF": 35.87
+      }
+    },
+    "LOSP-JP017": {
+      "name": "混沌之双翼",
+      "prices": {
+        "PSER-OF": 90.0
+      }
+    },
+    "LOSP-JP018": {
+      "name": "闭锁世界的冥神",
+      "prices": {
+        "PSER-OF": 70.0
+      }
+    },
+    "LOSP-JP019": {
+      "name": "精灵术的术使",
+      "prices": {
+        "PSER-OF": 30.0
+      }
+    },
+    "LOSP-JP020": {
+      "name": "灵王的波动",
+      "prices": {
+        "PSER-OF": 297.0
+      }
+    }
+  }
+}

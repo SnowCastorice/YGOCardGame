@@ -150,6 +150,7 @@ const InventorySystem = (function () {
                 };
                 inventory[cardId] = {
                     id: card.id,
+                    cardSetCode: card.cardSetCode || '',
                     name: card.name || '',
                     nameCN: card.nameCN || '',
                     nameOriginal: card.nameOriginal || '',
@@ -277,12 +278,12 @@ const InventorySystem = (function () {
     /**
      * 获取卡片市场价格
      * @param {string} rarity - 稀有度代码
-     * @param {number|string} [cardId] - 卡片密码
+     * @param {string} [cardSetCode] - 卡片编号（如 'LOCH-JP001'）
      * @returns {number} 市场价格，无报价返回 0
      */
-    function getCardPrice(rarity, cardId) {
-        if (cardId && typeof PriceSystem !== 'undefined') {
-            var marketPrice = PriceSystem.getCardPrice(cardId, rarity);
+    function getCardPrice(rarity, cardSetCode) {
+        if (cardSetCode && typeof PriceSystem !== 'undefined') {
+            var marketPrice = PriceSystem.getCardPrice(cardSetCode, rarity);
             if (marketPrice !== null) return marketPrice;
         }
         // 无市场报价，价值为 0
@@ -291,11 +292,11 @@ const InventorySystem = (function () {
 
     /**
      * 检查指定卡片是否有真实市场价格数据
-     * @param {number|string} cardId - 卡片密码
+     * @param {string} cardSetCode - 卡片编号（如 'LOCH-JP001'）
      * @returns {boolean}
      */
-    function hasMarketPrice(cardId) {
-        return typeof PriceSystem !== 'undefined' && PriceSystem.hasPrice(cardId);
+    function hasMarketPrice(cardSetCode) {
+        return typeof PriceSystem !== 'undefined' && PriceSystem.hasPrice(cardSetCode);
     }
 
     /**
@@ -312,11 +313,11 @@ const InventorySystem = (function () {
             if (hasVersions) {
                 Object.keys(versionsOwned).forEach(function (rarity) {
                     var count = versionsOwned[rarity];
-                    cardValue += getCardPrice(rarity, card.id) * count;
+                    cardValue += getCardPrice(rarity, card.cardSetCode) * count;
                 });
             } else {
                 // 兼容旧数据：使用第一个稀有度
-                cardValue = getCardPrice((card.rarityVersions || ['N'])[0], card.id) * card.count;
+                cardValue = getCardPrice((card.rarityVersions || ['N'])[0], card.cardSetCode) * card.count;
             }
             return sum + cardValue;
         }, 0);
@@ -541,8 +542,8 @@ const InventorySystem = (function () {
         cards.forEach(function (card) {
             const rarityCode = card.displayRarity || (card.rarityVersions || ['N'])[0];
             const cardCount = card.displayCount || card.count || 1;
-            const price = getCardPrice(rarityCode, card.id);
-            const isMarket = hasMarketPrice(card.id);
+            const price = getCardPrice(rarityCode, card.cardSetCode);
+            const isMarket = hasMarketPrice(card.cardSetCode);
             const displayName = card.nameCN || card.name || card.nameOriginal || '未知卡片';
 
             const fallbackUrl = 'https://images.ygoprodeck.com/images/cards_small/' + card.id + '.jpg';
@@ -651,8 +652,8 @@ const InventorySystem = (function () {
             case 'price':
                 // 价格排序：无报价卡片（价值0）降序排最后，升序排最前
                 sorted.sort(function (a, b) {
-                    const aPrice = getCardPrice(getCardRarity(a), a.id);
-                    const bPrice = getCardPrice(getCardRarity(b), b.id);
+                    const aPrice = getCardPrice(getCardRarity(a), a.cardSetCode);
+                    const bPrice = getCardPrice(getCardRarity(b), b.cardSetCode);
                     const pDiff = bPrice - aPrice;
                     if (pDiff !== 0) return pDiff * dir;
                     return (getCardCount(b) - getCardCount(a)) * dir;

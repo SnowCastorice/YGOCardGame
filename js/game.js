@@ -2646,9 +2646,9 @@ const rarityOrder = RARITY_CODES_DESC;
         let totalCardValue = 0;
         let hasPriceData = false;
         for (const card of allStatsCards) {
-            const cardId = card.id;
+            const cardSetCode = card.cardSetCode || '';
             const rarity = (card.rarityVersions || ['N'])[0];
-            const price = PriceSystem.getCardPrice(cardId, rarity);
+            const price = PriceSystem.getCardPrice(cardSetCode, rarity);
             if (price !== null) {
                 totalCardValue += price * (card.count || 1);
                 hasPriceData = true;

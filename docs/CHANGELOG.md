@@ -2,6 +2,23 @@
 
 > 所有版本变更的详细记录。待办事项见 [TODO.md](TODO.md)，面向玩家的更新日志见 `data/changelog.json`。
 
+## v1.9.4（2026-04-10）— 价格系统优化
+
+### Bug 修复（`js/priceSystem.js` / `js/inventory.js` / `js/game.js`）
+- 价格文件 key 从卡片密码（password）改为 setNumber（如 LOCH-JP001），修复卡片密码因数据库更新而变化后价格失配的问题
+- 前端价格查询改用 `card.cardSetCode` 代替 `card.id`，inventory 补存 `cardSetCode` 字段
+- 删除不再需要的 `setNumberIndex` 反向索引机制
+
+### 数据架构优化（`data/ocg/prices/`）
+- LOSP vol1（JP001-010）从 `loch_prices.json` 拆分为独立的 `losp_vol1_prices.json`
+- LOSP vol2（JP011-020）从 `locr_prices.json` 拆分为独立的 `losp_vol2_prices.json`
+- 价格系统新增加载 LOSP 独立价格文件（共 5 个价格文件）
+
+### 工具链更新（`tools/merge_prices.py`）
+- merge 脚本输出 key 改为 setNumber，移除 LOSP 混入母包的路由逻辑
+- 新增 LOSP vol1/vol2 独立的加载、处理、保存流程
+- 新增一次性迁移脚本 `tools/migrate_price_keys.py`
+
 ## v1.9.3（2026-04-01）— 存档压缩 + 分段发送
 
 ### 功能优化（`js/game.js` / `index.html` / `css/style.css`）

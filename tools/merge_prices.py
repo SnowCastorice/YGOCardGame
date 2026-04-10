@@ -5,18 +5,21 @@
 
 流程：
 1. 读取 parse_ocr_prices.py 输出的 parsed_prices_v6.json（OCR识别结果）
-2. 读取已有的 loch_prices.json、locr_prices.json 和 blzd_prices.json
+2. 读取已有的 loch_prices.json、locr_prices.json、blzd_prices.json、losp_vol1_prices.json、losp_vol2_prices.json
 3. 读取 price_overrides.json（人工确认的价格覆盖配置）
 4. 智能合并（串扰检测、异常过滤、变化幅度校验）
-   - LOCH + LOSP vol1 增量更新（自动识别 LOSP 编号前缀从对应数据源取价格）
-   - LOCR + LOSP vol2 增量更新（LOCR为全稀有度包，规则同LOCH）
+   - LOCH 增量更新
+   - LOCR 增量更新（全稀有度包，规则同LOCH）
    - BLZD 增量更新（对比旧价格，保留OCR未覆盖的稀有度）
+   - LOSP vol1/vol2 独立更新
    - 被异常规则拦截的价格，如果在 price_overrides.json 中有人工确认条目，则强制采用
 5. 从OCR数据的 pack_prices 字段自动更新卡包/卡盒价格
 6. 输出价格对照表 CSV（包含旧价格、OCR价格、采用价格、备注）
 7. 输出异常告警精简列表 price_alerts.csv（仅含需人工确认项）
-8. 保存更新后的价格文件
+8. 保存更新后的价格文件（5个独立文件）
 9. 清理已消费的覆盖条目并保存 price_overrides.json
+
+注意：价格文件的 cards 对象 key 为 setNumber（如 LOCH-JP001），不再使用卡片密码。
 """
 
 import json
@@ -85,6 +88,10 @@ def main(date_str=None, parsed_path=None):
     loch_prices = load_json(os.path.join(base_dir, 'data', 'ocg', 'prices', 'loch_prices.json'))
     locr_prices = load_json(os.path.join(base_dir, 'data', 'ocg', 'prices', 'locr_prices.json'))
     blzd_prices = load_json(os.path.join(base_dir, 'data', 'ocg', 'prices', 'blzd_prices.json'))
+    losp_vol1_prices = load_json(os.path.join(base_dir, 'data', 'ocg', 'prices', 'losp_vol1_prices.json'))
+    losp_vol2_prices = load_json(os.path.join(base_dir, 'data', 'ocg', 'prices', 'losp_vol2_prices.json'))
+    losp_vol1_has_changes = False
+    losp_vol2_has_changes = False
 
     # 加载人工确认的价格覆盖配置
     overrides_path = os.path.join(base_dir, 'data', 'ocg', 'prices', 'price_overrides.json')
@@ -141,27 +148,22 @@ def main(date_str=None, parsed_path=None):
     csv_rows.append(['卡包', '编号', '卡名', '稀有度', '旧价格', 'OCR价格', 'GMR亚洲版', 'GMR日本版', '采用价格', '备注'])
 
     # =====================
-    # 更新 LOCH + LOSP 价格
+    # 更新 LOCH 价格（LOSP 已拆分为独立文件）
     # =====================
     print("=" * 80)
-    print("LOCH + LOSP 价格更新")
+    print("LOCH 价格更新")
     print("=" * 80)
 
     loch_changes = 0
     loch_not_listed = 0
 
-    for card_key, card_info in loch_prices['cards'].items():
-        set_number = card_info['setNumber']
+    for set_number, card_info in loch_prices['cards'].items():
         card_name = card_info['name']
         old_prices = card_info.get('prices', {})
 
-        # 从OCR结果中查找（根据编号前缀自动选择 LOCH 或 LOSP 数据源）
-        if set_number.startswith('LOSP-'):
-            ocr_card = losp_ocr.get(set_number, {})
-            csv_pack_label = 'LOSP'
-        else:
-            ocr_card = loch_ocr.get(set_number, {})
-            csv_pack_label = 'LOCH'
+        # 从OCR结果中查找
+        ocr_card = loch_ocr.get(set_number, {})
+        csv_pack_label = 'LOCH'
 
         # 智能合并
         new_prices = {}
@@ -272,23 +274,20 @@ def main(date_str=None, parsed_path=None):
     # 更新 LOCR + LOSP vol2 价格
     # =====================
     print(f"\n{'=' * 80}")
-    print("LOCR + LOSP vol2 价格更新")
+    print("LOCR 价格更新（LOSP 已拆分为独立文件）")
     print("=" * 80)
 
     locr_changes = 0
     locr_not_listed = 0
     locr_new_count = 0
 
-    # 建立旧价格映射：setNumber -> old card info
+    # 建立旧价格映射：setNumber -> old card info（key 已经是 setNumber）
     locr_old_by_set = {}  # setNumber -> old card info
-    for card_key, card_info in locr_prices.get('cards', {}).items():
-        sn = card_info.get('setNumber', '')
-        if sn:
-            locr_old_by_set[sn] = {
-                'password': card_key,
-                'name': card_info.get('name', ''),
-                'prices': card_info.get('prices', {}),
-            }
+    for set_number, card_info in locr_prices.get('cards', {}).items():
+        locr_old_by_set[set_number] = {
+            'name': card_info.get('name', ''),
+            'prices': card_info.get('prices', {}),
+        }
 
     locr_cards = {}
 
@@ -395,8 +394,7 @@ def main(date_str=None, parsed_path=None):
                                 f'¥{old_p}', '-', '', '', f'¥{old_p}', '—（OCR未识别，保留旧值）'])
 
         if filtered_prices:
-            locr_cards[password] = {
-                'setNumber': set_number,
+            locr_cards[set_number] = {
                 'name': card_name,
                 'prices': filtered_prices,
             }
@@ -404,57 +402,10 @@ def main(date_str=None, parsed_path=None):
             prices_str = ', '.join(f'{r}=¥{p}' for r, p in sorted(filtered_prices.items()))
             print(f"  {set_number:15s} {card_name[:18]:20s} {prices_str}")
 
-    # 处理 LOSP vol2 卡片（LOSP-JP011~020，已在 locr_prices 中）
-    for card_key, card_info in locr_prices.get('cards', {}).items():
-        sn = card_info.get('setNumber', '')
-        if not sn.startswith('LOSP-'):
-            continue
-        # LOSP vol2 卡片的更新逻辑
-        old_prices = card_info.get('prices', {})
-        ocr_card = losp_ocr.get(sn, {})
-        password = card_key
-        card_name = card_info.get('name', '')
-
-        if password in locr_cards:
-            continue  # 已处理过
-
-        new_prices = {}
-        for rarity, old_p in old_prices.items():
-            ocr_entry = ocr_card.get(rarity)
-            ocr_p = get_price_from_entry(ocr_entry) if ocr_entry else None
-
-            note = ''
-            if ocr_p is not None:
-                if ocr_p == PRICE_NOT_LISTED:
-                    new_prices[rarity] = old_p
-                    note = '⚠️ 集换社未收录(--)'
-                    locr_not_listed += 1
-                else:
-                    new_prices[rarity] = ocr_p
-                    if ocr_p != old_p:
-                        note = '✅ 更新'
-                        locr_changes += 1
-            else:
-                new_prices[rarity] = old_p
-                note = '—（OCR未识别）'
-
-            adopted = new_prices[rarity]
-            ocr_str = f'¥{ocr_p}' if ocr_p is not None and ocr_p != PRICE_NOT_LISTED else ('--' if ocr_p == PRICE_NOT_LISTED else '-')
-            csv_rows.append(['LOSP', sn, card_name, rarity,
-                            f'¥{old_p}', ocr_str, '', '', f'¥{adopted}', note])
-
-        locr_cards[password] = {
-            'setNumber': sn,
-            'name': card_name,
-            'prices': new_prices,
-        }
-
-    # 保留OCR中完全没有的旧卡片（如果有）
+    # 保留OCR中完全没有的旧卡片（如果有，key 已经是 setNumber）
     for sn, old_info in locr_old_by_set.items():
-        pw = old_info['password']
-        if pw not in locr_cards:
-            locr_cards[pw] = {
-                'setNumber': sn,
+        if sn not in locr_cards:
+            locr_cards[sn] = {
                 'name': old_info['name'],
                 'prices': old_info['prices'],
             }
@@ -477,16 +428,13 @@ def main(date_str=None, parsed_path=None):
     print("BLZD 价格更新（增量）")
     print("=" * 80)
 
-    # 建立旧价格映射：setNumber -> {rarity: price}
+    # 建立旧价格映射：setNumber -> {rarity: price}（key 已经是 setNumber）
     blzd_old_by_set = {}  # setNumber -> old card info
-    for card_key, card_info in blzd_prices.get('cards', {}).items():
-        sn = card_info.get('setNumber', '')
-        if sn:
-            blzd_old_by_set[sn] = {
-                'password': card_key,
-                'name': card_info.get('name', ''),
-                'prices': card_info.get('prices', {}),
-            }
+    for set_number, card_info in blzd_prices.get('cards', {}).items():
+        blzd_old_by_set[set_number] = {
+            'name': card_info.get('name', ''),
+            'prices': card_info.get('prices', {}),
+        }
 
     blzd_cards = {}
     blzd_changes = 0
@@ -648,8 +596,7 @@ def main(date_str=None, parsed_path=None):
                                 f'¥{old_p}', '-', '', '', f'¥{old_p}', '—（OCR未识别，保留旧值）'])
 
         if filtered_prices:
-            blzd_cards[password] = {
-                'setNumber': set_number,
+            blzd_cards[set_number] = {
                 'name': card_name,
                 'prices': filtered_prices,
             }
@@ -657,13 +604,11 @@ def main(date_str=None, parsed_path=None):
             prices_str = ', '.join(f'{r}=¥{p}' for r, p in sorted(filtered_prices.items()))
             print(f"  {set_number:15s} {card_name[:18]:20s} {prices_str}")
 
-    # 保留OCR中完全没有的旧卡片（如果有）
+    # 保留OCR中完全没有的旧卡片（如果有，key 已经是 setNumber）
     for sn, old_info in blzd_old_by_set.items():
         if sn not in blzd_ocr:
-            pw = old_info['password']
-            if pw not in blzd_cards:
-                blzd_cards[pw] = {
-                    'setNumber': sn,
+            if sn not in blzd_cards:
+                blzd_cards[sn] = {
                     'name': old_info['name'],
                     'prices': old_info['prices'],
                 }
@@ -678,6 +623,90 @@ def main(date_str=None, parsed_path=None):
     blzd_prices['_数据来源'] = '集换社App截图 OCR 识别'
 
     print(f"  BLZD 更新: {len(blzd_cards)} 张, 变更: {blzd_changes} 项, 新建: {blzd_new_count} 项, 未收录: {blzd_not_listed} 项")
+
+    # =====================
+    # 更新 LOSP vol1 + vol2 价格（独立文件）
+    # =====================
+    print(f"\n{'=' * 80}")
+    print("LOSP vol1 + vol2 价格更新（独立文件）")
+    print("=" * 80)
+
+    losp_vol1_changes = 0
+    losp_vol2_changes = 0
+
+    # LOSP vol1（JP001-010）
+    for set_number, card_info in losp_vol1_prices.get('cards', {}).items():
+        card_name = card_info.get('name', '')
+        old_prices = card_info.get('prices', {})
+        ocr_card = losp_ocr.get(set_number, {})
+
+        new_prices = {}
+        for rarity, old_p in old_prices.items():
+            ocr_entry = ocr_card.get(rarity)
+            ocr_p = get_price_from_entry(ocr_entry) if ocr_entry else None
+            note = ''
+
+            if ocr_p is not None:
+                if ocr_p == PRICE_NOT_LISTED:
+                    new_prices[rarity] = old_p
+                    note = '⚠️ 集换社未收录(--)'
+                else:
+                    new_prices[rarity] = ocr_p
+                    if ocr_p != old_p:
+                        note = '✅ 更新'
+                        losp_vol1_changes += 1
+            else:
+                new_prices[rarity] = old_p
+                note = '—（OCR未识别）'
+
+            adopted = new_prices[rarity]
+            ocr_str = f'¥{ocr_p}' if ocr_p is not None and ocr_p != PRICE_NOT_LISTED else ('--' if ocr_p == PRICE_NOT_LISTED else '-')
+            csv_rows.append(['LOSP-vol1', set_number, card_name, rarity,
+                            f'¥{old_p}', ocr_str, '', '', f'¥{adopted}', note])
+
+        card_info['prices'] = new_prices
+
+    if losp_vol1_changes > 0:
+        losp_vol1_has_changes = True
+        losp_vol1_prices['_更新时间'] = date_display
+    print(f"  LOSP vol1 变更: {losp_vol1_changes} 项")
+
+    # LOSP vol2（JP011-020）
+    for set_number, card_info in losp_vol2_prices.get('cards', {}).items():
+        card_name = card_info.get('name', '')
+        old_prices = card_info.get('prices', {})
+        ocr_card = losp_ocr.get(set_number, {})
+
+        new_prices = {}
+        for rarity, old_p in old_prices.items():
+            ocr_entry = ocr_card.get(rarity)
+            ocr_p = get_price_from_entry(ocr_entry) if ocr_entry else None
+            note = ''
+
+            if ocr_p is not None:
+                if ocr_p == PRICE_NOT_LISTED:
+                    new_prices[rarity] = old_p
+                    note = '⚠️ 集换社未收录(--)'
+                else:
+                    new_prices[rarity] = ocr_p
+                    if ocr_p != old_p:
+                        note = '✅ 更新'
+                        losp_vol2_changes += 1
+            else:
+                new_prices[rarity] = old_p
+                note = '—（OCR未识别）'
+
+            adopted = new_prices[rarity]
+            ocr_str = f'¥{ocr_p}' if ocr_p is not None and ocr_p != PRICE_NOT_LISTED else ('--' if ocr_p == PRICE_NOT_LISTED else '-')
+            csv_rows.append(['LOSP-vol2', set_number, card_name, rarity,
+                            f'¥{old_p}', ocr_str, '', '', f'¥{adopted}', note])
+
+        card_info['prices'] = new_prices
+
+    if losp_vol2_changes > 0:
+        losp_vol2_has_changes = True
+        losp_vol2_prices['_更新时间'] = date_display
+    print(f"  LOSP vol2 变更: {losp_vol2_changes} 项")
 
     # =====================
     # 卡包/卡盒价格（从OCR数据自动读取）
@@ -711,17 +740,17 @@ def main(date_str=None, parsed_path=None):
         print(f"  LOCH 包=¥{loch_prices['packPrices']['LOCH'].get('pack', '?')} (沿用旧价，OCR未识别)")
         csv_rows.append(['卡包价格', 'LOCH', '', '包', '', '', '', '', f"¥{loch_prices['packPrices']['LOCH'].get('pack', '?')}", '沿用旧价'])
 
-    # LOSP vol1 包价格（只在 OCR 数据包含 vol1 的卡片 JP001~010 时更新）
+    # LOSP vol1 包价格（写入独立文件）
     losp_pack = ocr_pack_prices.get('losp', {})
     losp_ocr_has_vol1 = any(sn for sn in losp_ocr if sn.startswith('LOSP-JP0') and int(sn.split('JP')[1][:3]) <= 10)
     if 'pack' in losp_pack and losp_ocr_has_vol1:
-        loch_prices['packPrices']['LOSP-vol1']['pack'] = losp_pack['pack']
-        loch_has_changes = True
+        losp_vol1_prices['packPrices']['LOSP-vol1']['pack'] = losp_pack['pack']
+        losp_vol1_has_changes = True
         print(f"  LOSP-vol1 包=¥{losp_pack['pack']} ✅ (OCR识别)")
-        csv_rows.append(['卡包价格', 'LOSP-vol1', '', '包', f"¥{loch_prices['packPrices']['LOSP-vol1'].get('pack', '-')}", '', '', '', f"¥{losp_pack['pack']}", 'OCR识别'])
+        csv_rows.append(['卡包价格', 'LOSP-vol1', '', '包', f"¥{losp_vol1_prices['packPrices']['LOSP-vol1'].get('pack', '-')}", '', '', '', f"¥{losp_pack['pack']}", 'OCR识别'])
     else:
-        print(f"  LOSP-vol1 包=¥{loch_prices['packPrices']['LOSP-vol1'].get('pack', '?')} (沿用旧价，OCR未识别)")
-        csv_rows.append(['卡包价格', 'LOSP-vol1', '', '包', '', '', '', '', f"¥{loch_prices['packPrices']['LOSP-vol1'].get('pack', '?')}", '沿用旧价'])
+        print(f"  LOSP-vol1 包=¥{losp_vol1_prices['packPrices']['LOSP-vol1'].get('pack', '?')} (沿用旧价，OCR未识别)")
+        csv_rows.append(['卡包价格', 'LOSP-vol1', '', '包', '', '', '', '', f"¥{losp_vol1_prices['packPrices']['LOSP-vol1'].get('pack', '?')}", '沿用旧价'])
 
     # BLZD 盒/包价格
     blzd_pack = ocr_pack_prices.get('blzd', {})
@@ -763,18 +792,20 @@ def main(date_str=None, parsed_path=None):
         print(f"  LOCR 包=¥{locr_prices['packPrices']['LOCR'].get('pack', '?')} (沿用旧价，OCR未识别)")
         csv_rows.append(['卡包价格', 'LOCR', '', '包', '', '', '', '', f"¥{locr_prices['packPrices']['LOCR'].get('pack', '?')}", '沿用旧价'])
 
-    # LOSP vol2 包价格（只在 OCR 数据包含 vol2 的卡片 JP011~020 时更新）
+    # LOSP vol2 包价格（写入独立文件）
     losp_vol2_pack = ocr_pack_prices.get('losp', {})
     losp_ocr_has_vol2 = any(sn for sn in losp_ocr if sn.startswith('LOSP-JP0') and int(sn.split('JP')[1][:3]) > 10)
-    if 'pack' in losp_vol2_pack and losp_ocr_has_vol2 and 'LOSP-vol2' in locr_prices.get('packPrices', {}):
-        locr_prices['packPrices']['LOSP-vol2']['pack'] = losp_vol2_pack['pack']
-        locr_has_changes = True
+    if 'pack' in losp_vol2_pack and losp_ocr_has_vol2:
+        losp_vol2_prices['packPrices']['LOSP-vol2']['pack'] = losp_vol2_pack['pack']
+        losp_vol2_has_changes = True
         print(f"  LOSP-vol2 包=¥{losp_vol2_pack['pack']} ✅ (OCR识别)")
 
     # 按需保存：只写入有实际变更的价格文件
     loch_out = os.path.join(base_dir, 'data', 'ocg', 'prices', 'loch_prices.json')
     locr_out = os.path.join(base_dir, 'data', 'ocg', 'prices', 'locr_prices.json')
     blzd_out = os.path.join(base_dir, 'data', 'ocg', 'prices', 'blzd_prices.json')
+    losp_vol1_out = os.path.join(base_dir, 'data', 'ocg', 'prices', 'losp_vol1_prices.json')
+    losp_vol2_out = os.path.join(base_dir, 'data', 'ocg', 'prices', 'losp_vol2_prices.json')
 
     if loch_has_changes:
         save_json(loch_prices, loch_out)
@@ -793,6 +824,18 @@ def main(date_str=None, parsed_path=None):
         print(f"✅ 已保存 BLZD 价格: {blzd_out}")
     else:
         print(f"⏭️  BLZD 无变更，跳过写入")
+
+    if losp_vol1_has_changes:
+        save_json(losp_vol1_prices, losp_vol1_out)
+        print(f"✅ 已保存 LOSP vol1 价格: {losp_vol1_out}")
+    else:
+        print(f"⏭️  LOSP vol1 无变更，跳过写入")
+
+    if losp_vol2_has_changes:
+        save_json(losp_vol2_prices, losp_vol2_out)
+        print(f"✅ 已保存 LOSP vol2 价格: {losp_vol2_out}")
+    else:
+        print(f"⏭️  LOSP vol2 无变更，跳过写入")
 
     # 清理已消费的覆盖条目
     if consumed_overrides:
@@ -856,30 +899,25 @@ def main(date_str=None, parsed_path=None):
     print("覆盖率检查")
     print("=" * 80)
 
-    # LOCH + LOSP 覆盖率
+    # LOCH 覆盖率（key 已经是 setNumber，不再包含 LOSP）
     loch_missing = []
-    for card_key, card_info in loch_prices['cards'].items():
-        sn = card_info['setNumber']
-        if sn.startswith('LOSP-'):
-            ocr_card = losp_ocr.get(sn, {})
-        else:
-            ocr_card = loch_ocr.get(sn, {})
+    for set_number, card_info in loch_prices['cards'].items():
+        ocr_card = loch_ocr.get(set_number, {})
         if not ocr_card:
-            loch_missing.append(f"{sn} {card_info['name']}")
+            loch_missing.append(f"{set_number} {card_info['name']}")
         else:
-            # 检查各稀有度是否都有OCR数据
             for rarity in card_info.get('prices', {}).keys():
                 if rarity not in ocr_card:
-                    loch_missing.append(f"{sn} {card_info['name']} [{rarity}]")
+                    loch_missing.append(f"{set_number} {card_info['name']} [{rarity}]")
 
     if loch_missing:
-        print(f"  ⚠️ LOCH+LOSP 缺失OCR数据 ({len(loch_missing)} 项):")
-        for item in loch_missing[:20]:  # 最多显示20条
+        print(f"  ⚠️ LOCH 缺失OCR数据 ({len(loch_missing)} 项):")
+        for item in loch_missing[:20]:
             print(f"     - {item}")
         if len(loch_missing) > 20:
             print(f"     ... 还有 {len(loch_missing) - 20} 项")
     else:
-        print(f"  ✅ LOCH+LOSP 全部稀有度均有OCR覆盖")
+        print(f"  ✅ LOCH 全部稀有度均有OCR覆盖")
 
     # BLZD 覆盖率
     blzd_missing = []
@@ -914,11 +952,8 @@ def main(date_str=None, parsed_path=None):
     print("=" * 80)
 
     loch_total = len(loch_prices['cards'])
-    loch_with_ocr = sum(1 for k, v in loch_prices['cards'].items()
-                        if loch_ocr.get(v['setNumber']) or losp_ocr.get(v['setNumber']))
-    losp_with_ocr = sum(1 for k, v in loch_prices['cards'].items()
-                        if v['setNumber'].startswith('LOSP-') and losp_ocr.get(v['setNumber']))
-    print(f"  LOCH+LOSP: {loch_total} 张卡，OCR覆盖 {loch_with_ocr} 张 (其中LOSP {losp_with_ocr} 张)")
+    loch_with_ocr = sum(1 for sn in loch_prices['cards'] if loch_ocr.get(sn))
+    print(f"  LOCH: {loch_total} 张卡，OCR覆盖 {loch_with_ocr} 张")
     print(f"  LOCH 价格变更: {loch_changes} 项，未收录: {loch_not_listed} 项")
 
     locr_total = len(locr_cards)
@@ -926,6 +961,11 @@ def main(date_str=None, parsed_path=None):
 
     blzd_total = len(blzd_cards)
     print(f"  BLZD: {blzd_total} 张卡，变更: {blzd_changes} 项，新建: {blzd_new_count} 项，未收录: {blzd_not_listed} 项")
+
+    losp_vol1_total = len(losp_vol1_prices.get('cards', {}))
+    losp_vol2_total = len(losp_vol2_prices.get('cards', {}))
+    print(f"  LOSP vol1: {losp_vol1_total} 张卡，变更: {losp_vol1_changes} 项")
+    print(f"  LOSP vol2: {losp_vol2_total} 张卡，变更: {losp_vol2_changes} 项")
 
 
 if __name__ == '__main__':
