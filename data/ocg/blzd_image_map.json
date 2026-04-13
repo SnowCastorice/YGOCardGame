@@ -1,509 +1,647 @@
 {
-  "_说明": "BLZD 卡图映射表 -- 卡片密码(password) -> YugiohMeta S3 CDN 图片ID",
-  "_图片URL格式": "https://s3.duellinksmeta.com/cards/{metaId}_w{尺寸}.webp",
-  "_可用尺寸": "w100, w140, w200, w260, w360, w420",
-  "_数据来源": "从 yugiohmeta.com/articles/sets/ocg/blzd 页面提取 + YGOCDB API 匹配",
-  "_更新时间": "2026-03-06",
+  "_说明": "BLZD 卡图映射表 — setNumber -> 本地卡图文件名（按稀有度）",
+  "_格式": "localImages 中每个稀有度对应一个文件名数组，按图源优先级从高到低排序",
+  "_生成方式": "由 tools/rebuild_image_maps.py 自动生成",
   "cards": {
-    "53904087": {
-      "metaId": "6951ee2bdd1e2c58763c9d40",
-      "name": "Lahamu the Messenger of Sacred Scripture",
-      "setNumber": "BLZD-JP051"
-    },
-    "31533473": {
-      "metaId": "69662bdc2c7c9b5c492cf594",
-      "name": "Clown Clan Diablo",
-      "setNumber": "BLZD-JP032"
-    },
-    "93172951": {
-      "metaId": "69662c04d823ec5fce0ffa67",
-      "name": "Clown Clan Meteor",
-      "setNumber": "BLZD-JP040"
-    },
-    "39576656": {
-      "metaId": "696b88e8a9ac30c9e561d6b6",
-      "name": "Kewl Tune Crackle",
-      "setNumber": "BLZD-JP041"
-    },
-    "66787942": {
-      "metaId": "694871a81bf6012e25188bbd",
-      "name": "Predaplant Baalthea",
-      "setNumber": "BLZD-JP039"
-    },
-    "91237821": {
-      "metaId": "69662c26a629bbc400008773",
-      "name": "Clown Clan Devils",
-      "setNumber": "BLZD-JP046"
-    },
-    "44716748": {
-      "metaId": "69658b280789ce3f707bef6e",
-      "name": "Trito Enneacraft - \"exapatisIA\"",
-      "setNumber": "BLZD-JP019"
-    },
-    "45116390": {
-      "metaId": "6932294cbed2c9fcaaebfe00",
-      "name": "Heavy Knight Babel Decker",
-      "setNumber": "BLZD-JP006"
-    },
-    "81101309": {
-      "metaId": "69322970bed2c9fcaaec02b5",
-      "name": "Noctilucent Train Bleu Traveler",
-      "setNumber": "BLZD-JP007"
-    },
-    "44694191": {
-      "metaId": "6942d52ee40446483d3d706d",
-      "name": "Transient Masquerader of Illusion",
-      "setNumber": "BLZD-JP023"
-    },
-    "6083904": {
-      "metaId": "6962438afb04d3eac8bf4fee",
-      "name": "Diabrocken of the Ghost Light",
-      "setNumber": "BLZD-JP025"
-    },
-    "56838842": {
-      "metaId": "691435fb4e1cf3894cc791be",
-      "name": "Fiend Piece Golem",
-      "setNumber": "BLZD-JP003"
-    },
-    "43471513": {
-      "metaId": "696243afac9d56a1a13d92f6",
-      "name": "Convex Knight",
-      "setNumber": "BLZD-JP026"
-    },
-    "45538320": {
-      "metaId": "694874d85e1745f6741984c8",
-      "name": "Familiars of the Spiritual Arts",
-      "setNumber": "BLZD-JP022"
-    },
-    "83445539": {
-      "metaId": "691435c6fbbf5786cf6e1b2c",
-      "name": "Darkness Resonator",
-      "setNumber": "BLZD-JP001"
-    },
-    "18595008": {
-      "metaId": "694870c78665ec9779b06d42",
-      "name": "Predaplant Lilizard",
-      "setNumber": "BLZD-JP008"
-    },
-    "18711696": {
-      "metaId": "6948731ee7e7f1a00108fc1b",
-      "name": "Assault Sonic Warrior",
-      "setNumber": "BLZD-JP005"
-    },
-    "82933935": {
-      "metaId": "695014ece5a2d4f4e91de8a4",
-      "name": "Mimighoul Flower",
-      "setNumber": "BLZD-JP017"
-    },
-    "44994712": {
-      "metaId": "694871101bf6012e25188b80",
-      "name": "Predaplant Longinephila",
-      "setNumber": "BLZD-JP009"
-    },
-    "82997779": {
-      "metaId": "6942d4f7eb1dc3118af40691",
-      "name": "Archfiend Usurpation",
-      "setNumber": "BLZD-JP067"
-    },
-    "57847269": {
-      "metaId": "69663096dd1b651fdc4cf9fa",
-      "name": "Clown Clan \"Matinee\"",
-      "setNumber": "BLZD-JP060"
-    },
-    "99398682": {
-      "metaId": "69143687fbbf5786cf6e2742",
-      "name": "Crimson Call",
-      "setNumber": "BLZD-JP052"
-    },
-    "84054556": {
-      "metaId": "696247a99aa8d52569898db4",
-      "name": "DoomZ Command \"A.D.R.A.S.T.E.I.A.\"",
-      "setNumber": "BLZD-JP058"
-    },
-    "19504025": {
-      "metaId": "696580a4dbb23bd17dc22983",
-      "name": "Enneacraft Reset",
-      "setNumber": "BLZD-JP065"
-    },
-    "52782439": {
-      "metaId": "69322a8bbed2c9fcaaec24de",
-      "name": "Exceptional Schedule",
-      "setNumber": "BLZD-JP054"
-    },
-    "56725612": {
-      "metaId": "69322abd60185ac022e751ed",
-      "name": "Fairy Tail Ball",
-      "setNumber": "BLZD-JP063"
-    },
-    "19326613": {
-      "metaId": "69322aaabed2c9fcaaec2921",
-      "name": "Fairy Tail Long Long Ago",
-      "setNumber": "BLZD-JP062"
-    },
-    "18482473": {
-      "metaId": "6965639f9f53ecd95a0b9017",
-      "name": "H-E-R-O Flash!",
-      "setNumber": "BLZD-JP068"
-    },
-    "51669847": {
-      "metaId": "696246449429ca88fd501edb",
-      "name": "Null Power Patron Realm - Vidria",
-      "setNumber": "BLZD-JP057"
-    },
-    "82119326": {
-      "metaId": "69322ad17f4cc0feb5fb9717",
-      "name": "Tales of Fairy Tail",
-      "setNumber": "BLZD-JP064"
-    },
-    "44654994": {
-      "metaId": "696246522c4839f55b2899ed",
-      "name": "Artmage Impact -Recapture-",
-      "setNumber": "BLZD-JP072"
-    },
-    "43932352": {
-      "metaId": "69624473f33102e9961baeb9",
-      "name": "Bayt'al-Hecahands",
-      "setNumber": "BLZD-JP075"
-    },
-    "6547248": {
-      "metaId": "69662cccaa260c1f9eae514f",
-      "name": "Clown Clan \"New Face\"",
-      "setNumber": "BLZD-JP074"
-    },
-    "70058649": {
-      "metaId": "69662caee456c14d7305b51a",
-      "name": "Clown Clan \"Soiree\"",
-      "setNumber": "BLZD-JP073"
-    },
-    "79936051": {
-      "metaId": "696243d3cf183019a7088b0f",
-      "name": "Northern Cross Fire",
-      "setNumber": "BLZD-JP076"
-    },
-    "42719764": {
-      "metaId": "6962452c406c1f415578116e",
-      "name": "Summon Shock",
-      "setNumber": "BLZD-JP078"
-    },
-    "17269895": {
-      "metaId": "69143696fbbf5786cf6e2841",
-      "name": "The Ruler's Rumbling",
-      "setNumber": "BLZD-JP071"
-    },
-    "90011273": {
-      "metaId": "695015513331e53ebe34d200",
-      "name": "Breachborrel Dragon",
-      "setNumber": "BLZD-JP049"
-    },
-    "31411835": {
-      "metaId": "69624447a700f195572b0c5a",
-      "name": "Hecahands Dandalos",
-      "setNumber": "BLZD-JP035"
-    },
-    "78021082": {
-      "metaId": "693229cbd655c36a12358cc4",
-      "name": "Weaver of Fairy Tail Tales",
-      "setNumber": "BLZD-JP033"
-    },
-    "3294539": {
-      "metaId": "691436674e1cf3894cc798b5",
-      "name": "Crimson Blade Dragon",
-      "setNumber": "BLZD-JP037"
-    },
-    "38354018": {
-      "metaId": "69322a3cbed2c9fcaaec1b79",
-      "name": "Superdreadnought Rail Cannon Flying Launcher",
-      "setNumber": "BLZD-JP044"
-    },
-    "64626565": {
-      "metaId": "69487025bff3bb5609e270af",
-      "name": "Cherubidamn Irisfiel",
-      "setNumber": "BLZD-JP048"
-    },
-    "65848113": {
-      "metaId": "69624790e917a5c4777c229f",
-      "name": "DoomZ XIII Over - Graflario",
-      "setNumber": "BLZD-JP045"
-    },
-    "27632520": {
-      "metaId": "69322a6bd655c36a123597d0",
-      "name": "Fairy Tail - Wickat",
-      "setNumber": "BLZD-JP047"
-    },
-    "78744660": {
-      "metaId": "6942d4c9e40446483d3d6812",
-      "name": "Doom Regina Archfiend",
-      "setNumber": "BLZD-JP030"
-    },
-    "43871165": {
-      "metaId": "696245ecd1f607e0b4acbf67",
-      "name": "Power Patron Shadow Machine Zegredo",
-      "setNumber": "BLZD-JP012"
-    },
-    "17473466": {
-      "metaId": "696245c8fe9d307cf941f8f5",
-      "name": "Power Patron Shadow Beast Nervedo",
-      "setNumber": "BLZD-JP011"
-    },
-    "10266279": {
-      "metaId": "696246090bf84b9e66f834ce",
-      "name": "Power Patron Shadow Spirit Junordo",
-      "setNumber": "BLZD-JP013"
-    },
-    "82323997": {
-      "metaId": "6914361e4e1cf3894cc793cc",
-      "name": "Red Nova Dragon/Assault Mode",
-      "setNumber": "BLZD-JP004"
-    },
-    "20448151": {
-      "metaId": "69662c5a29c16f0dd070049a",
-      "name": "Clown Clan \"Rehearsal\"",
-      "setNumber": "BLZD-JP059"
-    },
-    "26387390": {
-      "metaId": "6948760ce3ea042050503480",
-      "name": "Junk Signal",
-      "setNumber": "BLZD-JP053"
-    },
-    "45508030": {
-      "metaId": "694875c9a3979e6ba7dbdfd6",
-      "name": "Possessed Resonance",
-      "setNumber": "BLZD-JP066"
-    },
-    "89176044": {
-      "metaId": "6948763415ce6383c718d88b",
-      "name": "Predaprimitive",
-      "setNumber": "BLZD-JP055"
-    },
-    "25661743": {
-      "metaId": "69624638898826496ac8bfa9",
-      "name": "Unleashed Power Patron Portal - Terminus",
-      "setNumber": "BLZD-JP056"
-    },
-    "6361316": {
-      "metaId": "69679eb1ba187bd58177f466",
-      "name": "WAKE CUP! Kuro",
-      "setNumber": "BLZD-JP028"
-    },
-    "71275181": {
-      "metaId": "6962451089a952251fd5f4a8",
-      "name": "One of Two",
-      "setNumber": "BLZD-JP070"
-    },
-    "5208118": {
-      "metaId": "696571f9fc9b47d64540bf32",
-      "name": "Moving Point Pendulum",
-      "setNumber": "BLZD-JP080"
-    },
-    "82159583": {
-      "metaId": "69662b7a9c97d6fb5e3940e4",
-      "name": "Clown Clan Whiteface",
-      "setNumber": "BLZD-JP015"
-    },
-    "71801447": {
-      "metaId": "696586b246773047f47a4cc9",
-      "name": "Enneacraft - Atil.SPIA",
-      "setNumber": "BLZD-JP020"
-    },
-    "56651978": {
-      "metaId": "69624625108f2e0703ef807c",
-      "name": "Elfnote Regina",
-      "setNumber": "BLZD-JP014"
-    },
-    "18321034": {
-      "metaId": "6962442efc2eade1a1a8d6cb",
-      "name": "Hecahands Makibel",
-      "setNumber": "BLZD-JP018"
-    },
-    "19434243": {
-      "metaId": "691435de4e1cf3894cc78f88",
-      "name": "Power Vice Dragon",
-      "setNumber": "BLZD-JP002"
-    },
-    "19144622": {
-      "metaId": "693229b3d655c36a12358ae4",
-      "name": "Fairy Tail - Matchlille",
-      "setNumber": "BLZD-JP016"
-    },
-    "79966218": {
-      "metaId": "6950151b95146ba563150964",
-      "name": "Draselea the Blood Tree Dragon Princess",
-      "setNumber": "BLZD-JP027"
-    },
-    "17209452": {
-      "metaId": "696b88b8fe4fb91ad3c5d9a5",
-      "name": "Kewl Tune Rotary",
-      "setNumber": "BLZD-JP021"
-    },
-    "83232904": {
-      "metaId": "69662c86960003a75e055eda",
-      "name": "Clown Clan \"Malabarism\"",
-      "setNumber": "BLZD-JP061"
-    },
-    "78114463": {
-      "metaId": "6968e3c658fa67626497da31",
-      "name": "Solemn Report",
-      "setNumber": "BLZD-JP079"
-    },
-    "5148778": {
-      "metaId": "694871576b25e2eb8c8be599",
-      "name": "Starving Venom Wing Dragon",
-      "setNumber": "BLZD-JP031"
-    },
-    "4026187": {
-      "metaId": "693229eebed2c9fcaaec12d1",
-      "name": "Chronicler of Fairy Tail Tales",
-      "setNumber": "BLZD-JP034"
-    },
-    "65961304": {
-      "metaId": "696b8914053d62f0578501fe",
-      "name": "Kewl Tune Back 2 Back",
-      "setNumber": "BLZD-JP042"
-    },
-    "67809530": {
-      "metaId": "6914363bfbbf5786cf6e2252",
-      "name": "The Crimson King",
-      "setNumber": "BLZD-JP036"
-    },
-    "92359409": {
-      "metaId": "69322a1ed655c36a12359229",
-      "name": "Superdreadnought Rail Cannon Gustav Rocket",
-      "setNumber": "BLZD-JP043"
-    },
-    "70488851": {
-      "metaId": "696245a2101885d4c40e9c91",
-      "name": "Vidrium the Power Patron of Chaos Extermination",
-      "setNumber": "BLZD-JP010"
-    },
-    "44886582": {
-      "metaId": "694876616b25e2eb8c8be7bf",
-      "name": "Apex Polymerization",
-      "setNumber": "BLZD-JP069"
-    },
-    "27519978": {
-      "metaId": "6948753abff3bb5609e271ac",
-      "name": "Four Charmers in Profusion",
-      "setNumber": "BLZD-JP050"
-    },
-    "30698243": {
-      "metaId": "6948720c131604f9a8437f10",
-      "name": "Red Hypernova Dragon",
-      "setNumber": "BLZD-JP038"
-    },
-    "70088809": {
-      "metaId": "696244059aa8d525698984ac",
-      "name": "Fidraulis Harmonia",
-      "setNumber": "BLZD-JP024"
-    },
-    "6325660": {
-      "metaId": "696b893cc11fc3c444cf73fd",
-      "name": "Dominus Spark",
-      "setNumber": "BLZD-JP077"
-    },
-    "42759961": {
-      "metaId": "69662bb0b83740f36d78ea0f",
-      "name": "Clown Clan Flare",
-      "setNumber": "BLZD-JP029"
-    },
-    "77360173": {
-      "metaId": "60c2b3aca0e24f2d54a53935",
-      "name": "Synkron Resonator",
-      "setNumber": "BLZD-JPS01"
-    },
-    "34761841": {
-      "metaId": "60c2b3aaa0e24f2d54a51a5a",
-      "name": "Crimson Resonator",
-      "setNumber": "BLZD-JPS02"
-    },
-    "62991792": {
-      "metaId": "64378433b3646a008098123e",
-      "name": "Soul Resonator",
-      "setNumber": "BLZD-JPS03"
-    },
-    "98396890": {
-      "metaId": "6461a1d3b2f5a917a9827a95",
-      "name": "Vision Resonator",
-      "setNumber": "BLZD-JPS04"
-    },
-    "25784595": {
-      "metaId": "64378466b3646a008098173e",
-      "name": "Bone Archfiend",
-      "setNumber": "BLZD-JPS05"
-    },
-    "97489701": {
-      "metaId": "60c2b3aca0e24f2d54a53304",
-      "name": "Red Nova Dragon",
-      "setNumber": "BLZD-JPS06"
-    },
-    "23008320": {
-      "metaId": "60c2b3aca0e24f2d54a53377",
-      "name": "Resonator Call",
-      "setNumber": "BLZD-JPS07"
-    },
-    "98173209": {
-      "metaId": "6492fd35509715549d488303",
-      "name": "Crimson Gaia",
-      "setNumber": "BLZD-JPS08"
-    },
-    "50056656": {
-      "metaId": "6461a1ecb2f5a917a9827c8b",
-      "name": "Red Zone",
-      "setNumber": "BLZD-JPS09"
-    },
-    "35272499": {
-      "metaId": "60c2b3aca0e24f2d54a5318f",
-      "name": "Predaplant Ophrys Scorpio",
-      "setNumber": "BLZD-JPS10"
-    },
-    "61677004": {
-      "metaId": "60c2b3aca0e24f2d54a53189",
-      "name": "Predaplant Darlingtonia Cobra",
-      "setNumber": "BLZD-JPS11"
-    },
-    "44932065": {
-      "metaId": "6265e6a93ecc89b0e4f30276",
-      "name": "Predaplant Byblisp",
-      "setNumber": "BLZD-JPS12"
-    },
-    "70427670": {
-      "metaId": "6265e6a93ecc89b0e4f30275",
-      "name": "Predaplant Bufolicula",
-      "setNumber": "BLZD-JPS13"
-    },
-    "17825378": {
-      "metaId": "6265e6a93ecc89b0e4f30277",
-      "name": "Predaplant Triantis",
-      "setNumber": "BLZD-JPS14"
-    },
-    "66309175": {
-      "metaId": "6265e6a93ecc89b0e4f30274",
-      "name": "Predaplant Ambulomelides",
-      "setNumber": "BLZD-JPS15"
-    },
-    "44536921": {
-      "metaId": "60c2b3aca0e24f2d54a53184",
-      "name": "Predaplanning",
-      "setNumber": "BLZD-JPS16"
-    },
-    "42921475": {
-      "metaId": "60c2b3aaa0e24f2d54a520c8",
-      "name": "Fairy Tail - Sleeper",
-      "setNumber": "BLZD-JPS17"
-    },
-    "52022648": {
-      "metaId": "60c2b3aaa0e24f2d54a520c6",
-      "name": "Fairy Tail - Rella",
-      "setNumber": "BLZD-JPS18"
-    },
-    "65953423": {
-      "metaId": "60c2b3aaa0e24f2d54a520c7",
-      "name": "Fairy Tail - Rochka",
-      "setNumber": "BLZD-JPS19"
-    },
-    "91957038": {
-      "metaId": "60c2b3aaa0e24f2d54a520ca",
-      "name": "Fairy Tail Tales",
-      "setNumber": "BLZD-JPS20"
+    "BLZD-JP001": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP001_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP002": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP002_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP003": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP003_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP004": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP004_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP005": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP005_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP006": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP006_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP007": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP007_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP008": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP008_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP009": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP009_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP010": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP010_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP011": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP011_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP012": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP012_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP013": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP013_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP014": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP014_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP015": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP015_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP016": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP016_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP017": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP017_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP018": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP018_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP019": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP019_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP020": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP020_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP021": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP021_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP022": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP022_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP023": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP023_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP024": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP024_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP025": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP025_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP026": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP026_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP027": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP027_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP028": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP028_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP029": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP029_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP030": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP030_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP031": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP031_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP032": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP032_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP033": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP033_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP034": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP034_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP035": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP035_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP036": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP036_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP037": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP037_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP038": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP038_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP039": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP039_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP040": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP040_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP041": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP041_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP042": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP042_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP043": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP043_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP044": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP044_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP045": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP045_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP046": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP046_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP047": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP047_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP048": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP048_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP049": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP049_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP050": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP050_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP051": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP051_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP052": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP052_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP053": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP053_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP054": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP054_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP055": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP055_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP056": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP056_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP057": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP057_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP058": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP058_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP059": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP059_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP060": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP060_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP061": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP061_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP062": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP062_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP063": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP063_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP064": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP064_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP065": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP065_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP066": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP066_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP067": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP067_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP068": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP068_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP069": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP069_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP070": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP070_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP071": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP071_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP072": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP072_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP073": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP073_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP074": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP074_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP075": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP075_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP076": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP076_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP077": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP077_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP078": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP078_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP079": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP079_N_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JP080": {
+      "name": "",
+      "localImages": {
+        "N": [
+          "BLZD-JP080_N_ygometa_render_art.webp"
+        ]
+      }
     }
   }
 }

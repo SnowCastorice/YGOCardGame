@@ -1,0 +1,94 @@
+{
+  "_说明": "LOSP vol2 辅助包卡图映射表 — setNumber -> 本地卡图文件名",
+  "_格式": "localImages 中每个稀有度对应一个文件名数组，按图源优先级从高到低排序",
+  "_生成方式": "由 tools/rebuild_image_maps.py 自动生成",
+  "cards": {
+    "LOSP-JP011": {
+      "name": "",
+      "localImages": {
+        "PSER-OF": [
+          "LOSP-JP011_PSER-OF_twitter_photo_art.webp"
+        ]
+      }
+    },
+    "LOSP-JP012": {
+      "name": "",
+      "localImages": {
+        "PSER-OF": [
+          "LOSP-JP012_PSER-OF_twitter_photo_art.webp",
+          "LOSP-JP012_PSER-OF_twitter_render_art.webp"
+        ]
+      }
+    },
+    "LOSP-JP013": {
+      "name": "",
+      "localImages": {
+        "PSER-OF": [
+          "LOSP-JP013_PSER-OF_twitter_photo_art.webp",
+          "LOSP-JP013_PSER-OF_twitter_render_art.webp"
+        ]
+      }
+    },
+    "LOSP-JP014": {
+      "name": "",
+      "localImages": {
+        "PSER-OF": [
+          "LOSP-JP014_PSER-OF_twitter_photo_art.webp",
+          "LOSP-JP014_PSER-OF_twitter_render_art.webp"
+        ]
+      }
+    },
+    "LOSP-JP015": {
+      "name": "",
+      "localImages": {
+        "PSER-OF": [
+          "LOSP-JP015_PSER-OF_twitter_render_art.webp"
+        ]
+      }
+    },
+    "LOSP-JP016": {
+      "name": "",
+      "localImages": {
+        "PSER-OF": [
+          "LOSP-JP016_PSER-OF_twitter_photo_art.webp",
+          "LOSP-JP016_PSER-OF_twitter_render_art.webp"
+        ]
+      }
+    },
+    "LOSP-JP017": {
+      "name": "",
+      "localImages": {
+        "PSER-OF": [
+          "LOSP-JP017_PSER-OF_twitter_photo_art.webp"
+        ]
+      }
+    },
+    "LOSP-JP018": {
+      "name": "",
+      "localImages": {
+        "PSER-OF": [
+          "LOSP-JP018_PSER-OF_twitter_photo_art.webp",
+          "LOSP-JP018_PSER-OF_twitter_render_art.webp"
+        ]
+      }
+    },
+    "LOSP-JP019": {
+      "name": "",
+      "localImages": {
+        "PSER-OF": [
+          "LOSP-JP019_PSER-OF_twitter_photo_art.webp",
+          "LOSP-JP019_PSER-OF_twitter_render_art.webp"
+        ]
+      }
+    },
+    "LOSP-JP020": {
+      "name": "",
+      "localImages": {
+        "PSER-OF": [
+          "LOSP-JP020_PSER-OF_twitter_photo_art.webp",
+          "LOSP-JP020_PSER-OF_twitter_render_art.webp"
+        ]
+      }
+    }
+  }
+}

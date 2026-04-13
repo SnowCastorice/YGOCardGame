@@ -1,0 +1,87 @@
+{
+  "_说明": "LOSP vol1 辅助包卡图映射表 — setNumber -> 本地卡图文件名",
+  "_格式": "localImages 中每个稀有度对应一个文件名数组，按图源优先级从高到低排序",
+  "_生成方式": "由 tools/rebuild_image_maps.py 自动生成",
+  "cards": {
+    "LOSP-JP001": {
+      "name": "",
+      "localImages": {
+        "PSER-OF": [
+          "LOSP-JP001_PSER-OF_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "LOSP-JP002": {
+      "name": "",
+      "localImages": {
+        "PSER-OF": [
+          "LOSP-JP002_PSER-OF_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "LOSP-JP003": {
+      "name": "",
+      "localImages": {
+        "PSER-OF": [
+          "LOSP-JP003_PSER-OF_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "LOSP-JP004": {
+      "name": "",
+      "localImages": {
+        "PSER-OF": [
+          "LOSP-JP004_PSER-OF_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "LOSP-JP005": {
+      "name": "",
+      "localImages": {
+        "PSER-OF": [
+          "LOSP-JP005_PSER-OF_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "LOSP-JP006": {
+      "name": "",
+      "localImages": {
+        "PSER-OF": [
+          "LOSP-JP006_PSER-OF_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "LOSP-JP007": {
+      "name": "",
+      "localImages": {
+        "PSER-OF": [
+          "LOSP-JP007_PSER-OF_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "LOSP-JP008": {
+      "name": "",
+      "localImages": {
+        "PSER-OF": [
+          "LOSP-JP008_PSER-OF_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "LOSP-JP009": {
+      "name": "",
+      "localImages": {
+        "PSER-OF": [
+          "LOSP-JP009_PSER-OF_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "LOSP-JP010": {
+      "name": "",
+      "localImages": {
+        "PSER-OF": [
+          "LOSP-JP010_PSER-OF_ygometa_render_art.webp"
+        ]
+      }
+    }
+  }
+}

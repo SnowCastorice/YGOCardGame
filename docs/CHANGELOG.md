@@ -2,6 +2,37 @@
 
 > 所有版本变更的详细记录。待办事项见 [TODO.md](TODO.md)，面向玩家的更新日志见 `data/changelog.json`。
 
+## v1.10.0（2026-04-14）— 卡图完全本地化
+
+### 卡图系统重构（`js/api.js` / `js/game.js` / `js/inventory.js`）
+- `getCardImageUrl()` 参数从 `cardId` 改为 `cardSetCode`，删除 metaId 分支和所有外部 CDN 回退
+- `resolveLocalImage()` 支持数组格式 localImages（多图源按优先级排序，取最优）
+- `handleCardImageError()` 简化为直接显示兜底内容，不再尝试 CDN fallback
+- 卡包封面不再回退到 CDN（`getPackCoverFallbackUrl` / `handlePackCoverErrorFinal` 简化）
+- 删除 `preloadOcgCoverCardId()` / `preloadTcgCoverCardId()`（不再需要）
+- 辅助包支持独立 imageMap（`supplementImageMapFile` / `supplementImagesDir`）
+- 全部 `data-fallback` / `imageFallbackUrl` 引用清除
+- 删除 `API_CONFIG` 中的 `IMAGE_SMALL_URL` / `IMAGE_LARGE_URL` / `YGOCDB.IMAGE_URL` / `YUGIOHMETA` CDN 配置
+
+### 卡图文件迁移（`data/ocg/images/`）
+- BLZD / LOCH 旧 hash 命名卡图重命名为 `{setNumber}_{rarity}_{source}_{type}.webp`
+- 只保留 420px 宽度，删除所有 w200 文件
+- 辅助包卡图拆分为独立目录：`blzds/`(20)、`losp_vol1/`(10)、`losp_vol2/`(17)
+
+### Image Map 重建（`data/ocg/*_image_map.json`）
+- 所有 image map 统一为 setNumber 作为 key + localImages 数组格式
+- 新建 `blzds_image_map.json`、`losp_vol1_image_map.json`、`losp_vol2_image_map.json`
+- `rebuild_image_maps.py` 重构：扫描目录自动生成数组格式，按图源优先级排序
+
+### CDN 测试工具删除（`js/game.js` / `index.html`）
+- 删除 CDN 卡图对比功能（CDN_SOURCES、loadCDNComparison、runBatchSpeedTest 等约 780 行）
+- 删除 index.html 中 CDN 对比 HTML section
+
+### 全局 CDN 清除确认
+- `cdn.233.momobako.com`：零引用
+- `s3.duellinksmeta.com`：零引用
+- `images.ygoprodeck.com`：零引用
+
 ## v1.9.4（2026-04-10）— 价格系统优化
 
 ### Bug 修复（`js/priceSystem.js` / `js/inventory.js` / `js/game.js`）

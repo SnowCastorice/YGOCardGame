@@ -1,0 +1,167 @@
+{
+  "_说明": "BLZDS 辅助包卡图映射表 — setNumber -> 本地卡图文件名",
+  "_格式": "localImages 中每个稀有度对应一个文件名数组，按图源优先级从高到低排序",
+  "_生成方式": "由 tools/rebuild_image_maps.py 自动生成",
+  "cards": {
+    "BLZD-JPS01": {
+      "name": "",
+      "localImages": {
+        "UR": [
+          "BLZD-JPS01_UR_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JPS02": {
+      "name": "",
+      "localImages": {
+        "UR": [
+          "BLZD-JPS02_UR_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JPS03": {
+      "name": "",
+      "localImages": {
+        "UR": [
+          "BLZD-JPS03_UR_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JPS04": {
+      "name": "",
+      "localImages": {
+        "UR": [
+          "BLZD-JPS04_UR_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JPS05": {
+      "name": "",
+      "localImages": {
+        "UR": [
+          "BLZD-JPS05_UR_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JPS06": {
+      "name": "",
+      "localImages": {
+        "UR": [
+          "BLZD-JPS06_UR_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JPS07": {
+      "name": "",
+      "localImages": {
+        "UR": [
+          "BLZD-JPS07_UR_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JPS08": {
+      "name": "",
+      "localImages": {
+        "UR": [
+          "BLZD-JPS08_UR_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JPS09": {
+      "name": "",
+      "localImages": {
+        "UR": [
+          "BLZD-JPS09_UR_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JPS10": {
+      "name": "",
+      "localImages": {
+        "UR": [
+          "BLZD-JPS10_UR_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JPS11": {
+      "name": "",
+      "localImages": {
+        "UR": [
+          "BLZD-JPS11_UR_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JPS12": {
+      "name": "",
+      "localImages": {
+        "UR": [
+          "BLZD-JPS12_UR_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JPS13": {
+      "name": "",
+      "localImages": {
+        "UR": [
+          "BLZD-JPS13_UR_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JPS14": {
+      "name": "",
+      "localImages": {
+        "UR": [
+          "BLZD-JPS14_UR_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JPS15": {
+      "name": "",
+      "localImages": {
+        "UR": [
+          "BLZD-JPS15_UR_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JPS16": {
+      "name": "",
+      "localImages": {
+        "UR": [
+          "BLZD-JPS16_UR_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JPS17": {
+      "name": "",
+      "localImages": {
+        "UR": [
+          "BLZD-JPS17_UR_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JPS18": {
+      "name": "",
+      "localImages": {
+        "UR": [
+          "BLZD-JPS18_UR_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JPS19": {
+      "name": "",
+      "localImages": {
+        "UR": [
+          "BLZD-JPS19_UR_ygometa_render_art.webp"
+        ]
+      }
+    },
+    "BLZD-JPS20": {
+      "name": "",
+      "localImages": {
+        "UR": [
+          "BLZD-JPS20_UR_ygometa_render_art.webp"
+        ]
+      }
+    }
+  }
+}

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>YGO Pack Opener - 游戏王开包模拟器</title>
     <!-- 全局版本号：所有资源的缓存破坏参数、页脚版本号等都从这里读取，更新时只改这一处 -->
-<script>window.APP_VERSION = '1.9.4';</script>
+<script>window.APP_VERSION = '1.10.0';</script>
     <!-- CSS 版本号自动跟随 APP_VERSION -->
     <script>document.write('<link rel="stylesheet" href="css/style.css?v=' + window.APP_VERSION + '">');</script>
 </head>
@@ -199,36 +199,6 @@
                         </label>
                     </div>
                     <p class="devtools-note">💡 开启后，缺少对应稀有度卡图的卡片将显示占位图（printing.jpg），方便排查缺失卡图。关闭时高稀有度卡片会自动回退到低稀有度卡图。</p>
-                </div>
-
-<!-- ▸ 隐藏板块：CDN 卡图对比（需点击设置标题5次解锁） -->
-                <div id="devtools-cdn-section" class="devtools-section-card devtools-admin-hidden" style="display:none;">
-                    <h3 class="devtools-section-title">🖼️ CDN 卡图对比</h3>
-                    <!-- 当前模式信息（优先展示，让用户知道当前上下文） -->
-                    <div id="devtools-mode-info" class="devtools-mode-info"></div>
-                    <!-- 卡片ID输入区 -->
-                    <div class="devtools-input-area">
-                        <label for="devtools-card-id">卡片ID：</label>
-                        <input type="text" id="devtools-card-id" placeholder="例如 89631139（青眼白龙）" />
-                    </div>
-                    <div class="devtools-input-actions">
-                        <button id="btn-devtools-load" class="btn-devtools-action">🔍 加载对比</button>
-                        <button id="btn-devtools-random" class="btn-devtools-action btn-devtools-random">🎲 随机卡片</button>
-                        <button id="btn-devtools-batch" class="btn-devtools-action btn-devtools-batch">🚀 批量测速</button>
-                    </div>
-                    <!-- 测试选项 -->
-                    <div class="devtools-test-options">
-                        <label class="devtools-checkbox-label">
-                            <input type="checkbox" id="devtools-no-cache" />
-                            <span>绕过缓存（加时间戳）</span>
-                        </label>
-                    </div>
-                    <!-- CDN 对比结果区 -->
-                    <div id="devtools-compare-area" class="devtools-compare-area">
-                        <p class="devtools-placeholder">输入卡片 ID 后点击「加载对比」，或使用「🎲 随机卡片」来测试</p>
-                    </div>
-                    <!-- 批量测试结果区（独立于单卡对比） -->
-                    <div id="devtools-batch-area" class="devtools-batch-area" style="display:none;"></div>
                 </div>
 
 <!-- ▸ 隐藏板块：管理后台入口（需点击设置标题5次解锁） -->
