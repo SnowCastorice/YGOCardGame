@@ -1,5 +1,12 @@
 # 改造 getCardImageUrl() + 卡图拆分重命名方案
 
+> 创建时间：2026-04-10
+> 更新时间：2026-04-13
+> 状态：待执行
+> 关联 TODO：#1 改造 getCardImageUrl() 图源优先级、#2 旧卡图重命名
+
+---
+
 ## 背景
 
 TODO #1（原 #2）：部分卡图仍在调用第三方 CDN（如 `cdn.233.momobako.com`、`s3.duellinksmeta.com`）。
@@ -23,12 +30,38 @@ TODO #1（原 #2）：部分卡图仍在调用第三方 CDN（如 `cdn.233.momob
 | LOCH | **metaId**（旧格式） | `{hash}_w200.webp` / `{hash}_w420.webp` | 200+420 | LOSP vol1 在 image map 中有 metaId，本地无文件 |
 | BLZD | **metaId**（旧格式） | `{hash}_w200.webp` / `{hash}_w420.webp` | 200+420 | BLZDS 在 image map 中有 metaId，本地有 hash 文件 |
 
-### 外部 CDN 调用来源（需清理）
+### 外部 CDN 调用来源（需清理）— 完整审计
 
-1. **metaId 模式**（L795）：S3 CDN `s3.duellinksmeta.com` 作为主图源或 fallback
-2. **默认回退**（L804）：YGOCDB CDN `cdn.233.momobako.com` 当 imageMap 中找不到卡时
-3. **无 imageMap 时**（L943-944）：辅助包构建中直接用 YGOCDB CDN
-4. **onerror fallback**（game.js L44-49）：`handleCardImageError` 中切换到 data-fallback URL
+**`cdn.233.momobako.com`（YGOCDB CDN）— 7 处**：
+1. `js/api.js` L42: `API_CONFIG.YGOCDB.IMAGE_URL` 配置常量
+2. `js/api.js` L804: `getCardImageUrl()` 默认回退
+3. `js/api.js` L485-486: `convertYGOCDBCard()` YGOCDB fallback 卡图
+4. `js/api.js` L580-581: YGOProDeck 旧 API 回退卡图
+5. `js/api.js` L943-944: `buildSupplementCardsFromLocalData()` 无 imageMap 时回退
+6. `js/game.js` L880: `getPackCoverImageUrl()` OCG 卡包封面图
+7. `js/game.js` L935: `handlePackCoverErrorFinal()` 封面图 fallback
+
+**`s3.duellinksmeta.com`（YugiohMeta S3 CDN）— 2 处活跃代码**：
+1. `js/api.js` L47: `API_CONFIG.YUGIOHMETA.CDN_BASE` 配置常量
+2. `js/api.js` L795: `getCardImageUrl()` metaId 模式生成 S3 URL
+
+**`images.ygoprodeck.com`（YGOProDeck CDN）— 6 处活跃代码**：
+1. `js/api.js` L34-35: `API_CONFIG.YGOPRODECK.IMAGE_SMALL_URL/IMAGE_LARGE_URL`
+2. `js/game.js` L882: `getPackCoverImageUrl()` TCG 卡包封面图
+3. `js/game.js` L890/896: TCG 卡包 set image
+4. `js/game.js` L936: `handlePackCoverErrorFinal()` TCG 封面 fallback
+5. `js/inventory.js` L555: 背包卡图 fallbackUrl
+
+**CDN 测试工具模板**（`js/game.js` L3219-3266）：
+- 6 个 URL template（YGOCDB × 3、YGOProDeck × 2、S3 × 1）
+- 这些是管理后台的 CDN 测试工具配置，**暂时保留**（测试用途，不影响正常游戏）
+
+**KONAMI 官方 URL**（`packs.json` 等）：
+- 卡包封面图 URL（`coverImage` 字段），**暂时保留**（后续卡包封面本地化时再处理）
+
+**不在本次范围**：
+- `static.cloudflareinsights.com`（Cloudflare 分析脚本，非图片）
+- `functions/api/card-image.js`（服务端代理，非前端调用）
 
 ### 关键文件
 
@@ -107,9 +140,11 @@ TODO #1（原 #2）：部分卡图仍在调用第三方 CDN（如 `cdn.233.momob
 
 #### 2e. 更新 `locr_image_map.json`（移除 LOSP 条目）
 
-### 第 3 步：改造 `js/api.js` getCardImageUrl()
+### 第 3 步：改造 `js/api.js` — 删除所有外部 CDN 卡图回退
 
-**目标**：删除 metaId 模式和所有外部 CDN 回退，只保留 localImages 模式。
+**目标**：卡图只走 localImages 模式，找不到就显示占位图，不再请求任何外部 CDN。
+
+#### 3a. 简化 `getCardImageUrl()`（L765-805）
 
 ```javascript
 function getCardImageUrl(cardId, imageMap, size, rarityCode) {
@@ -135,20 +170,69 @@ function getCardImageUrl(cardId, imageMap, size, rarityCode) {
 }
 ```
 
-关键删除：
-- 删除整个 metaId 分支（L786-800）
-- 删除 YGOCDB CDN 回退（L803-804）
-- 删除 `API_CONFIG.YUGIOHMETA` 配置中的 CDN_BASE 等（仅删 CDN 相关，保留其他用途）
-- `buildSupplementCardsFromLocalData` 中无 imageMap 时也用占位图而不是 YGOCDB CDN
+**删除**：
+- 整个 metaId 分支（旧 L786-800）
+- YGOCDB CDN 回退（旧 L803-804）
+- `size` 参数不再使用（只有一种尺寸），但保留签名兼容
 
-### 第 4 步：清理 onerror fallback
+#### 3b. 清理 `API_CONFIG` 中的 CDN 图源配置
 
-**`js/game.js`** `handleCardImageError()`：
-- 所有 fallbackUrl 已经是 null，data-fallback 不会有外部 CDN URL
-- 简化为：加载失败直接显示占位图
+- `API_CONFIG.YGOCDB.IMAGE_URL`（L42）：删除或注释（CDN 卡图不再使用）
+- `API_CONFIG.YUGIOHMETA.CDN_BASE`（L47）：删除（S3 CDN 不再使用）
+- `API_CONFIG.YUGIOHMETA.SIZE_SMALL/SIZE_LARGE`（L48-49）：删除
+- `API_CONFIG.YGOPRODECK.IMAGE_SMALL_URL/IMAGE_LARGE_URL`（L34-35）：保留（TCG 模式可能用到，但卡图回退不再使用）
 
-**`js/inventory.js`**：
-- onerror 中的 `data-fallback` 使用 `ygoprodeck.com` URL，改为直接显示占位图
+#### 3c. 清理 `buildSupplementCardsFromLocalData()`（L943-944）
+
+```javascript
+// 旧：无 imageMap 时用 YGOCDB CDN
+const imgSmallResult = imageMap ? getCardImageUrl(...) : { url: `${API_CONFIG.YGOCDB.IMAGE_URL}/${cardDef.id}.jpg`, fallbackUrl: null };
+
+// 新：无 imageMap 时直接用占位图
+const imgSmallResult = imageMap ? getCardImageUrl(...) : { url: MISSING_IMAGE_PLACEHOLDER, fallbackUrl: null };
+```
+
+同理处理 `buildOCGCardsFromLocalData()` 中的类似回退。
+
+#### 3d. 清理 `convertYGOCDBCard()`（L485-486）和旧 API 回退（L580-581）
+
+这些是 YGOCDB fallback 路径中设置的图片 URL，改为占位图。
+
+### 第 4 步：清理 onerror fallback — 卡图 + 卡包封面
+
+#### 4a. `js/game.js` `handleCardImageError()`（L44-57）
+
+所有 `fallbackUrl` 已经是 null（第 3 步改造后），`data-fallback` 不会有外部 URL。
+简化为：加载失败 → 直接显示占位图。
+
+```javascript
+function handleCardImageError(img) {
+    // 本地卡图加载失败，显示占位图
+    if (img.src !== MISSING_IMAGE_PLACEHOLDER_URL) {
+        img.src = 'data/ocg/images/printing.jpg';
+    } else {
+        img.style.display = 'none';
+        if (img.nextElementSibling) img.nextElementSibling.style.display = 'flex';
+    }
+}
+```
+
+#### 4b. `js/game.js` `getPackCoverImageUrl()`（L880）和 `handlePackCoverErrorFinal()`（L935）
+
+当前封面图回退链：KONAMI 官方 → cdn.233/ygoprodeck → 占位。
+**改为**：KONAMI 官方 URL（packs.json 中的 coverImage）→ 本地封面图 → 占位图。
+OCG 卡包已经有本地封面（如 `data/ocg/covers/LOCH-pack.webp`），不需要 CDN 回退。
+
+#### 4c. `js/inventory.js` 背包卡图 fallback（L555）
+
+```javascript
+// 旧
+const fallbackUrl = 'https://images.ygoprodeck.com/images/cards_small/' + card.id + '.jpg';
+
+// 新：不再使用外部回退，onerror 直接隐藏图片显示占位
+```
+
+删除 `data-fallback` 属性，onerror 直接显示占位。
 
 ### 第 5 步：更新 packs.json 配置
 
@@ -160,11 +244,16 @@ function getCardImageUrl(cardId, imageMap, size, rarityCode) {
 
 ### 第 6 步：检查遗留的外部 CDN 引用
 
-全局搜索以下 URL，确保全部清理：
-- `cdn.233.momobako.com`
-- `s3.duellinksmeta.com`
-- `ygoprodeck.com/images`
-- `images.ygoprodeck.com`
+全局搜索以下 URL，确保卡图相关的引用全部清理：
+
+| 域名 | 预期结果 |
+|------|----------|
+| `cdn.233.momobako.com` | 仅剩 CDN 测试工具模板（`js/game.js` L3219-3237），活跃卡图代码中零引用 |
+| `s3.duellinksmeta.com` | 仅剩 CDN 测试工具模板（`js/game.js` L3266）+ image map JSON 中的文档注释 |
+| `images.ygoprodeck.com` | 仅剩 CDN 测试工具模板（`js/game.js` L3246-3256）+ `API_CONFIG` 中保留但不被卡图逻辑调用 |
+| `ygoprodeck.com/images` | 零引用 |
+
+**CDN 测试工具**（管理后台 `/admin/stats.html`）中的 URL template 暂时保留，不影响正常游戏。
 
 ---
 
