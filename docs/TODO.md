@@ -50,8 +50,4 @@
 
 ## 🔵 已记录的技术问题
 
-### YGOProDeck 图源限流（挂起）
-- 现象：YGOProDeck 图源在 CDN 测试工具中始终加载失败
-- 原因：YGOProDeck 启用了 Cloudflare Turnstile 人机验证，程序化请求被拦截
-- 影响范围：仅影响 CDN 测试工具中的 YGOProDeck 图源对比，不影响游戏正常功能
-- 待后续决策：是否从 CDN 测试工具中移除 YGOProDeck 图源
+（暂无）

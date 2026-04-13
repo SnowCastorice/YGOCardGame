@@ -52,9 +52,11 @@ TODO #1（原 #2）：部分卡图仍在调用第三方 CDN（如 `cdn.233.momob
 4. `js/game.js` L936: `handlePackCoverErrorFinal()` TCG 封面 fallback
 5. `js/inventory.js` L555: 背包卡图 fallbackUrl
 
-**CDN 测试工具模板**（`js/game.js` L3219-3266）：
-- 6 个 URL template（YGOCDB × 3、YGOProDeck × 2、S3 × 1）
-- 这些是管理后台的 CDN 测试工具配置，**暂时保留**（测试用途，不影响正常游戏）
+**CDN 测试工具**（`js/game.js`）：
+- L3199-3300: CDN 卡图对比工具（`CDN_SOURCES` 定义 + `showCDNCompare()` + 相关 UI）
+- L3326-3480: 隐藏功能入口中的 CDN 对比入口
+- L4614-结尾附近: CDN 批量速度测试（`runBatchCDNTest()` 等）
+- **本次一并删除**，今后不再使用 CDN 相关功能
 
 **KONAMI 官方 URL**（`packs.json` 等）：
 - 卡包封面图 URL（`coverImage` 字段），**暂时保留**（后续卡包封面本地化时再处理）
@@ -242,18 +244,24 @@ const fallbackUrl = 'https://images.ygoprodeck.com/images/cards_small/' + card.i
 
 方案：在 `packs.json` 中新增 `supplementImageMapFile` 和 `supplementImagesDir` 字段，`buildSupplementCardsFromLocalData` 加载独立的 image map。
 
-### 第 6 步：检查遗留的外部 CDN 引用
+### 第 6 步：删除 CDN 测试工具 + 检查遗留引用
 
-全局搜索以下 URL，确保卡图相关的引用全部清理：
+#### 6a. 删除 CDN 测试工具代码（`js/game.js`）
+
+- **L3199-3300**: CDN 卡图对比工具（`CDN_SOURCES` 数组、`showCDNCompare()` 函数及 UI 渲染）
+- **L3326-3480**: 隐藏功能入口中移除 CDN 对比相关的按钮和逻辑（保留其他隐藏功能如管理后台入口）
+- **L4614-末尾附近**: CDN 批量速度测试（`runBatchCDNTest()`、`SAMPLE_CARD_IDS` 等）
+- 同步清理 `css/style.css` 中 CDN 测试工具相关样式（如有）
+- 同步清理 `admin/stats.html` 中 CDN 测试相关入口（如有）
+
+#### 6b. 全局搜索确认零外部 CDN 卡图引用
 
 | 域名 | 预期结果 |
 |------|----------|
-| `cdn.233.momobako.com` | 仅剩 CDN 测试工具模板（`js/game.js` L3219-3237），活跃卡图代码中零引用 |
-| `s3.duellinksmeta.com` | 仅剩 CDN 测试工具模板（`js/game.js` L3266）+ image map JSON 中的文档注释 |
-| `images.ygoprodeck.com` | 仅剩 CDN 测试工具模板（`js/game.js` L3246-3256）+ `API_CONFIG` 中保留但不被卡图逻辑调用 |
+| `cdn.233.momobako.com` | 零引用（CDN 测试工具已删除） |
+| `s3.duellinksmeta.com` | 仅 image map JSON 中的文档注释（无活跃代码引用） |
+| `images.ygoprodeck.com` | 仅 `API_CONFIG` 中保留定义但不被卡图逻辑调用 |
 | `ygoprodeck.com/images` | 零引用 |
-
-**CDN 测试工具**（管理后台 `/admin/stats.html`）中的 URL template 暂时保留，不影响正常游戏。
 
 ---
 
