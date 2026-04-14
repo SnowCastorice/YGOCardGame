@@ -1,0 +1,88 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                 YGOCardGame 数据一致性检查 - 快速参考表                       ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+【1】IMAGE MAP & 图片目录
+├─ 文件位置
+│  ├─ 映射表: data/ocg/image_maps/    (6个 *_image_map.json)
+│  └─ 图片:   data/ocg/images/        (6个 {pack}/ 子目录)
+├─ Card Key格式: {PACK}-{REGION}{NUM}  例:LOCH-JP001, BLZD-JP002
+├─ localImages结构: rarity → [filename_array] (按优先级排序)
+└─ 文件名格式: {setNumber}_{rarity}_{source}_{type}.webp
+
+【2】价格文件 & 卡包数据
+├─ 价格文件: data/ocg/prices/  (5个卡包 + 1个override)
+├─ 卡数据: data/ocg/cards/     (6个 ocg_*.json)
+├─ setNumber: 与image_map和prices中的key相同格式 {PACK}-{REGION}{NUM}
+├─ rarityVersions: [rarity_array] → 与prices中的rarity键对应
+└─ 稀有度: N, NR, R, SR, UR, SER, UTR, PSER, UR-OF, PSER-OF, GMR-OF
+
+【3】PACKS.JSON 引用的文件路径
+├─ cardFile            (相对 data/ocg/cards/)
+├─ imageMapFile        (相对 data/ocg/image_maps/)
+├─ localImagesDir      (绝对路径)
+├─ supplementPackFile  (相对 data/ocg/cards/)
+├─ supplementImageMapFile (相对 data/ocg/image_maps/)
+└─ supplementImagesDir (绝对路径)
+
+【4】HOOKS & 验证脚本
+├─ Git Hook
+│  ├─ .git/hooks/pre-commit
+│  └─ 调用 tools/version-check.sh
+├─ Claude Hooks (.claude/hooks/)
+│  ├─ pre-push-check.sh      (版本+日志)
+│  ├─ version-check.sh       (版本一致性)
+│  └─ pre-compact.sh         (压缩检查)
+└─ 验证脚本 (tools/)
+   ├─ rebuild_image_maps.py  (生成image_map.json)
+   ├─ check_missing_images.py (检查缺图)
+   ├─ extract_prices.py       (解析价格)
+   ├─ migrate_card_images.py  (迁移卡图)
+   └─ migrate_price_keys.py   (转换价格key)
+
+【5】关键数据约束
+├─ setNumber格式: {PACK}-{REGION}{NUM}
+├─ setNumber存在: 应在 image_maps.cards 和 prices.cards 中都有
+├─ rarityVersions覆盖: 每个rarity在localImages中存在或可fallback
+├─ 文件路径存在: cardFile, imageMapFile, localImagesDir必须存在
+├─ 图片文件存在: localImages中的filename应对应存在
+└─ 补充包: supplementPackFile等路径指向存在的文件
+
+【6】快速统计
+├─ 主卡包: 3个 (LOCH, LOCR, BLZD)
+├─ 辅助包: 2个 (LOSP-VOL1, LOSP-VOL2)
+├─ 卡牌数据文件: 6个
+├─ 卡图映射文件: 6个
+├─ 价格数据文件: 6个
+├─ 图片目录: 6个
+├─ 总卡片数: 320+张
+└─ 稀有度版本: 可达1000+个
+
+════════════════════════════════════════════════════════════════════════════════
+
+【检查流程框架】
+
+1. 加载 packs.json，获得所有卡包配置
+2. 对每个卡包执行以下检查：
+   ├─ 检查 cardFile 是否存在
+   ├─ 检查 imageMapFile 是否存在
+   ├─ 检查 localImagesDir 目录是否存在
+   ├─ 加载 cards.json 和 image_map.json
+   ├─ 对每张卡 cardIds[]：
+   │  ├─ setNumber格式验证 ({PACK}-{REGION}{NUM})
+   │  ├─ setNumber在image_map.cards中存在性
+   │  ├─ setNumber在prices中存在性（如有prices文件）
+   │  ├─ rarityVersions非空
+   │  ├─ 每个rarity在localImages中存在或可fallback
+   │  └─ 对应图片文件 (data/ocg/images/{pack}/{filename}.webp) 是否存在
+   └─ 检查补充包（如有supplementPackFile）
+
+3. 生成详细报告，包括：
+   ├─ 格式错误 (setNumber不符合格式)
+   ├─ 数据缺失 (key在某文件中不存在)
+   ├─ 文件缺失 (图片或配置文件不存在)
+   ├─ 冗余数据 (image_map中有cards中不存在的key)
+   ├─ 价格缺失 (稀有度在prices中无价格信息)
+   └─ Fallback信息 (缺失exact match但可用fallback)
+
+════════════════════════════════════════════════════════════════════════════════
