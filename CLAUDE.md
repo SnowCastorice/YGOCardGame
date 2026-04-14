@@ -78,6 +78,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **设计原则**：移动端专属，`max-width: 500px` 居中，`viewport-fit=cover` + `safe-area-inset` 适配刘海屏
 - **业务规则**：金币与人民币 1:1，游戏内不出现真实货币
 - **临时文件**：统一保存到 `test_output/`，禁止随意建目录，及时清理
+- **Edit 后验证语法**：JS 文件用 `node --check file.js`，Python 文件用 `python -c "import ast; ast.parse(open('file.py').read())"`
 - **外部 API**：所有请求通过 `requestThrottler`（间隔 ≥ 300ms），YGOProDeck 限制 20 req/s
 
 ## 任务执行流程

@@ -46,15 +46,18 @@
 
 ### 安装 Git pre-commit Hook
 
-版本号一致性检查脚本已提交到 `tools/version-check.sh`，需要在每台设备上手动安装到 Git hooks：
+提交前自动检查脚本已提交到 `tools/pre-commit-hook.sh`，包含版本号一致性检查和数据一致性检查。需要在每台设备上手动安装到 Git hooks：
 
 ```bash
-echo '#!/bin/bash' > .git/hooks/pre-commit
-echo 'exec bash tools/version-check.sh' >> .git/hooks/pre-commit
+cp tools/pre-commit-hook.sh .git/hooks/pre-commit
 chmod +x .git/hooks/pre-commit
 ```
 
-安装后，每次 `git commit` 会自动检查 `APP_VERSION`、`changelog.json`、`CHANGELOG.md`、`README.md` 四处版本号是否一致。不一致则阻止提交。
+安装后，每次 `git commit` 会自动执行：
+1. **版本号一致性检查**：`APP_VERSION`、`changelog.json`、`CHANGELOG.md`、`README.md` 四处版本号是否一致
+2. **数据一致性检查**（仅当暂存区包含 `data/ocg/*` 时触发）：文件引用、image map ↔ 图片、卡片数据 ↔ image map、价格 ↔ 卡片数据
+
+有 ERROR 则阻止提交。如需跳过：`git commit --no-verify`。
 
 ## 第三步：验证一切就绪
 

@@ -589,11 +589,44 @@ NR 是非官方定义的稀有度（封入率更低的 N 卡）。集换社和 N
 | `tools/fetch_packs.py` | 卡包数据抓取 |
 | `tools/fetch_yugiohmeta.py` | YugiohMeta 卡图映射表构建 |
 | `tools/download_loch_images.py` | LOCH 卡图本地化下载 |
-| `tools/build_loch_map.py` | LOCH 卡图映射表构建 |
-| `tools/build_loch_rarity_map.py` | LOCH 稀有度映射表构建 |
-| `tools/build_locr_image_map.py` | LOCR 卡图映射表构建（localImages 新格式） |
-| `tools/build_blzd_image_map.py` | BLZD 卡图映射表构建 |
+| `tools/rebuild_image_maps.py` | 重建所有 image map（扫描图片目录自动生成） |
+| `tools/check_data_consistency.py` | 数据一致性检查（已集成到 pre-commit hook） |
 | `tools/resize_preview_cards.py` | LOCR+LOSP 预览卡图批量处理（缩放+转webp） |
+
+---
+
+## `rebuild_image_maps.py` — 重建所有 image map
+
+扫描 `data/ocg/images/` 下各卡包图片目录，自动生成 `data/ocg/image_maps/` 下的 image map JSON 文件。
+
+每个稀有度对应一个文件名数组，按图源优先级从高到低排序（`twitter_photo` > `twitter_render` > `tcgcorner_photo` > `ygojp` > `official` > `ygometa`）。
+
+| 命令 | 说明 |
+|------|------|
+| `python tools/rebuild_image_maps.py` | 重建全部 6 个 image map |
+
+> 💡 更新卡图文件后必须重跑此脚本，使 image map 与图片目录保持同步。
+> ⚠️ Windows 环境需加 `PYTHONIOENCODING=utf-8` 前缀。
+
+## `check_data_consistency.py` — 数据一致性检查
+
+从 `packs.json` 出发，自动校验 4 类数据一致性：
+
+| 检查项 | 说明 | 级别 |
+|--------|------|------|
+| 文件引用 | packs.json 中的 cardFile/imageMapFile/localImagesDir 等是否存在 | ERROR |
+| image map ↔ 图片 | 幽灵引用（map 引用了不存在的文件）/ 孤儿文件（文件未被 map 引用） | ERROR / WARNING |
+| 卡片数据 ↔ image map | 缺图卡片 / image map 多余条目 | WARNING |
+| 价格 ↔ 卡片数据 | 多余价格条目 / 缺价格卡片 | WARNING |
+
+| 命令 | 说明 |
+|------|------|
+| `python tools/check_data_consistency.py` | 运行全量检查 |
+
+- **退出码**：`0` = 无 ERROR，`1` = 有 ERROR
+- **已集成到 pre-commit hook**：当暂存区包含 `data/ocg/*` 或 `tools/rebuild_image_maps.py` 时自动触发
+
+> ⚠️ Windows 环境需加 `PYTHONIOENCODING=utf-8` 前缀。
 
 ---
 
