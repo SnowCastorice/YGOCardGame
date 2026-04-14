@@ -519,7 +519,7 @@ function bindCardImageViewer() {
         // 构建显示名称（编号 + 中文名 + 外文名）
         let displayName = '';
         if (cardSetCode) {
-            displayName += `<span style="font-size:0.8em;opacity:0.7;">${cardSetCode}</span><br>`;
+            displayName += `<span style="font-size:0.95em;color:#f0c040;letter-spacing:0.5px;">${cardSetCode}</span><br>`;
         }
         displayName += cardName;
         if (foreignName && foreignName !== cardName) {
@@ -555,7 +555,7 @@ function bindCardImageViewer() {
 
             let displayName = '';
             if (cardSetCode) {
-                displayName += `<span style="font-size:0.8em;opacity:0.7;">${cardSetCode}</span><br>`;
+                displayName += `<span style="font-size:0.95em;color:#f0c040;letter-spacing:0.5px;">${cardSetCode}</span><br>`;
             }
             displayName += cardName;
             if (foreignName && foreignName !== cardName) {
@@ -4491,7 +4491,7 @@ const rarityWeight = RARITY_ORDER_ASC;
                         const foreignName = card.nameOriginal || '';
                         let nameHtml = '';
                         if (cardSetCode) {
-                            nameHtml += '<span style="font-size:0.8em;opacity:0.7;">' + cardSetCode + '</span><br>';
+                            nameHtml += '<span style="font-size:0.95em;color:#f0c040;letter-spacing:0.5px;">' + cardSetCode + '</span><br>';
                         }
                         nameHtml += displayName;
                         if (foreignName && foreignName !== displayName) {

@@ -527,6 +527,7 @@ const InventorySystem = (function () {
                     const rarityImgs = (card.rarityImageUrls && card.rarityImageUrls[rarity]) || {};
                     const viewerCard = {
                         id: card.id,
+                        cardSetCode: card.cardSetCode,
                         name: card.name,
                         nameCN: card.nameCN,
                         nameOriginal: card.nameOriginal,
@@ -619,7 +620,7 @@ const InventorySystem = (function () {
             const foreignName = card.nameOriginal || '';
             let nameHtml = '';
             if (cardSetCode) {
-                nameHtml += '<span style="font-size:0.8em;opacity:0.7;">' + cardSetCode + '</span><br>';
+                nameHtml += '<span style="font-size:0.95em;color:#f0c040;letter-spacing:0.5px;">' + cardSetCode + '</span><br>';
             }
             nameHtml += displayName;
             if (foreignName && foreignName !== displayName) {
