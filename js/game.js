@@ -47,7 +47,6 @@ function handleCardImageError(img) {
     const next = img.nextElementSibling;
     if (next) next.style.display = next.classList.contains('preview-card-placeholder') ? 'flex' : 'block';
 }
-}
 
 // ====== 页面加载完成后初始化 ======
 document.addEventListener('DOMContentLoaded', async function () {
