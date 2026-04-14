@@ -49,7 +49,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 每次更新版本号时必须**同步修改 4 处**：`index.html` APP_VERSION、`data/changelog.json`、`docs/CHANGELOG.md`、`README.md` badge。
 
-> ⚠️ 有 Git pre-commit Hook 和 Claude Stop Hook 自动检查四处版本号一致性。
+> ⚠️ 有 Claude Hook（`.claude/hooks/pre-push-check.sh`）自动检查版本号一致性和数据一致性，跨设备生效。
 
 ## 代码架构（概要）
 

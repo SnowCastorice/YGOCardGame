@@ -1,7 +1,12 @@
 #!/bin/bash
-# Claude PreToolUse Hook：提交/推送前检查版本号和游戏日志
+# Claude PreToolUse Hook：提交/推送前检查版本号、数据一致性
 # 触发时机：Claude 执行 Bash 命令前
 # 仅在 git commit / git push 命令时触发检查
+#
+# 检查内容：
+#   1. 版本号四处一致性（APP_VERSION / changelog.json / CHANGELOG.md / README.md）
+#   2. 代码变更时版本号是否递增
+#   3. 数据文件变更时运行数据一致性检查（check_data_consistency.py）
 
 input=$(cat)
 
@@ -52,16 +57,23 @@ all_files=$(printf "%s\n%s\n%s" "$diff_files" "$unstaged" "$staged" | sort -u)
 
 # 检查是否存在需要版本号更新的代码变更
 code_changed=false
+data_changed=false
 while IFS= read -r file; do
   case "$file" in
     .claude/*|.agents/*|skills-lock.json) continue ;;
     docs/*|data/changelog.json) continue ;;
     data/ocg/prices/*) continue ;;
-    tools/*) continue ;;
+    tools/*)
+      # tools/rebuild_image_maps.py 变更时触发数据检查
+      case "$file" in
+        tools/rebuild_image_maps.py) data_changed=true ;;
+      esac
+      continue ;;
     admin/*) continue ;;
     CloudflareReport/*) continue ;;
     .gitignore|.mcp.json|CLAUDE.md|README.md) continue ;;
     screenshots/*|test_output/*|pack_references/*) continue ;;
+    data/ocg/*) data_changed=true; code_changed=true; break ;;
     "") continue ;;
     *) code_changed=true; break ;;
   esac
@@ -74,6 +86,30 @@ if [ "$code_changed" = true ]; then
     if [ "$app_ver" = "$remote_ver" ]; then
       printf "⚠️ 检测到代码变更但版本号未递增（当前 v%s = 远端 v%s）\n" "$app_ver" "$remote_ver" >&2
       printf "请确认是否需要更新版本号和游戏日志（changelog.json + CHANGELOG.md）\n" >&2
+      exit 2
+    fi
+  fi
+fi
+
+# === 数据一致性检查（仅在数据文件变更时触发） ===
+if [ "$data_changed" = true ]; then
+  # 查找 Python 解释器
+  if [ -x "local/venv/Scripts/python.exe" ]; then
+    PYTHON="local/venv/Scripts/python.exe"
+  elif command -v python3 &>/dev/null; then
+    PYTHON="python3"
+  else
+    PYTHON="python"
+  fi
+
+  # 检查脚本是否存在
+  if [ -f "tools/check_data_consistency.py" ]; then
+    printf "📋 检测到数据文件变更，运行数据一致性检查...\n" >&2
+    result=$(PYTHONIOENCODING=utf-8 "$PYTHON" tools/check_data_consistency.py 2>&1)
+    rc=$?
+    if [ $rc -ne 0 ]; then
+      printf "%s\n" "$result" >&2
+      printf "\n❌ 数据一致性检查未通过，提交被阻止！\n" >&2
       exit 2
     fi
   fi

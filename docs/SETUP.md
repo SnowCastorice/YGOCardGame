@@ -44,20 +44,15 @@
 当前已授予的权限：
 - `Bash(npx skills:*)` — 允许执行 npx skills 相关命令
 
-### 安装 Git pre-commit Hook
+### 自动检查（Claude Code Hooks）
 
-提交前自动检查脚本已提交到 `tools/pre-commit-hook.sh`，包含版本号一致性检查和数据一致性检查。需要在每台设备上手动安装到 Git hooks：
+以下检查通过 `.claude/hooks/pre-push-check.sh` 自动执行，无需手动安装，跨设备生效：
 
-```bash
-cp tools/pre-commit-hook.sh .git/hooks/pre-commit
-chmod +x .git/hooks/pre-commit
-```
-
-安装后，每次 `git commit` 会自动执行：
 1. **版本号一致性检查**：`APP_VERSION`、`changelog.json`、`CHANGELOG.md`、`README.md` 四处版本号是否一致
-2. **数据一致性检查**（仅当暂存区包含 `data/ocg/*` 时触发）：文件引用、image map ↔ 图片、卡片数据 ↔ image map、价格 ↔ 卡片数据
+2. **代码变更版本号递增检查**：有代码变更时版本号必须比远端递增
+3. **数据一致性检查**（仅当 `data/ocg/*` 变更时触发）：文件引用、image map ↔ 图片、卡片数据 ↔ image map、价格 ↔ 卡片数据
 
-有 ERROR 则阻止提交。如需跳过：`git commit --no-verify`。
+触发时机：Claude 执行 `git commit` 或 `git push` 命令前自动拦截。
 
 ## 第三步：验证一切就绪
 
