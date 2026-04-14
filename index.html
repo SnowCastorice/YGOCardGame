@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>YGO Pack Opener - 游戏王开包模拟器</title>
     <!-- 全局版本号：所有资源的缓存破坏参数、页脚版本号等都从这里读取，更新时只改这一处 -->
-<script>window.APP_VERSION = '1.11.1';</script>
+<script>window.APP_VERSION = '1.11.2';</script>
     <!-- CSS 版本号自动跟随 APP_VERSION -->
     <script>document.write('<link rel="stylesheet" href="css/style.css?v=' + window.APP_VERSION + '">');</script>
 </head>
@@ -197,8 +197,13 @@
                             <input type="checkbox" id="devtools-strict-image-match" />
                             <span>卡图严格匹配模式</span>
                         </label>
+                        <label class="devtools-checkbox-label">
+                            <input type="checkbox" id="devtools-force-r2" />
+                            <span>强制使用 R2 图源</span>
+                        </label>
                     </div>
-                    <p class="devtools-note">💡 开启后，缺少对应稀有度卡图的卡片将显示占位图（printing.jpg），方便排查缺失卡图。关闭时高稀有度卡片会自动回退到低稀有度卡图。</p>
+                    <p class="devtools-note" id="devtools-image-note">💡 严格匹配：缺少对应稀有度卡图的卡片显示占位图。R2 图源：本地开发时强制从云端加载卡图（需重新选择卡包生效）。</p>
+                    <p class="devtools-note" id="devtools-r2-status"></p>
                 </div>
 
 <!-- ▸ 隐藏板块：管理后台入口（需点击设置标题5次解锁） -->

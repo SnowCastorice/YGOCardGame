@@ -553,12 +553,19 @@ const InventorySystem = (function () {
             const displayName = card.nameCN || card.name || card.nameOriginal || '未知卡片';
 
             let imageHtml;
-            if (card.imageUrl) {
-                imageHtml = `<img class="inventory-card-image" src="${card.imageUrl}" alt="${displayName}" loading="lazy"
-                                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-                             <div class="inventory-card-placeholder" style="display:none;">🃏</div>`;
+            // 检测旧存档中的无效 imageUrl（旧 hash 命名或已不存在的 CDN URL）
+            let validImageUrl = card.imageUrl || '';
+            if (validImageUrl && !validImageUrl.includes('printing.jpg')) {
+                // 旧 hash 格式检测：包含 _w200 或 _w420 + 非 setNumber 开头
+                if (validImageUrl.match(/_w\d+\.webp/) || validImageUrl.match(/\/[a-f0-9]{20,}_/)) {
+                    validImageUrl = '';  // 清空无效 URL，使用占位图
+                }
+            }
+            if (validImageUrl) {
+                imageHtml = `<img class="inventory-card-image" src="${validImageUrl}" alt="${displayName}" loading="lazy"
+                                  onerror="this.src='data/ocg/images/printing.jpg';this.onerror=null;">`;
             } else {
-                imageHtml = `<div class="inventory-card-placeholder" style="display:flex;">🃏</div>`;
+                imageHtml = `<img class="inventory-card-image" src="data/ocg/images/printing.jpg" alt="${displayName}">`;
             }
 
             let priceHtml;
@@ -598,17 +605,27 @@ const InventorySystem = (function () {
         if (img) {
             // 先清空旧图，避免打开新卡片时闪现上一张图片
             img.src = '';
-            img.src = card.imageLargeUrl || card.imageUrl || '';
+            let largeUrl = card.imageLargeUrl || card.imageUrl || '';
+            // 检测旧存档中的无效 URL（旧 hash 命名）
+            if (largeUrl && (largeUrl.match(/_w\d+\.webp/) || largeUrl.match(/\/[a-f0-9]{20,}_/))) {
+                largeUrl = 'data/ocg/images/printing.jpg';
+            }
+            img.src = largeUrl || 'data/ocg/images/printing.jpg';
+            img.onerror = function () { this.src = 'data/ocg/images/printing.jpg'; this.onerror = null; };
         }
         if (nameEl) {
+            const cardSetCode = card.cardSetCode || '';
             const displayName = card.nameCN || card.name || '';
             const foreignName = card.nameOriginal || '';
-            // 中文名和日文名之间用换行分隔
-            if (foreignName && foreignName !== displayName) {
-                nameEl.innerHTML = displayName + '<br><span style="font-size:0.8em;opacity:0.7;">' + foreignName + '</span>';
-            } else {
-                nameEl.textContent = displayName;
+            let nameHtml = '';
+            if (cardSetCode) {
+                nameHtml += '<span style="font-size:0.8em;opacity:0.7;">' + cardSetCode + '</span><br>';
             }
+            nameHtml += displayName;
+            if (foreignName && foreignName !== displayName) {
+                nameHtml += '<br><span style="font-size:0.8em;opacity:0.7;">' + foreignName + '</span>';
+            }
+            nameEl.innerHTML = nameHtml;
         }
 
         viewer.classList.add('active');

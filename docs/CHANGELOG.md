@@ -2,6 +2,16 @@
 
 > 所有版本变更的详细记录。待办事项见 [TODO.md](TODO.md)，面向玩家的更新日志见 `data/changelog.json`。
 
+## v1.11.2（2026-04-15）— 背包卡图修复 + 大图预览显示编号
+
+### Bug 修复（`js/inventory.js`）
+- 背包列表和大图模式：旧存档中的 hash URL 自动检测并替换为 printing.jpg
+- 背包卡图加载失败时 onerror 回退到 printing.jpg（替代原来的 emoji）
+
+### 功能优化（`js/game.js` / `js/inventory.js`）
+- 大图预览统一显示卡片编号（第一行）→ 中文名 → 外文名
+- 适用于开包结果、辅助包、卡包预览、背包 4 个场景
+
 ## v1.11.1（2026-04-14）— 卡图云端加速（Cloudflare R2）
 
 ### 卡图存储迁移（`js/api.js` / `data/ocg/packs.json`）

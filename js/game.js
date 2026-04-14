@@ -505,6 +505,7 @@ function bindCardImageViewer() {
         const largeUrl = img.getAttribute('data-large-url');
         const cardName = img.getAttribute('data-card-name') || '';
         const foreignName = img.getAttribute('data-card-foreign') || '';
+        const cardSetCode = img.getAttribute('data-card-set-code') || '';
 
         if (!largeUrl) return;
 
@@ -515,8 +516,12 @@ function bindCardImageViewer() {
         viewerImage.alt = cardName;
         viewerImage.onerror = null;
 
-        // 构建显示名称（中文名 + 外文名）
-        let displayName = cardName;
+        // 构建显示名称（编号 + 中文名 + 外文名）
+        let displayName = '';
+        if (cardSetCode) {
+            displayName += `<span style="font-size:0.8em;opacity:0.7;">${cardSetCode}</span><br>`;
+        }
+        displayName += cardName;
         if (foreignName && foreignName !== cardName) {
             displayName += `<br><span style="font-size:0.8em;opacity:0.7;">${foreignName}</span>`;
         }
@@ -538,6 +543,7 @@ function bindCardImageViewer() {
             const bonusLargeUrl = img.getAttribute('data-large-url');
             const cardName = img.getAttribute('data-card-name') || '';
             const foreignName = img.getAttribute('data-card-foreign') || '';
+            const cardSetCode = img.getAttribute('data-card-set-code') || '';
 
             if (!bonusLargeUrl) return;
 
@@ -547,7 +553,11 @@ function bindCardImageViewer() {
             viewerImage.alt = cardName;
             viewerImage.onerror = null;
 
-            let displayName = cardName;
+            let displayName = '';
+            if (cardSetCode) {
+                displayName += `<span style="font-size:0.8em;opacity:0.7;">${cardSetCode}</span><br>`;
+            }
+            displayName += cardName;
             if (foreignName && foreignName !== cardName) {
                 displayName += `<br><span style="font-size:0.8em;opacity:0.7;">${foreignName}</span>`;
             }
@@ -2383,7 +2393,7 @@ async function showResults(cards, bonusCards) {
             const foreignName = card.nameOriginal || '';
             // 使用 API 提供的卡图，添加 clickable 类和 data 属性供放大查看
             imageHtml = `<img class="card-image clickable" src="${card.imageUrl}" alt="${cardName}" loading="lazy"
-                              data-large-url="${largeUrl}" data-card-name="${cardName}" data-card-foreign="${foreignName}"
+                              data-large-url="${largeUrl}" data-card-name="${cardName}" data-card-foreign="${foreignName}" data-card-set-code="${card.cardSetCode || ''}"
                               onerror="handleCardImageError(this)">
                          <span class="card-icon" style="display:none;">${getCardIcon(rarityCode)}</span>`;
         } else {
@@ -2442,7 +2452,7 @@ async function showResults(cards, bonusCards) {
                     const cardName = card.nameCN || card.name;
                     const foreignName = card.nameOriginal || '';
                     imageHtml = `<img class="card-image clickable" src="${card.imageUrl}" alt="${cardName}" loading="lazy"
-                                      data-large-url="${largeUrl}" data-card-name="${cardName}" data-card-foreign="${foreignName}"
+                                      data-large-url="${largeUrl}" data-card-name="${cardName}" data-card-foreign="${foreignName}" data-card-set-code="${card.cardSetCode || ''}"
                                       onerror="handleCardImageError(this)">
                                  <span class="card-icon" style="display:none;">${getCardIcon(rarityCode)}</span>`;
                 } else {
@@ -3189,6 +3199,34 @@ function showDevTools() {
             localStorage.setItem('strictImageMatch', this.checked);
             console.log(this.checked ? '🎨 卡图严格匹配模式：已开启' : '🎨 卡图严格匹配模式：已关闭');
             showDevtoolsToast(this.checked ? '🎨 严格匹配模式已开启' : '🎨 严格匹配模式已关闭');
+        };
+    }
+    // 绑定 R2 图源切换 checkbox
+    const forceR2Checkbox = document.getElementById('devtools-force-r2');
+    const r2StatusEl = document.getElementById('devtools-r2-status');
+    if (forceR2Checkbox) {
+        // 从 localStorage 恢复状态
+        const savedForceR2 = localStorage.getItem('forceR2') === 'true';
+        forceR2Checkbox.checked = savedForceR2;
+        window._forceR2 = savedForceR2;
+
+        // 显示当前图源状态
+        function updateR2Status() {
+            if (r2StatusEl) {
+                const isR2 = typeof isLocalDev === 'function' ? !isLocalDev() : !savedForceR2;
+                const source = isR2 ? '☁️ R2 云端' : '📂 本地文件';
+                const url = isR2 && typeof CARD_IMAGE_BASE_URL !== 'undefined' ? CARD_IMAGE_BASE_URL : 'data/ocg/images/';
+                r2StatusEl.textContent = `当前图源：${source}（${url}）`;
+            }
+        }
+        updateR2Status();
+
+        forceR2Checkbox.onchange = function () {
+            window._forceR2 = this.checked;
+            localStorage.setItem('forceR2', this.checked);
+            updateR2Status();
+            console.log(this.checked ? '☁️ 强制 R2 图源：已开启' : '📂 强制 R2 图源：已关闭（使用本地图片）');
+            showDevtoolsToast(this.checked ? '☁️ 已切换到 R2 图源（重选卡包生效）' : '📂 已切换到本地图源（重选卡包生效）');
         };
     }
 }
@@ -4448,14 +4486,18 @@ const rarityWeight = RARITY_ORDER_ASC;
                         img.onerror = null;
                     }
                     if (nameEl) {
+                        const cardSetCode = card.cardSetCode || card.setNumber || '';
                         const displayName = card.nameCN || card.name || '';
                         const foreignName = card.nameOriginal || '';
-                        // 中文名和日文名之间用换行分隔
-                        if (foreignName && foreignName !== displayName) {
-                            nameEl.innerHTML = displayName + '<br><span style="font-size:0.8em;opacity:0.7;">' + foreignName + '</span>';
-                        } else {
-                            nameEl.textContent = displayName;
+                        let nameHtml = '';
+                        if (cardSetCode) {
+                            nameHtml += '<span style="font-size:0.8em;opacity:0.7;">' + cardSetCode + '</span><br>';
                         }
+                        nameHtml += displayName;
+                        if (foreignName && foreignName !== displayName) {
+                            nameHtml += '<br><span style="font-size:0.8em;opacity:0.7;">' + foreignName + '</span>';
+                        }
+                        nameEl.innerHTML = nameHtml;
                     }
                     viewer.classList.add('active');
                 }
