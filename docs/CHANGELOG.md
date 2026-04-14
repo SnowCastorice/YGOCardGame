@@ -2,7 +2,7 @@
 
 > 所有版本变更的详细记录。待办事项见 [TODO.md](TODO.md)，面向玩家的更新日志见 `data/changelog.json`。
 
-## v1.11.0（2026-04-14）— 卡图云端加速（Cloudflare R2）
+## v1.11.1（2026-04-14）— 卡图云端加速（Cloudflare R2）
 
 ### 卡图存储迁移（`js/api.js` / `data/ocg/packs.json`）
 - 卡图从 Cloudflare Pages 本地部署迁移到 Cloudflare R2 对象存储

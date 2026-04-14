@@ -37,6 +37,8 @@ const CARD_IMAGE_BASE_URL = 'https://pub-bafe4b6b5a6c4dc6a70d48ecc9a83f9e.r2.dev
 
 /** 判断是否为本地开发环境 */
 function isLocalDev() {
+    // 开发者可在 console 中执行 window._forceR2 = true 强制使用 R2（用于本地测试 R2 连通性）
+    if (window._forceR2) return false;
     return location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 }
 
