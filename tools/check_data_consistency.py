@@ -73,6 +73,11 @@ def get_card_list(card_data):
     return card_data.get('cardIds', card_data.get('cards', []))
 
 
+def resolve_images_dir(relative_dir):
+    """将 packs.json 中的相对图片目录路径转为绝对路径"""
+    return os.path.join(IMAGES_DIR, relative_dir)
+
+
 # ============================================================
 # 检查 1：packs.json 文件引用
 # ============================================================
@@ -91,7 +96,7 @@ def check_file_references(packs):
         if pack.get('imageMapFile'):
             checks.append(('imageMapFile', os.path.join(IMAGE_MAPS_DIR, pack['imageMapFile'])))
         if pack.get('localImagesDir'):
-            checks.append(('localImagesDir', os.path.join(PROJECT_ROOT, pack['localImagesDir'])))
+            checks.append(('localImagesDir', resolve_images_dir(pack['localImagesDir'])))
 
         # 辅助包文件
         if pack.get('supplementPackFile'):
@@ -99,7 +104,7 @@ def check_file_references(packs):
         if pack.get('supplementImageMapFile'):
             checks.append(('supplementImageMapFile', os.path.join(IMAGE_MAPS_DIR, pack['supplementImageMapFile'])))
         if pack.get('supplementImagesDir'):
-            checks.append(('supplementImagesDir', os.path.join(PROJECT_ROOT, pack['supplementImagesDir'])))
+            checks.append(('supplementImagesDir', resolve_images_dir(pack['supplementImagesDir'])))
 
         for field, path in checks:
             if not os.path.exists(path):
@@ -124,7 +129,7 @@ def check_image_map_vs_files(packs):
         if pack.get('imageMapFile') and pack.get('localImagesDir'):
             check_pairs.append((
                 os.path.join(IMAGE_MAPS_DIR, pack['imageMapFile']),
-                os.path.join(PROJECT_ROOT, pack['localImagesDir']),
+                resolve_images_dir(pack['localImagesDir']),
                 pack_code
             ))
         if pack.get('supplementImageMapFile') and pack.get('supplementImagesDir'):
@@ -132,7 +137,7 @@ def check_image_map_vs_files(packs):
             supp_label = pack.get('supplementImageMapFile', '').replace('_image_map.json', '').upper()
             check_pairs.append((
                 os.path.join(IMAGE_MAPS_DIR, pack['supplementImageMapFile']),
-                os.path.join(PROJECT_ROOT, pack['supplementImagesDir']),
+                resolve_images_dir(pack['supplementImagesDir']),
                 supp_label
             ))
 

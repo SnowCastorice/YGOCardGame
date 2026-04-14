@@ -2,6 +2,18 @@
 
 > 所有版本变更的详细记录。待办事项见 [TODO.md](TODO.md)，面向玩家的更新日志见 `data/changelog.json`。
 
+## v1.11.0（2026-04-14）— 卡图云端加速（Cloudflare R2）
+
+### 卡图存储迁移（`js/api.js` / `data/ocg/packs.json`）
+- 卡图从 Cloudflare Pages 本地部署迁移到 Cloudflare R2 对象存储
+- api.js 新增 `CARD_IMAGE_BASE_URL` / `isLocalDev()` / `getCardImageDir()`
+- 线上环境卡图从 R2 公开桶加载，本地开发自动回退到 `data/ocg/images/`
+- packs.json 的 `localImagesDir` / `supplementImagesDir` 改为相对路径
+
+### 工具脚本
+- 新建 `tools/upload_to_r2.py`：批量上传卡图到 R2（S3 兼容 API，支持断点续传）
+- `tools/check_data_consistency.py` 适配相对路径
+
 ## v1.10.3（2026-04-14）— 卡图完全本地化
 
 ### 卡图系统重构（`js/api.js` / `js/game.js` / `js/inventory.js`）

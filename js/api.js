@@ -27,6 +27,27 @@
  */
 
 // ====== 配置常量 ======
+
+/**
+ * 卡图 CDN 基础 URL（Cloudflare R2 对象存储）
+ * 本地开发时自动回退到 data/ocg/images（同源加载）
+ * 切换自定义域名时只需改这一处
+ */
+const CARD_IMAGE_BASE_URL = 'https://pub-bafe4b6b5a6c4dc6a70d48ecc9a83f9e.r2.dev';
+
+/** 判断是否为本地开发环境 */
+function isLocalDev() {
+    return location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+}
+
+/** 获取卡图目录的完整 URL 前缀 */
+function getCardImageDir(relativeDir) {
+    if (isLocalDev()) {
+        return 'data/ocg/images/' + relativeDir;
+    }
+    return CARD_IMAGE_BASE_URL + '/' + relativeDir;
+}
+
 const API_CONFIG = {
     // === 主要数据源：YGOProDeck（支持多语言） ===
     YGOPRODECK: {
@@ -635,7 +656,7 @@ async function getOCGCardSetData(packConfig, onProgress) {
                     imageMap = mapData.cards || null;
                     // 如果配置了本地图片目录，附加到 imageMap 供 getCardImageUrl 生成本地备份 URL
                     if (imageMap && packConfig.localImagesDir) {
-                        imageMap._localDir = packConfig.localImagesDir;
+                        imageMap._localDir = getCardImageDir(packConfig.localImagesDir);
                     }
                     console.log(`🗺️ 已加载卡图映射表 [${packConfig.imageMapFile}]，共 ${Object.keys(imageMap).length - (imageMap._localDir ? 1 : 0)} 条（localImages 模式）`);
                 }
@@ -656,7 +677,7 @@ async function getOCGCardSetData(packConfig, onProgress) {
                     const suppMapData = await suppMapResp.json();
                     supplementImageMap = suppMapData.cards || null;
                     if (supplementImageMap && packConfig.supplementImagesDir) {
-                        supplementImageMap._localDir = packConfig.supplementImagesDir;
+                        supplementImageMap._localDir = getCardImageDir(packConfig.supplementImagesDir);
                     }
                     console.log(`🗺️ 已加载辅助包卡图映射表 [${packConfig.supplementImageMapFile}]，共 ${Object.keys(supplementImageMap).length - (supplementImageMap._localDir ? 1 : 0)} 条`);
                 }
