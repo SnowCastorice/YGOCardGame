@@ -125,6 +125,10 @@ def build_image_map(images_dir, name_source, description):
 def main():
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     ocg_dir = os.path.join(base_dir, 'data', 'ocg')
+    maps_dir = os.path.join(ocg_dir, 'image_maps')
+
+    # 确保 image_maps 目录存在
+    os.makedirs(maps_dir, exist_ok=True)
 
     print("=" * 60)
     print("重建 image map 文件（统一为 localImages 格式）")
@@ -140,12 +144,12 @@ def main():
                 names[key] = info['name']
         return names
 
-    old_loch = load_json(os.path.join(ocg_dir, 'loch_image_map.json'))
-    old_blzd = load_json(os.path.join(ocg_dir, 'blzd_image_map.json'))
-    old_blzds = load_json(os.path.join(ocg_dir, 'blzds_image_map.json'))
-    old_locr = load_json(os.path.join(ocg_dir, 'locr_image_map.json'))
-    old_losp1 = load_json(os.path.join(ocg_dir, 'losp_vol1_image_map.json'))
-    old_losp2 = load_json(os.path.join(ocg_dir, 'losp_vol2_image_map.json'))
+    old_loch = load_json(os.path.join(maps_dir, 'loch_image_map.json'))
+    old_blzd = load_json(os.path.join(maps_dir, 'blzd_image_map.json'))
+    old_blzds = load_json(os.path.join(maps_dir, 'blzds_image_map.json'))
+    old_locr = load_json(os.path.join(maps_dir, 'locr_image_map.json'))
+    old_losp1 = load_json(os.path.join(maps_dir, 'losp_vol1_image_map.json'))
+    old_losp2 = load_json(os.path.join(maps_dir, 'losp_vol2_image_map.json'))
 
     loch_names = extract_names(old_loch)
     blzd_names = extract_names(old_blzd)
@@ -161,7 +165,7 @@ def main():
         loch_names,
         'LOCH 卡图映射表 — setNumber -> 本地卡图文件名（按稀有度）',
     )
-    save_json(loch_map, os.path.join(ocg_dir, 'loch_image_map.json'))
+    save_json(loch_map, os.path.join(maps_dir, 'loch_image_map.json'))
     print(f"  ✅ {len(loch_map['cards'])} 张卡")
 
     # ===== 2. BLZD =====
@@ -171,7 +175,7 @@ def main():
         blzd_names,
         'BLZD 卡图映射表 — setNumber -> 本地卡图文件名（按稀有度）',
     )
-    save_json(blzd_map, os.path.join(ocg_dir, 'blzd_image_map.json'))
+    save_json(blzd_map, os.path.join(maps_dir, 'blzd_image_map.json'))
     print(f"  ✅ {len(blzd_map['cards'])} 张卡")
 
     # ===== 3. BLZDS =====
@@ -181,7 +185,7 @@ def main():
         blzds_names,
         'BLZDS 辅助包卡图映射表 — setNumber -> 本地卡图文件名',
     )
-    save_json(blzds_map, os.path.join(ocg_dir, 'blzds_image_map.json'))
+    save_json(blzds_map, os.path.join(maps_dir, 'blzds_image_map.json'))
     print(f"  ✅ {len(blzds_map['cards'])} 张卡")
 
     # ===== 4. LOSP vol1 =====
@@ -191,7 +195,7 @@ def main():
         losp1_names,
         'LOSP vol1 辅助包卡图映射表 — setNumber -> 本地卡图文件名',
     )
-    save_json(losp_vol1_map, os.path.join(ocg_dir, 'losp_vol1_image_map.json'))
+    save_json(losp_vol1_map, os.path.join(maps_dir, 'losp_vol1_image_map.json'))
     print(f"  ✅ {len(losp_vol1_map['cards'])} 张卡")
 
     # ===== 5. LOSP vol2 =====
@@ -201,7 +205,7 @@ def main():
         losp2_names,
         'LOSP vol2 辅助包卡图映射表 — setNumber -> 本地卡图文件名',
     )
-    save_json(losp_vol2_map, os.path.join(ocg_dir, 'losp_vol2_image_map.json'))
+    save_json(losp_vol2_map, os.path.join(maps_dir, 'losp_vol2_image_map.json'))
     print(f"  ✅ {len(losp_vol2_map['cards'])} 张卡")
 
     # ===== 6. LOCR =====
@@ -211,7 +215,7 @@ def main():
         locr_names,
         'LOCR 卡图映射表 — setNumber -> 本地卡图文件名（按稀有度）',
     )
-    save_json(locr_map, os.path.join(ocg_dir, 'locr_image_map.json'))
+    save_json(locr_map, os.path.join(maps_dir, 'locr_image_map.json'))
     print(f"  ✅ {len(locr_map['cards'])} 张卡")
 
     # ===== 汇总 =====

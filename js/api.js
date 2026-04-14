@@ -628,7 +628,7 @@ async function getOCGCardSetData(packConfig, onProgress) {
         let imageMap = null;
         if (packConfig.imageMapFile) {
             try {
-                const mapUrl = `data/ocg/${packConfig.imageMapFile}`;
+                const mapUrl = `data/ocg/image_maps/${packConfig.imageMapFile}`;
                 const mapResp = await fetch(mapUrl);
                 if (mapResp.ok) {
                     const mapData = await mapResp.json();
@@ -650,7 +650,7 @@ async function getOCGCardSetData(packConfig, onProgress) {
         let supplementImageMap = null;
         if (packConfig.supplementImageMapFile) {
             try {
-                const suppMapUrl = `data/ocg/${packConfig.supplementImageMapFile}`;
+                const suppMapUrl = `data/ocg/image_maps/${packConfig.supplementImageMapFile}`;
                 const suppMapResp = await fetch(suppMapUrl);
                 if (suppMapResp.ok) {
                     const suppMapData = await suppMapResp.json();
@@ -1029,18 +1029,6 @@ async function getOCGCardSetDataViaAPI(packConfig, onProgress) {
         }
 
         if (cards.length === 0) {
-            if (window.FALLBACK_CARD_DATA && window.FALLBACK_CARD_DATA[packId]) {
-                const fallbackData = window.FALLBACK_CARD_DATA[packId];
-                return {
-                    setCode: `${packId}_${langCode}`,
-                    cards: fallbackData.cards,
-                    totalCards: fallbackData.cards.length,
-                    fetchedAt: Date.now(),
-                    isOfflineData: true,
-                    dataSource: 'fallback',
-                    language: langCode
-                };
-            }
             throw new Error(`卡包 [${packConfig.packName}] 无法获取数据`);
         }
     }
