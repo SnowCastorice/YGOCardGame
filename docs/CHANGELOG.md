@@ -2,7 +2,7 @@
 
 > 所有版本变更的详细记录。待办事项见 [TODO.md](TODO.md)，面向玩家的更新日志见 `data/changelog.json`。
 
-## v1.10.0（2026-04-14）— 卡图完全本地化
+## v1.10.1（2026-04-14）— 卡图完全本地化
 
 ### 卡图系统重构（`js/api.js` / `js/game.js` / `js/inventory.js`）
 - `getCardImageUrl()` 参数从 `cardId` 改为 `cardSetCode`，删除 metaId 分支和所有外部 CDN 回退

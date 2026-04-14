@@ -504,7 +504,6 @@ function bindCardImageViewer() {
 
         // 获取大图 URL 和卡片名称
         const largeUrl = img.getAttribute('data-large-url');
-        const largeFallback = img.getAttribute('data-large-fallback') || '';
         const cardName = img.getAttribute('data-card-name') || '';
         const foreignName = img.getAttribute('data-card-foreign') || '';
 
@@ -515,13 +514,7 @@ function bindCardImageViewer() {
         // 设置大图和名称
         viewerImage.src = largeUrl;
         viewerImage.alt = cardName;
-        // 大图加载失败时尝试 Cloudflare 本地备份
-        viewerImage.onerror = largeFallback ? function() {
-            if (this.src !== largeFallback) {
-                console.warn('⚠️ S3 大图加载失败，切换到 Cloudflare 备份');
-                this.src = largeFallback;
-            }
-        } : null;
+        viewerImage.onerror = null;
 
         // 构建显示名称（中文名 + 外文名）
         let displayName = cardName;
@@ -544,7 +537,6 @@ function bindCardImageViewer() {
             e.stopPropagation();
 
             const bonusLargeUrl = img.getAttribute('data-large-url');
-            const bonusLargeFallback = img.getAttribute('data-large-fallback') || '';
             const cardName = img.getAttribute('data-card-name') || '';
             const foreignName = img.getAttribute('data-card-foreign') || '';
 
@@ -554,13 +546,7 @@ function bindCardImageViewer() {
             viewerImage.src = '';
             viewerImage.src = bonusLargeUrl;
             viewerImage.alt = cardName;
-            // 大图加载失败时尝试 Cloudflare 本地备份
-            viewerImage.onerror = bonusLargeFallback ? function() {
-                if (this.src !== bonusLargeFallback) {
-                    console.warn('⚠️ S3 大图加载失败，切换到 Cloudflare 备份');
-                    this.src = bonusLargeFallback;
-                }
-            } : null;
+            viewerImage.onerror = null;
 
             let displayName = cardName;
             if (foreignName && foreignName !== cardName) {
@@ -3730,17 +3716,19 @@ async function rebuildInventoryFromPacks(slimInventory) {
             var foreignName = jpName || enName || '';
 
             // 获取默认卡图 URL
+            var setNumber = cardDef.setNumber || '';
             var imgSmallUrl = '';
             var imgLargeUrl = '';
             if (typeof getCardImageUrl === 'function' && imageMap) {
-                var smallResult = getCardImageUrl(cardDef.id, imageMap, 'small');
-                var largeResult = getCardImageUrl(cardDef.id, imageMap, 'large');
+                var smallResult = getCardImageUrl(setNumber, imageMap, 'small');
+                var largeResult = getCardImageUrl(setNumber, imageMap, 'large');
                 if (smallResult && smallResult.url) imgSmallUrl = smallResult.url;
                 if (largeResult && largeResult.url) imgLargeUrl = largeResult.url;
             }
 
             cardIndex[cardId] = {
                 id: cardDef.id,
+                cardSetCode: setNumber,
                 name: displayName,
                 nameCN: cnName,
                 nameOriginal: foreignName,
