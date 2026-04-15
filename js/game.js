@@ -3108,6 +3108,20 @@ function showDevTools() {
     const modal = document.getElementById('devtools-modal');
     modal.classList.add('active');
 
+    // 内网环境（localhost）自动解锁隐藏功能
+    const _isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    if (_isLocal) {
+        const hiddenSections = [
+            document.getElementById('devtools-image-section'),
+            document.getElementById('devtools-admin-section')
+        ].filter(Boolean);
+        hiddenSections.forEach(function (section) {
+            section.style.display = '';
+            section.classList.remove('devtools-admin-hidden');
+            section.classList.add('devtools-admin-visible');
+        });
+    }
+
     // 绑定开发者快捷操作按钮
     const addGoldBtn = document.getElementById('btn-dev-add-gold');
     const resetGameBtn = document.getElementById('btn-dev-reset-game');
@@ -3201,10 +3215,16 @@ function showDevTools() {
             showDevtoolsToast(this.checked ? '🎨 严格匹配模式已开启' : '🎨 严格匹配模式已关闭');
         };
     }
-    // 绑定 R2 图源切换 checkbox
+    // 绑定 R2 图源切换 checkbox（仅内网环境显示）
     const forceR2Checkbox = document.getElementById('devtools-force-r2');
     const r2StatusEl = document.getElementById('devtools-r2-status');
+    const forceR2Label = forceR2Checkbox ? forceR2Checkbox.closest('label') : null;
     if (forceR2Checkbox) {
+        if (!_isLocal) {
+            // 外网环境：隐藏开关（外网本身就走 R2，开关无意义）
+            if (forceR2Label) forceR2Label.style.display = 'none';
+        }
+
         // 从 localStorage 恢复状态
         const savedForceR2 = localStorage.getItem('forceR2') === 'true';
         forceR2Checkbox.checked = savedForceR2;

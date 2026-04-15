@@ -3,7 +3,7 @@
 > 复刻游戏王实体卡包的开包体验！选择经典卡包，撕开包装，看看你能抽到什么稀有卡牌！
 
 [![Deploy Status](https://img.shields.io/badge/deploy-Cloudflare%20Pages-orange?logo=cloudflare)](https://ygocardgame.pages.dev/)
-[![Version](https://img.shields.io/badge/version-v1.11.3-blue)](#)
+[![Version](https://img.shields.io/badge/version-v1.11.4-blue)](#)
 [![License](https://img.shields.io/badge/license-非商业用途-green)](#版权声明)
 
 👉 **[点击这里在线体验！](https://ygocardgame.pages.dev/)**
