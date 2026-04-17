@@ -3,11 +3,11 @@
 """
 check_data_consistency.py — 数据一致性自动检查脚本
 
-从 packs.json 读取所有卡包配置，校验 4 类数据一致性：
-  1. packs.json 文件引用检查（cardFile、imageMapFile、localImagesDir 等是否存在）
-  2. image map ↔ 图片文件交叉校验（幽灵引用、孤儿文件）
-  3. 卡片数据 ↔ image map 交叉校验（缺图卡片、多余条目）
-  4. 价格文件 ↔ 卡片数据交叉校验（多余价格、缺价格卡片）
+从 packs.json 读取所有卡包配置，校验 2 类数据一致性：
+  1. packs.json 文件引用检查（cardFile、localImagesDir 等是否存在）
+  2. 价格文件 ↔ 卡片数据交叉校验（多余价格、缺价格卡片）
+
+注：image map 已在双图库架构中移除，相关检查已删除。
 
 用法：
     python tools/check_data_consistency.py
@@ -28,8 +28,7 @@ PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 
 PACKS_JSON = os.path.join(PROJECT_ROOT, 'data', 'ocg', 'packs.json')
 CARDS_DIR = os.path.join(PROJECT_ROOT, 'data', 'ocg', 'cards')
-IMAGE_MAPS_DIR = os.path.join(PROJECT_ROOT, 'data', 'ocg', 'image_maps')
-IMAGES_DIR = os.path.join(PROJECT_ROOT, 'data', 'ocg', 'images_source')
+IMAGES_DIST_DIR = os.path.join(PROJECT_ROOT, 'data', 'ocg', 'images_dist')
 PRICES_DIR = os.path.join(PROJECT_ROOT, 'data', 'ocg', 'prices')
 
 # === 计数器 ===
@@ -73,11 +72,6 @@ def get_card_list(card_data):
     return card_data.get('cardIds', card_data.get('cards', []))
 
 
-def resolve_images_dir(relative_dir):
-    """将 packs.json 中的相对图片目录路径转为绝对路径"""
-    return os.path.join(IMAGES_DIR, relative_dir)
-
-
 # ============================================================
 # 检查 1：packs.json 文件引用
 # ============================================================
@@ -93,18 +87,14 @@ def check_file_references(packs):
         checks = []
         if pack.get('cardFile'):
             checks.append(('cardFile', os.path.join(CARDS_DIR, pack['cardFile'])))
-        if pack.get('imageMapFile'):
-            checks.append(('imageMapFile', os.path.join(IMAGE_MAPS_DIR, pack['imageMapFile'])))
         if pack.get('localImagesDir'):
-            checks.append(('localImagesDir', resolve_images_dir(pack['localImagesDir'])))
+            checks.append(('localImagesDir', os.path.join(IMAGES_DIST_DIR, pack['localImagesDir'])))
 
         # 辅助包文件
         if pack.get('supplementPackFile'):
             checks.append(('supplementPackFile', os.path.join(CARDS_DIR, pack['supplementPackFile'])))
-        if pack.get('supplementImageMapFile'):
-            checks.append(('supplementImageMapFile', os.path.join(IMAGE_MAPS_DIR, pack['supplementImageMapFile'])))
         if pack.get('supplementImagesDir'):
-            checks.append(('supplementImagesDir', resolve_images_dir(pack['supplementImagesDir'])))
+            checks.append(('supplementImagesDir', os.path.join(IMAGES_DIST_DIR, pack['supplementImagesDir'])))
 
         for field, path in checks:
             if not os.path.exists(path):
@@ -116,150 +106,11 @@ def check_file_references(packs):
 
 
 # ============================================================
-# 检查 2：image map ↔ 图片文件交叉校验
-# ============================================================
-def check_image_map_vs_files(packs):
-    """检查 image map 引用的文件是否存在，以及目录中是否有未被引用的孤儿文件"""
-    print_section('检查 2: image map ↔ 图片文件交叉校验')
-
-    # 收集所有需要检查的 (image_map_file, images_dir, label) 组合
-    check_pairs = []
-    for pack in packs:
-        pack_code = pack.get('packCode', pack.get('packId', '未知'))
-        if pack.get('imageMapFile') and pack.get('localImagesDir'):
-            check_pairs.append((
-                os.path.join(IMAGE_MAPS_DIR, pack['imageMapFile']),
-                resolve_images_dir(pack['localImagesDir']),
-                pack_code
-            ))
-        if pack.get('supplementImageMapFile') and pack.get('supplementImagesDir'):
-            # 从辅助包文件名推断标签
-            supp_label = pack.get('supplementImageMapFile', '').replace('_image_map.json', '').upper()
-            check_pairs.append((
-                os.path.join(IMAGE_MAPS_DIR, pack['supplementImageMapFile']),
-                resolve_images_dir(pack['supplementImagesDir']),
-                supp_label
-            ))
-
-    all_ok = True
-    for map_path, img_dir, label in check_pairs:
-        if not os.path.exists(map_path) or not os.path.exists(img_dir):
-            continue  # 检查 1 已经报过错
-
-        image_map = load_json(map_path)
-        cards = image_map.get('cards', {})
-
-        # 收集 image map 中引用的所有文件名
-        referenced_files = set()
-        for sn, card_info in cards.items():
-            local_images = card_info.get('localImages', {})
-            for rarity, file_list in local_images.items():
-                if isinstance(file_list, list):
-                    referenced_files.update(file_list)
-                elif isinstance(file_list, str):
-                    referenced_files.add(file_list)
-
-        # 收集目录中实际存在的 .webp 文件
-        actual_files = set()
-        for f in os.listdir(img_dir):
-            if f.endswith('.webp'):
-                actual_files.add(f)
-
-        # 幽灵引用：image map 引用了但文件不存在
-        ghost_refs = referenced_files - actual_files
-        if ghost_refs:
-            all_ok = False
-            print_error(f'{label}: 幽灵引用 {len(ghost_refs)} 个（image map 引用了但文件不存在）')
-            for f in sorted(ghost_refs)[:10]:  # 最多显示 10 个
-                print(f'      - {f}')
-            if len(ghost_refs) > 10:
-                print(f'      ... 还有 {len(ghost_refs) - 10} 个')
-
-        # 孤儿文件：文件存在但 image map 未引用
-        orphan_files = actual_files - referenced_files
-        if orphan_files:
-            all_ok = False
-            print_warning(f'{label}: 孤儿文件 {len(orphan_files)} 个（图片目录中存在但 image map 未引用）')
-            for f in sorted(orphan_files)[:10]:
-                print(f'      - {f}')
-            if len(orphan_files) > 10:
-                print(f'      ... 还有 {len(orphan_files) - 10} 个')
-
-    if all_ok:
-        print_pass(f'image map ↔ 图片文件交叉校验 — 全部通过（{len(check_pairs)} 组）')
-
-
-# ============================================================
-# 检查 3：卡片数据 ↔ image map 交叉校验
-# ============================================================
-def check_cards_vs_image_map(packs):
-    """检查卡片数据中的 setNumber 与 image map 的 key 是否匹配"""
-    print_section('检查 3: 卡片数据 ↔ image map 交叉校验')
-
-    # 收集所有需要检查的 (card_file, image_map_file, label) 组合
-    check_pairs = []
-    for pack in packs:
-        pack_code = pack.get('packCode', pack.get('packId', '未知'))
-        if pack.get('cardFile') and pack.get('imageMapFile'):
-            check_pairs.append((
-                os.path.join(CARDS_DIR, pack['cardFile']),
-                os.path.join(IMAGE_MAPS_DIR, pack['imageMapFile']),
-                pack_code
-            ))
-        if pack.get('supplementPackFile') and pack.get('supplementImageMapFile'):
-            supp_label = pack.get('supplementImageMapFile', '').replace('_image_map.json', '').upper()
-            check_pairs.append((
-                os.path.join(CARDS_DIR, pack['supplementPackFile']),
-                os.path.join(IMAGE_MAPS_DIR, pack['supplementImageMapFile']),
-                supp_label
-            ))
-
-    all_ok = True
-    for card_path, map_path, label in check_pairs:
-        if not os.path.exists(card_path) or not os.path.exists(map_path):
-            continue
-
-        card_data = load_json(card_path)
-        card_ids = get_card_list(card_data)
-        card_set_numbers = set()
-        for card in card_ids:
-            sn = card.get('setNumber', '')
-            if sn:
-                card_set_numbers.add(sn)
-
-        image_map = load_json(map_path)
-        map_keys = set(image_map.get('cards', {}).keys())
-
-        # 缺图卡片：cardIds 中有 setNumber 但 image map 中没有
-        missing_in_map = card_set_numbers - map_keys
-        if missing_in_map:
-            all_ok = False
-            print_warning(f'{label}: 缺图卡片 {len(missing_in_map)} 张（卡片数据中有但 image map 中无条目）')
-            for sn in sorted(missing_in_map)[:10]:
-                print(f'      - {sn}')
-            if len(missing_in_map) > 10:
-                print(f'      ... 还有 {len(missing_in_map) - 10} 张')
-
-        # 多余条目：image map 中有 key 但 cardIds 中没有对应 setNumber
-        extra_in_map = map_keys - card_set_numbers
-        if extra_in_map:
-            all_ok = False
-            print_warning(f'{label}: image map 多余条目 {len(extra_in_map)} 个（image map 中有但卡片数据中无）')
-            for sn in sorted(extra_in_map)[:10]:
-                print(f'      - {sn}')
-            if len(extra_in_map) > 10:
-                print(f'      ... 还有 {len(extra_in_map) - 10} 个')
-
-    if all_ok:
-        print_pass(f'卡片数据 ↔ image map 交叉校验 — 全部通过（{len(check_pairs)} 组）')
-
-
-# ============================================================
-# 检查 4：价格文件 ↔ 卡片数据交叉校验
+# 检查 2：价格文件 ↔ 卡片数据交叉校验
 # ============================================================
 def check_prices_vs_cards(packs):
     """检查价格文件的 key 与卡片数据的 setNumber 是否匹配"""
-    print_section('检查 4: 价格文件 ↔ 卡片数据交叉校验')
+    print_section('检查 2: 价格文件 ↔ 卡片数据交叉校验')
 
     # 收集所有卡包+辅助包的 setNumber
     all_set_numbers = set()
@@ -353,10 +204,8 @@ def main():
     packs = packs_data.get('packs', [])
     print(f'\n  已加载 {len(packs)} 个卡包配置')
 
-    # 执行 4 类检查
+    # 执行 2 类检查
     check_file_references(packs)
-    check_image_map_vs_files(packs)
-    check_cards_vs_image_map(packs)
     check_prices_vs_cards(packs)
 
     # 汇总

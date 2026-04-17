@@ -2,6 +2,37 @@
 
 > 所有版本变更的详细记录。待办事项见 [TODO.md](TODO.md)，面向玩家的更新日志见 `data/changelog.json`。
 
+## v1.11.4+（2026-04-17）— 双图库架构完成（开发侧变更，不更新版本号）
+
+### 双图库架构（`js/api.js` / `js/game.js` / `js/inventory.js`）
+- `getCardImageUrl()` 重写为 3 参数 `(cardSetCode, packDir, rarityCode)`，直接拼接 `{packDir}/{setNumber}_{rarity}.webp`
+- 删除 `resolveLocalImage()` / `getBestFile()` / `RARITY_FALLBACK_*` 等 image map 选图逻辑
+- 所有 `_imageMap` 引用改为 `_packDir`
+- `buildOCGCardsFromLocalData` / `buildSupplementCardsFromLocalData` 使用 packDir
+- 存档导入重建使用 packDir，不再获取 imageMap
+
+### 卡图从 git 移除
+- 402 个卡图 + 6 个 image map 文件从 git 跟踪中移除（`git rm --cached`）
+- `.gitignore` 排除 `data/ocg/images/`、`images_source/`、`images_dist/`、`image_maps/`
+- `printing.jpg` / `default.jpg` 迁移到 `data/ocg/` 根目录
+- `packs.json` 移除 `imageMapFile` / `supplementImageMapFile` 字段
+
+### 旧存档兼容（`js/inventory.js`）
+- 检测旧目录路径 `data/ocg/images/` 并清空为占位图
+- 修正旧占位图路径 `data/ocg/images/printing.jpg` → `data/ocg/printing.jpg`
+
+### 工具脚本
+- 删除 `rebuild_image_maps.py`、`build_blzd_image_map.py`、`build_locr_image_map.py`
+- 新增 `build_card_images.py`（原始图库 → 调用图库构建）
+- `upload_to_r2.py` 支持 `--target dist|source|both` 双图库上传
+- `check_data_consistency.py` 简化为 2 类检查（移除 image map 相关）
+
+### 文档更新
+- `TOOLS.md`：新增 `build_card_images.py` / `upload_to_r2.py` 文档，删除旧 image map 脚本文档
+- `ARCHITECTURE.md`：更新目录结构，反映双图库架构和 R2 存储
+- `TODO.md`：双图库架构任务标记完成
+- `CLAUDE.md`：CR 报告等生成物统一保存到 `test_output/`
+
 ## v1.11.4（2026-04-15）— 内网调试优化
 
 ### 开发者工具（`js/game.js`）

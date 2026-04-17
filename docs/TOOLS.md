@@ -589,34 +589,50 @@ NR 是非官方定义的稀有度（封入率更低的 N 卡）。集换社和 N
 | `tools/fetch_packs.py` | 卡包数据抓取 |
 | `tools/fetch_yugiohmeta.py` | YugiohMeta 卡图映射表构建 |
 | `tools/download_loch_images.py` | LOCH 卡图本地化下载 |
-| `tools/rebuild_image_maps.py` | 重建所有 image map（扫描图片目录自动生成） |
-| `tools/check_data_consistency.py` | 数据一致性检查（已集成到 pre-commit hook） |
+| `tools/build_card_images.py` | 双图库构建：原始图库 → 调用图库（按优先级选最优图） |
+| `tools/upload_to_r2.py` | 卡图上传到 Cloudflare R2 对象存储 |
+| `tools/check_data_consistency.py` | 数据一致性检查（已集成到 Claude hook） |
 | `tools/resize_preview_cards.py` | LOCR+LOSP 预览卡图批量处理（缩放+转webp） |
 
 ---
 
-## `rebuild_image_maps.py` — 重建所有 image map
+## `build_card_images.py` — 双图库构建脚本
 
-扫描 `data/ocg/images/` 下各卡包图片目录，自动生成 `data/ocg/image_maps/` 下的 image map JSON 文件。
+扫描 `data/ocg/images_source/` 下各卡包的原始图库，按图源优先级为每张卡每个稀有度选取最优图片，输出到 `data/ocg/images_dist/` 调用图库。
 
-每个稀有度对应一个文件名数组，按图源优先级从高到低排序（`twitter_photo` > `twitter_render` > `tcgcorner_photo` > `ygojp` > `official` > `ygometa`）。
+**图源优先级**（从高到低）：`twitter_photo`(1) > `twitter_render`(2) > `tcgcorner_photo`(3) > `ygojp`(4) > `official`(5) > `ygometa`(6)
+
+**命名规范**：
+- 原始图库：`{setNumber}_{rarity}_{source}_{type}.webp`（如 `LOCR-JP001_UR-OF_twitter_photo_art.webp`）
+- 调用图库：`{setNumber}_{rarity}.webp`（如 `LOCR-JP001_UR-OF.webp`）
 
 | 命令 | 说明 |
 |------|------|
-| `python tools/rebuild_image_maps.py` | 重建全部 6 个 image map |
+| `python tools/build_card_images.py` | 构建全部卡包的调用图库 |
 
-> 💡 更新卡图文件后必须重跑此脚本，使 image map 与图片目录保持同步。
-> ⚠️ Windows 环境需加 `PYTHONIOENCODING=utf-8` 前缀。
+> 💡 新图放入 `images_source/` 后运行此脚本，调用图库自动更新。
+> 💡 构建完成后可运行 `upload_to_r2.py` 上传到 R2。
+
+## `upload_to_r2.py` — R2 对象存储上传
+
+将调用图库或原始图库上传到 Cloudflare R2 对象存储。
+
+| 命令 | 说明 |
+|------|------|
+| `python tools/upload_to_r2.py --target dist` | 上传调用图库到 `ocg/dist/` |
+| `python tools/upload_to_r2.py --target source` | 上传原始图库到 `ocg/source/` |
+| `python tools/upload_to_r2.py --target both` | 同时上传两个图库 |
+| `python tools/upload_to_r2.py --clean-old` | 删除 R2 根目录下的旧格式文件 |
+
+> ⚠️ 需要在 `local/.env` 中配置 R2 凭据（`R2_ACCESS_KEY_ID`、`R2_SECRET_ACCESS_KEY`、`R2_ENDPOINT`、`R2_BUCKET_NAME`）。
 
 ## `check_data_consistency.py` — 数据一致性检查
 
-从 `packs.json` 出发，自动校验 4 类数据一致性：
+从 `packs.json` 出发，自动校验 2 类数据一致性：
 
 | 检查项 | 说明 | 级别 |
 |--------|------|------|
-| 文件引用 | packs.json 中的 cardFile/imageMapFile/localImagesDir 等是否存在 | ERROR |
-| image map ↔ 图片 | 幽灵引用（map 引用了不存在的文件）/ 孤儿文件（文件未被 map 引用） | ERROR / WARNING |
-| 卡片数据 ↔ image map | 缺图卡片 / image map 多余条目 | WARNING |
+| 文件引用 | packs.json 中的 cardFile/localImagesDir 等是否存在 | ERROR |
 | 价格 ↔ 卡片数据 | 多余价格条目 / 缺价格卡片 | WARNING |
 
 | 命令 | 说明 |
@@ -624,45 +640,11 @@ NR 是非官方定义的稀有度（封入率更低的 N 卡）。集换社和 N
 | `python tools/check_data_consistency.py` | 运行全量检查 |
 
 - **退出码**：`0` = 无 ERROR，`1` = 有 ERROR
-- **已集成到 pre-commit hook**：当暂存区包含 `data/ocg/*` 或 `tools/rebuild_image_maps.py` 时自动触发
+- **已集成到 Claude hook**：当暂存区包含 `data/ocg/*` 变更时自动触发
 
 > ⚠️ Windows 环境需加 `PYTHONIOENCODING=utf-8` 前缀。
 
 ---
-
-## `build_locr_image_map.py` — LOCR 卡图映射表生成
-
-从 `data/ocg/images/locr/` 目录扫描所有卡图文件名，结合 `data/ocg/cards/ocg_locr.json` 中的卡片密码和卡编号信息，自动生成 `data/ocg/locr_image_map.json` 映射表。
-
-映射表采用 **localImages 新格式**（按卡编号 + 稀有度查找本地文件名），与 LOCH/BLZD 的 metaId 格式不同：
-
-```json
-{
-  "cards": {
-    "100257001": {
-      "setNumber": "LOCR-JP001",
-      "name": "白色幻兽-青眼白龙",
-      "localImages": {
-        "UR": "LOCR-JP001_UR_ygojp_render_art.webp",
-        "UR-OF": "LOCR-JP001_UR-OF_twitter_photo_art.webp",
-        "PSER-OF": "LOCR-JP001_PSER-OF_twitter_photo_art.webp"
-      }
-    }
-  }
-}
-```
-
-同一张卡同一稀有度有多张来源不同的图时，按优先级选择最优的一张：
-- **来源优先级**：`twitter+photo_art` > `twitter+render_art` > `ygojp` > `official`
-
-| 命令 | 说明 |
-|------|------|
-| `python tools/build_locr_image_map.py` | 生成映射表 |
-| `python tools/build_locr_image_map.py --dry-run` | 预览模式，不写入文件 |
-| `python tools/build_locr_image_map.py --stats` | 显示详细统计 |
-
-> 💡 文件命名规范：`{卡编号}_{稀有度}_{来源}_{类型}.webp`（如 `LOCR-JP001_UR-OF_twitter_photo_art.webp`）
-> ⚠️ 每次新增或更新 LOCR 卡图后，需重新运行此脚本更新映射表。
 
 ## `resize_preview_cards.py` — 预览卡图批量处理工具
 

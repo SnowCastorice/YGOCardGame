@@ -86,14 +86,9 @@ buildOCGCardsFromLocalData()（纯本地转换）
 data/ocg/
 ├── packs.json           ← 卡包元信息索引
 ├── pack_list.json       ← 完整卡包目录
-├── loch_image_map.json  ← LOCH 卡图映射表（metaId / altMetaId）
-├── locr_image_map.json  ← LOCR 卡图映射表（localImages 新格式）
-├── blzd_image_map.json  ← BLZD 卡图映射表（metaId）
+├── printing.jpg         ← 占位图（卡图缺失时显示）
+├── default.jpg          ← 默认图
 ├── covers/              ← 本地封面图（{packCode}-{type}.webp）
-├── images/              ← 本地卡图目录（v1.5.33+）
-│   ├── loch/            ← LOCH 卡图（196 个 webp 文件，约 7.3MB）
-│   ├── locr/            ← LOCR 卡图（171 个 webp 文件）
-│   └── blzd/            ← BLZD 卡图（200 个 webp 文件，约 7.0MB）
 ├── prices/              ← 市场价格 JSON
 │   ├── loch_prices.json
 │   ├── locr_prices.json
@@ -103,6 +98,16 @@ data/ocg/
     ├── ocg_loch.json
     └── ocg_locr.json
 ```
+
+以下目录已从 git 移除，仅在本地开发时存在（.gitignore 排除）：
+
+```
+data/ocg/images_source/  ← 原始图库（多图源，长文件名，开发用）
+data/ocg/images_dist/    ← 调用图库（最优图，简化命名，本地开发用）
+data/ocg/image_maps/     ← 旧 image map 文件（已废弃）
+```
+
+线上环境卡图从 **Cloudflare R2** 加载：`https://pub-xxx.r2.dev/ocg/dist/{pack}/{setNumber}_{rarity}.webp`
 
 ### KONAMI 官方商品参考数据
 
