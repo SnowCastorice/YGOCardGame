@@ -110,15 +110,15 @@ const InventorySystem = (function () {
             const cardId = String(card.id);
             const rarity = (card.rarityVersions || ['N'])[0];
 
-            // 利用卡片上的 _imageMap 为当前稀有度预计算卡图URL
-            // _imageMap 是运行时大对象不能直接存储，所以只保存计算后的URL
+            // 利用卡片上的 _packDir 为当前稀有度预计算卡图URL
             let raritySmallUrl = card.imageUrl || '';
             let rarityLargeUrl = card.imageLargeUrl || '';
-            if (card._imageMap && typeof getCardImageUrl === 'function') {
-                const smallResult = getCardImageUrl(card.cardSetCode, card._imageMap, 'small', rarity);
-                const largeResult = getCardImageUrl(card.cardSetCode, card._imageMap, 'large', rarity);
-                if (smallResult && smallResult.url) raritySmallUrl = smallResult.url;
-                if (largeResult && largeResult.url) rarityLargeUrl = largeResult.url;
+            if (card._packDir && typeof getCardImageUrl === 'function') {
+                const result = getCardImageUrl(card.cardSetCode, card._packDir, rarity);
+                if (result && result.url) {
+                    raritySmallUrl = result.url;
+                    rarityLargeUrl = result.url;
+                }
             }
 
             if (inventory[cardId]) {
@@ -554,19 +554,27 @@ const InventorySystem = (function () {
             const displayName = card.nameCN || card.name || card.nameOriginal || '未知卡片';
 
             let imageHtml;
-            // 检测旧存档中的无效 imageUrl（旧 hash 命名或已不存在的 CDN URL）
+            // 检测旧存档中的无效 imageUrl（旧 hash 命名、旧目录路径、旧多图源文件名）
             let validImageUrl = card.imageUrl || '';
+            // 修正旧占位图路径
+            if (validImageUrl === 'data/ocg/images/printing.jpg') {
+                validImageUrl = 'data/ocg/printing.jpg';
+            }
             if (validImageUrl && !validImageUrl.includes('printing.jpg')) {
                 // 旧 hash 格式检测：包含 _w200 或 _w420 + 非 setNumber 开头
                 if (validImageUrl.match(/_w\d+\.webp/) || validImageUrl.match(/\/[a-f0-9]{20,}_/)) {
                     validImageUrl = '';  // 清空无效 URL，使用占位图
                 }
+                // 旧目录路径检测：data/ocg/images/ 已改名为 images_source/images_dist
+                if (validImageUrl.match(/data\/ocg\/images\/[^_]/)) {
+                    validImageUrl = '';
+                }
             }
             if (validImageUrl) {
                 imageHtml = `<img class="inventory-card-image" src="${validImageUrl}" alt="${displayName}" loading="lazy"
-                                  onerror="this.src='data/ocg/images/printing.jpg';this.onerror=null;">`;
+                                  onerror="this.src='data/ocg/printing.jpg';this.onerror=null;">`;
             } else {
-                imageHtml = `<img class="inventory-card-image" src="data/ocg/images/printing.jpg" alt="${displayName}">`;
+                imageHtml = `<img class="inventory-card-image" src="data/ocg/printing.jpg" alt="${displayName}">`;
             }
 
             let priceHtml;
@@ -607,12 +615,16 @@ const InventorySystem = (function () {
             // 先清空旧图，避免打开新卡片时闪现上一张图片
             img.src = '';
             let largeUrl = card.imageLargeUrl || card.imageUrl || '';
-            // 检测旧存档中的无效 URL（旧 hash 命名）
-            if (largeUrl && (largeUrl.match(/_w\d+\.webp/) || largeUrl.match(/\/[a-f0-9]{20,}_/))) {
-                largeUrl = 'data/ocg/images/printing.jpg';
+            // 修正旧占位图路径
+            if (largeUrl === 'data/ocg/images/printing.jpg') {
+                largeUrl = 'data/ocg/printing.jpg';
             }
-            img.src = largeUrl || 'data/ocg/images/printing.jpg';
-            img.onerror = function () { this.src = 'data/ocg/images/printing.jpg'; this.onerror = null; };
+            // 检测旧存档中的无效 URL（旧 hash 命名、旧目录路径）
+            if (largeUrl && (largeUrl.match(/_w\d+\.webp/) || largeUrl.match(/\/[a-f0-9]{20,}_/) || largeUrl.match(/data\/ocg\/images\/[^_]/))) {
+                largeUrl = 'data/ocg/printing.jpg';
+            }
+            img.src = largeUrl || 'data/ocg/printing.jpg';
+            img.onerror = function () { this.src = 'data/ocg/printing.jpg'; this.onerror = null; };
         }
         if (nameEl) {
             const cardSetCode = card.cardSetCode || '';

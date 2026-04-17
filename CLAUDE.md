@@ -77,7 +77,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **遇到阻塞时**即时和用户沟通，不要自行尝试新方案
 - **设计原则**：移动端专属，`max-width: 500px` 居中，`viewport-fit=cover` + `safe-area-inset` 适配刘海屏
 - **业务规则**：金币与人民币 1:1，游戏内不出现真实货币
-- **临时文件**：统一保存到 `test_output/`，禁止随意建目录，及时清理
+- **临时文件**：统一保存到 `test_output/`（已 .gitignore），禁止随意建目录，及时清理。CR 报告、审查文档等生成物也保存在此目录，**严禁保存到用户桌面或项目外路径**
 - **Edit 后验证语法**：JS 文件用 `node --check file.js`，Python 文件用 `python -c "import ast; ast.parse(open('file.py').read())"`
 - **外部 API**：所有请求通过 `requestThrottler`（间隔 ≥ 300ms），YGOProDeck 限制 20 req/s
 

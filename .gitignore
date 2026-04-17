@@ -37,3 +37,11 @@ screenshots/
 
 # 本地大文件资源（Python虚拟环境、OCR图片、先行卡卡图等，不提交到 Git）
 local/
+
+# 卡图（已迁移至 R2 对象存储，本地仅开发用）
+data/ocg/images/
+data/ocg/images_source/
+data/ocg/images_dist/
+
+# image map 文件（双图库架构后不再需要）
+data/ocg/image_maps/

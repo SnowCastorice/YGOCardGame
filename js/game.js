@@ -1374,7 +1374,7 @@ async function openMultiPacks(count, boxesCount) {
 }
 
 /**
- * 根据卡片的 _imageMap 和最终稀有度，更新卡片的 imageUrl / imageLargeUrl
+ * 根据卡片的 _packDir 和最终稀有度，更新卡片的 imageUrl / imageLargeUrl
  *
  * 【用途】
  * 在存入背包之前调用，确保背包中保存的是正确的本地卡图地址。
@@ -1385,10 +1385,10 @@ async function openMultiPacks(count, boxesCount) {
 function updateCardsImageUrl(cards) {
     if (!Array.isArray(cards)) return;
     cards.forEach(function (card) {
-        if (card._imageMap) {
+        if (card._packDir) {
             const rarity = (card.rarityVersions || ['N'])[0];
-            const smallResult = getCardImageUrl(card.cardSetCode, card._imageMap, 'small', rarity);
-            const largeResult = getCardImageUrl(card.cardSetCode, card._imageMap, 'large', rarity);
+            const smallResult = getCardImageUrl(card.cardSetCode, card._packDir, rarity);
+            const largeResult = getCardImageUrl(card.cardSetCode, card._packDir, rarity);
             card.imageUrl = smallResult.url;
             card.imageLargeUrl = largeResult.url;
         }
@@ -1943,10 +1943,10 @@ function drawCards_LOCH(pack, cards) {
 
     // --- 根据最终稀有度更新卡图URL（OF 超框卡版本使用不同卡图）---
     results.forEach(function(card) {
-        if (card._imageMap) {
+        if (card._packDir) {
             const rarity = (card.rarityVersions || ['N'])[0];
-            const smallResult = getCardImageUrl(card.cardSetCode, card._imageMap, 'small', rarity);
-            const largeResult = getCardImageUrl(card.cardSetCode, card._imageMap, 'large', rarity);
+            const smallResult = getCardImageUrl(card.cardSetCode, card._packDir, rarity);
+            const largeResult = getCardImageUrl(card.cardSetCode, card._packDir, rarity);
             card.imageUrl = smallResult.url;
             card.imageLargeUrl = largeResult.url;
         }
@@ -2127,10 +2127,10 @@ function drawCardsBox_LOCH(pack, cards) {
 
     // --- 根据最终稀有度更新卡图URL（OF 超框卡版本使用不同卡图）---
     allCards.forEach(function(card) {
-        if (card._imageMap) {
+        if (card._packDir) {
             const rarity = (card.rarityVersions || ['N'])[0];
-            const smallResult = getCardImageUrl(card.cardSetCode, card._imageMap, 'small', rarity);
-            const largeResult = getCardImageUrl(card.cardSetCode, card._imageMap, 'large', rarity);
+            const smallResult = getCardImageUrl(card.cardSetCode, card._packDir, rarity);
+            const largeResult = getCardImageUrl(card.cardSetCode, card._packDir, rarity);
             card.imageUrl = smallResult.url;
             card.imageLargeUrl = largeResult.url;
         }
@@ -3235,7 +3235,7 @@ function showDevTools() {
             if (r2StatusEl) {
                 const isR2 = typeof isLocalDev === 'function' ? !isLocalDev() : !savedForceR2;
                 const source = isR2 ? '☁️ R2 云端' : '📂 本地文件';
-                const url = isR2 && typeof CARD_IMAGE_BASE_URL !== 'undefined' ? CARD_IMAGE_BASE_URL : 'data/ocg/images/';
+                const url = isR2 && typeof CARD_IMAGE_BASE_URL !== 'undefined' ? CARD_IMAGE_BASE_URL : 'data/ocg/images_dist/';
                 r2StatusEl.textContent = `当前图源：${source}（${url}）`;
             }
         }
@@ -3722,16 +3722,11 @@ async function rebuildInventoryFromPacks(slimInventory) {
     var packsData = await packsResp.json();
     var packs = packsData.packs || [];
 
-    // 第2步：并行加载所有卡包的 cardFile 和 imageMapFile（每包一对）
+    // 第2步：并行加载所有卡包的 cardFile
     var fetchPairs = packs.map(function (pack) {
-        return Promise.all([
-            pack.cardFile
-                ? fetch('data/ocg/cards/' + pack.cardFile).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
-                : Promise.resolve(null),
-            pack.imageMapFile
-                ? fetch('data/ocg/' + pack.imageMapFile).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
-                : Promise.resolve(null)
-        ]);
+        return pack.cardFile
+            ? fetch('data/ocg/cards/' + pack.cardFile).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+            : Promise.resolve(null);
     });
 
     var results = await Promise.all(fetchPairs);
@@ -3739,26 +3734,14 @@ async function rebuildInventoryFromPacks(slimInventory) {
     // 第3步：构建全局卡牌索引 cardId → 卡牌完整信息
     var cardIndex = {};
     packs.forEach(function (pack, i) {
-        var packData = results[i][0];
-        var imageMapRaw = results[i][1];
+        var packData = results[i];
 
         if (!packData) return;
 
-        // 处理 imageMap：统一为以卡密为 key 的对象
-        var imageMap = null;
-        if (imageMapRaw && imageMapRaw.cards) {
-            imageMap = {};
-            // 添加 _localDir 属性（如果卡包配置了本地图片目录）
-            if (pack.localImagesDir) {
-                imageMap._localDir = pack.localImagesDir + '/';
-            }
-            Object.keys(imageMapRaw.cards).forEach(function (pw) {
-                imageMap[pw] = imageMapRaw.cards[pw];
-            });
-        }
+        var packDir = pack.localImagesDir || '';
 
         // 遍历卡包中的每张卡
-        var cardIds = packData.cardIds || packData;
+        var cardIds = packData.cardIds || packData.cards || packData;
         if (!Array.isArray(cardIds)) return;
 
         cardIds.forEach(function (cardDef) {
@@ -3772,13 +3755,14 @@ async function rebuildInventoryFromPacks(slimInventory) {
             var displayName = cnName || jpName || enName || ('ID:' + cardDef.id);
             var foreignName = jpName || enName || '';
 
-            // 获取默认卡图 URL
+            // 获取默认卡图 URL（使用默认稀有度）
             var setNumber = cardDef.setNumber || '';
+            var defaultRarity = (cardDef.rarityVersions || ['N'])[0];
             var imgSmallUrl = '';
             var imgLargeUrl = '';
-            if (typeof getCardImageUrl === 'function' && imageMap) {
-                var smallResult = getCardImageUrl(setNumber, imageMap, 'small');
-                var largeResult = getCardImageUrl(setNumber, imageMap, 'large');
+            if (typeof getCardImageUrl === 'function' && packDir) {
+                var smallResult = getCardImageUrl(setNumber, packDir, defaultRarity);
+                var largeResult = getCardImageUrl(setNumber, packDir, defaultRarity);
                 if (smallResult && smallResult.url) imgSmallUrl = smallResult.url;
                 if (largeResult && largeResult.url) imgLargeUrl = largeResult.url;
             }
@@ -3792,7 +3776,7 @@ async function rebuildInventoryFromPacks(slimInventory) {
                 rarityVersions: cardDef.rarityVersions || ['N'],
                 imageUrl: imgSmallUrl,
                 imageLargeUrl: imgLargeUrl,
-                _imageMap: imageMap  // 保留映射表引用，用于重建 rarityImageUrls
+                _packDir: packDir  // 保留图片目录引用，用于重建 rarityImageUrls
             };
         });
     });
@@ -3808,9 +3792,9 @@ async function rebuildInventoryFromPacks(slimInventory) {
             var rarityImageUrls = {};
             var versionsOwned = slim.r || {};
             Object.keys(versionsOwned).forEach(function (rarity) {
-                if (typeof getCardImageUrl === 'function' && info._imageMap) {
-                    var smallResult = getCardImageUrl(info.cardSetCode, info._imageMap, 'small', rarity);
-                    var largeResult = getCardImageUrl(info.cardSetCode, info._imageMap, 'large', rarity);
+                if (typeof getCardImageUrl === 'function' && info._packDir) {
+                    var smallResult = getCardImageUrl(info.cardSetCode, info._packDir, rarity);
+                    var largeResult = getCardImageUrl(info.cardSetCode, info._packDir, rarity);
                     rarityImageUrls[rarity] = {
                         imageUrl: (smallResult && smallResult.url) || info.imageUrl,
                         imageLargeUrl: (largeResult && largeResult.url) || info.imageLargeUrl
@@ -4024,8 +4008,8 @@ function renderCardPreview(sortBy, cards, pack, supplementCards) {
             sorted.forEach(function(rarity) {
                 // 为每个稀有度版本创建独立的卡位对象
                 // 获取对应稀有度的卡图URL（OF超框卡版本使用超框卡图，普通版使用普通卡图）
-                const expSmall = card._imageMap ? getCardImageUrl(card.cardSetCode, card._imageMap, 'small', rarity) : null;
-                const expLarge = card._imageMap ? getCardImageUrl(card.cardSetCode, card._imageMap, 'large', rarity) : null;
+                const expSmall = card._packDir ? getCardImageUrl(card.cardSetCode, card._packDir, rarity) : null;
+                const expLarge = card._packDir ? getCardImageUrl(card.cardSetCode, card._packDir, rarity) : null;
                 const expanded = Object.assign({}, card, {
                     rarityVersions: [rarity],
                     imageUrl: expSmall ? expSmall.url : card.imageUrl,

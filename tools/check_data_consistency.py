@@ -29,7 +29,7 @@ PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 PACKS_JSON = os.path.join(PROJECT_ROOT, 'data', 'ocg', 'packs.json')
 CARDS_DIR = os.path.join(PROJECT_ROOT, 'data', 'ocg', 'cards')
 IMAGE_MAPS_DIR = os.path.join(PROJECT_ROOT, 'data', 'ocg', 'image_maps')
-IMAGES_DIR = os.path.join(PROJECT_ROOT, 'data', 'ocg', 'images')
+IMAGES_DIR = os.path.join(PROJECT_ROOT, 'data', 'ocg', 'images_source')
 PRICES_DIR = os.path.join(PROJECT_ROOT, 'data', 'ocg', 'prices')
 
 # === 计数器 ===
