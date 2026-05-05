@@ -2,6 +2,13 @@
 
 > 所有版本变更的详细记录。待办事项见 [TODO.md](TODO.md)，面向玩家的更新日志见 `data/changelog.json`。
 
+## v1.11.5（2026-05-04）— 卡图加载失败优化
+
+### Bug 修复（`js/game.js`）
+- `handleCardImageError()`：加载失败时改为显示 `printing.jpg` 默认卡背，不再隐藏图片显示 🃏 emoji
+- 大图查看器（`bindCardImageViewer` / `openCardImageViewer` / 收集一览点击放大）：统一添加 `onerror` fallback 到 `printing.jpg`
+- 修复 `openCardImageViewer` 中 `viewerImage.alt` 缩进异常
+
 ## v1.11.4+（2026-04-17）— 双图库架构完成（开发侧变更，不更新版本号）
 
 ### 双图库架构（`js/api.js` / `js/game.js` / `js/inventory.js`）

@@ -37,15 +37,13 @@ let RARITY_CODES_DESC = Object.keys(RARITY_ORDER_ASC).sort(function (a, b) { ret
 
 /**
  * 卡图 onerror 统一处理
- * 本地卡图加载失败 → 隐藏图片显示兜底内容（不再回退到外部 CDN）
+ * 本地卡图加载失败 → 显示默认卡背占位图
  *
  * @param {HTMLImageElement} img - 加载失败的 img 元素
  */
 function handleCardImageError(img) {
-    img.style.display = 'none';
-    img.classList.remove('clickable');
-    const next = img.nextElementSibling;
-    if (next) next.style.display = next.classList.contains('preview-card-placeholder') ? 'flex' : 'block';
+    img.onerror = null;  // 防止死循环
+    img.src = 'data/ocg/printing.jpg';
 }
 
 // ====== 页面加载完成后初始化 ======
@@ -514,7 +512,7 @@ function bindCardImageViewer() {
         // 设置大图和名称
         viewerImage.src = largeUrl;
         viewerImage.alt = cardName;
-        viewerImage.onerror = null;
+        viewerImage.onerror = function() { this.src = 'data/ocg/printing.jpg'; this.onerror = null; };
 
         // 构建显示名称（编号 + 中文名 + 外文名）
         let displayName = '';
@@ -615,7 +613,8 @@ function openCardImageViewer(imgSrc, cardName, subText) {
     // 先清空旧图，防止切换时闪现上一张图片
     viewerImage.src = '';
     viewerImage.src = imgSrc;
-viewerImage.alt = cardName || '';
+    viewerImage.alt = cardName || '';
+    viewerImage.onerror = function() { this.src = 'data/ocg/printing.jpg'; this.onerror = null; };
 
     // 构建显示名称
     var displayName = cardName || '';
@@ -4487,7 +4486,7 @@ const rarityWeight = RARITY_ORDER_ASC;
                         // 先清空旧图，防止切换时闪现上一张图片
                         img.src = '';
                         img.src = imgUrl;
-                        img.onerror = null;
+                        img.onerror = function() { this.src = 'data/ocg/printing.jpg'; this.onerror = null; };
                     }
                     if (nameEl) {
                         const cardSetCode = card.cardSetCode || card.setNumber || '';
