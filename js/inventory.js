@@ -524,6 +524,11 @@ const InventorySystem = (function () {
                 const rarity = cardItem.getAttribute('data-rarity');
                 const card = getCard(cardId);
                 if (card) {
+                    // 优先使用回退链缓存的有效 URL，避免大图重复走 404 回退链
+                    const cacheKey = cardId + '_' + rarity;
+                    const cachedUrl = (typeof CARD_IMAGE_FALLBACK_CACHE !== 'undefined')
+                        ? CARD_IMAGE_FALLBACK_CACHE.get(cacheKey) || ''
+                        : '';
                     const rarityImgs = (card.rarityImageUrls && card.rarityImageUrls[rarity]) || {};
                     const viewerCard = {
                         id: card.id,
@@ -531,8 +536,8 @@ const InventorySystem = (function () {
                         name: card.name,
                         nameCN: card.nameCN,
                         nameOriginal: card.nameOriginal,
-                        imageUrl: rarityImgs.imageUrl || card.imageUrl,
-                        imageLargeUrl: rarityImgs.imageLargeUrl || card.imageLargeUrl
+                        imageUrl: cachedUrl || rarityImgs.imageUrl || card.imageUrl,
+                        imageLargeUrl: cachedUrl || rarityImgs.imageLargeUrl || card.imageLargeUrl
                     };
                     showCardViewer(viewerCard);
                 }
@@ -572,7 +577,7 @@ const InventorySystem = (function () {
             }
             if (validImageUrl) {
                 imageHtml = `<img class="inventory-card-image" src="${validImageUrl}" alt="${displayName}" loading="lazy"
-                                  onerror="this.src='data/ocg/printing.jpg';this.onerror=null;">`;
+                                  onerror="handleCardImageError(this)" onload="cacheCardImageUrl(this)">`;
             } else {
                 imageHtml = `<img class="inventory-card-image" src="data/ocg/printing.jpg" alt="${displayName}">`;
             }
@@ -624,7 +629,7 @@ const InventorySystem = (function () {
                 largeUrl = 'data/ocg/printing.jpg';
             }
             img.src = largeUrl || 'data/ocg/printing.jpg';
-            img.onerror = function () { this.src = 'data/ocg/printing.jpg'; this.onerror = null; };
+            img.onerror = function () { handleCardImageError(this); };
         }
         if (nameEl) {
             const cardSetCode = card.cardSetCode || '';

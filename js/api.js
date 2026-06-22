@@ -687,6 +687,37 @@ async function getOCGCardSetData(packConfig, onProgress) {
 const MISSING_IMAGE_PLACEHOLDER = 'data/ocg/printing.jpg';
 
 /**
+ * 卡图 URL 缓存：记录缩略图/大图通过 onerror 回退链找到的有效 URL
+ * key: "cardId_rarityCode"（如 "12345_UR"）
+ * value: 有效的卡图 URL 字符串
+ *
+ * 用途：缩略图通过回退链加载成功后，大图直接使用缓存 URL，避免重复 404 请求
+ */
+const CARD_IMAGE_FALLBACK_CACHE = new Map();
+
+/**
+ * 稀有度卡图回退链：当前稀有度图加载失败时，尝试的下一个稀有度
+ * 破框链：OF 之间互相回退，不降级到非 OF 卡图（画面不同）
+ * 普通链：画面相同（只是闪光工艺不同），逐级回退到基础稀有度
+ */
+const RARITY_FALLBACK_CHAIN = {
+    // 破框链（OF 之间互相回退，不降级到非 OF）
+    'GMR-OF': 'PSER-OF',
+    'PSER-OF': 'UR-OF',
+    // UR-OF 不在 map 中 → OF 回退终点，显示 printing.jpg
+    // 普通链
+    'PSER': 'SER',
+    'SER': 'CR',
+    'CR': 'UTR',
+    'UTR': 'UR',
+    'UR': 'SR',
+    'SR': 'R',
+    'R': 'NR',
+    'NR': 'N'
+    // N 不在 map 中 → 回退终点，显示 printing.jpg
+};
+
+/**
  * 获取卡图 URL — 直接拼接路径，无需 image map
  *
  * URL 格式：{baseUrl}/{packDir}/{setNumber}_{rarity}.webp

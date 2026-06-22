@@ -2,6 +2,16 @@
 
 > 所有版本变更的详细记录。待办事项见 [TODO.md](TODO.md)，面向玩家的更新日志见 `data/changelog.json`。
 
+## v1.11.6（2026-06-23）— 背包大图加载加速
+
+### Bug 修复（`js/api.js` / `js/game.js` / `js/inventory.js`）
+- **卡图回退链缓存**：缩略图通过 onerror 回退链找到有效 URL 后，结果只保存在 DOM src，未回写数据。点大图时重新走回退链（每步都是 404）
+  - `api.js`：新增 `CARD_IMAGE_FALLBACK_CACHE` Map，缓存 key 为 `cardId_rarityCode`
+  - `game.js`：新增 `cacheCardImageUrl(img)` 函数，从 DOM 读取 card-id/rarity 并写入缓存，`printing.jpg` 不缓存
+  - `inventory.js`：缩略图添加 `onload="cacheCardImageUrl(this)"` 自动缓存成功加载的 URL
+  - `inventory.js`：点击打开大图时优先查缓存命中 URL，未命中走原始逻辑（无回归）
+- 修复部分稀有度卡图（如 LOCR-JP079 N）背包大图打开缓慢或无法打开的问题
+
 ## v1.11.5（2026-05-04）— 卡图加载失败优化
 
 ### Bug 修复（`js/game.js`）

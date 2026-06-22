@@ -18,11 +18,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 开发环境
 
-- **终端**：Git Bash（使用 Bash 语法，非 PowerShell / CMD）
+- **终端**：macOS 终端（zsh）/ Git Bash（Windows），使用 Bash 语法，非 PowerShell / CMD
 - **调试**：Chrome DevTools 模拟 Xiaomi 14（400×890px）
-- **本地预览**：`python -m http.server 8000`，访问 `http://localhost:8000`
+- **本地预览**：`python3 -m http.server 8000`（macOS）/ `python -m http.server 8000`（Windows），访问 `http://localhost:8000`
 - **临时文件**：必须保存到 `test_output/`，不得在其他位置随意创建目录
-- **Python 工具**：通过虚拟环境 `local/venv/Scripts/python.exe` 执行（详见 `docs/TOOLS.md`）
+- **Python 工具**：通过虚拟环境执行
+  - macOS：`local/venv/bin/python`（详见 `docs/TOOLS.md`）
+  - Windows：`local/venv/Scripts/python.exe`（详见 `docs/TOOLS.md`）
 
 ## 分支管理与发布
 
@@ -49,22 +51,50 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 每次更新版本号时必须**同步修改 4 处**：`index.html` APP_VERSION、`data/changelog.json`、`docs/CHANGELOG.md`、`README.md` badge。
 
-> ⚠️ 有 Claude Hook（`.claude/hooks/pre-push-check.sh`）自动检查版本号一致性和数据一致性，跨设备生效。
+> ⚠️ 有 Claude Hook（`.claude/hooks/pre-push-check.sh`）在 `git commit`/`git push` 时自动触发，检查内容：
+> 1. 版本号四处一致性（APP_VERSION / changelog.json / CHANGELOG.md / README.md）
+> 2. 代码变更时版本号是否已递增
+> 3. 数据文件变更时运行 `tools/check_data_consistency.py` 数据一致性检查
+>
+> 跨设备生效，任一检查未通过则提交被阻止。
 
 ## 代码架构（概要）
 
 纯前端 SPA，`index.html` 为唯一入口，所有 JS 通过 `<script>` 标签加载（无打包器）。
 
+**脚本加载顺序**（IIFE 依赖链，顺序不可更改）：
+```
+currency → priceSystem → inventory → pack-stats → api → game
+```
+
 | 文件/目录 | 职责 |
 |-----------|------|
 | `js/game.js` | 主协调器：UI 流程、开包、动画 |
-| `js/api.js` | 数据获取、IndexedDB 缓存、CDN 图源 |
+| `js/api.js` | 数据获取、IndexedDB 缓存、卡图 URL 生成 |
 | `js/currency.js` / `inventory.js` / `pack-stats.js` / `priceSystem.js` | 各子系统（localStorage 状态管理） |
 | `data/ocg/cards/*.json` | 卡包数据（含预注入的 cardData，运行时零 API 调用） |
 | `data/ocg/prices/*.json` | 市场价格（OCR 提取） |
 | `tools/` | Python 工具（OCR、数据库更新、卡包构建） |
 
 所有模块使用 **IIFE 模式**（`const Foo = (function(){ ... return {...} })()`）。
+
+### 卡图加载架构（v1.11.0+ 双图库）
+
+卡图已迁移到 **Cloudflare R2 对象存储**，本地开发时自动从本地目录加载。
+
+| 环境 | 图源 | 切换方式 |
+|------|------|----------|
+| 线上 | `CARD_IMAGE_BASE_URL`（R2 CDN）| 默认 |
+| 本地开发 | `data/ocg/images_dist/{pack}/` | `isLocalDev()` 自动判断 |
+| 调试强制 R2 | R2 CDN | 设置面板开关 `_forceR2`（仅本地开发可用） |
+
+- `js/api.js` 中的 `isLocalDev()` 根据 `location.hostname` 判断环境，`getCardImageDir()` 自动拼接正确路径
+- 卡图命名规范：`{setNumber}_{rarityCode}.webp`（如 `LOCH-JP001_UR.webp`）
+- 以下目录为本地开发专用，**已 gitignore，不在仓库中**：
+  - `data/ocg/images_source/` — 原始图库（多图源，长文件名）
+  - `data/ocg/images_dist/` — 调用图库（最优图，规范化命名）
+
+> 卡图加载流程速查：`CARD_IMAGE_FLOW_QUICK_REFERENCE.md`，完整分析：`CARD_IMAGE_FLOW_ANALYSIS.md`
 
 > 详细架构、数据流、数据注入机制见 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)。
 > 背包、图鉴、货币、开包系统规格见 [`docs/FEATURES.md`](docs/FEATURES.md)。
@@ -78,8 +108,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **设计原则**：移动端专属，`max-width: 500px` 居中，`viewport-fit=cover` + `safe-area-inset` 适配刘海屏
 - **业务规则**：金币与人民币 1:1，游戏内不出现真实货币
 - **临时文件**：统一保存到 `test_output/`（已 .gitignore），禁止随意建目录，及时清理。CR 报告、审查文档等生成物也保存在此目录，**严禁保存到用户桌面或项目外路径**
-- **Edit 后验证语法**：JS 文件用 `node --check file.js`，Python 文件用 `python -c "import ast; ast.parse(open('file.py').read())"`
+- **Edit 后验证语法**：JS 文件用 `node --check file.js`，Python 文件用 `python3 -c "import ast; ast.parse(open('file.py').read())"`（macOS）/ `python -c "..."`（Windows）
 - **外部 API**：所有请求通过 `requestThrottler`（间隔 ≥ 300ms），YGOProDeck 限制 20 req/s
+
+## 常用命令
+
+| 命令 | 用途 | 平台 |
+|------|------|------|
+| `python3 -m http.server 8000` | 本地预览（访问 `http://localhost:8000`）| macOS |
+| `python -m http.server 8000` | 本地预览 | Windows |
+| `node --check js/game.js` | JS 语法检查（所有 `.js` 文件通用）| 通用 |
+| `python3 -c "import ast; ast.parse(open('tools/xxx.py').read())"` | Python 语法检查 | macOS |
+| `bash .claude/hooks/pre-push-check.sh` | 手动运行提交前检查（版本号 + 数据一致性）| 通用 |
 
 ## 任务执行流程
 

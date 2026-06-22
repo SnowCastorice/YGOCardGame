@@ -36,14 +36,47 @@ let RARITY_ORDER_DESC = Object.assign({}, RARITY_ORDER_ASC);
 let RARITY_CODES_DESC = Object.keys(RARITY_ORDER_ASC).sort(function (a, b) { return RARITY_ORDER_ASC[b] - RARITY_ORDER_ASC[a]; });
 
 /**
- * 卡图 onerror 统一处理
- * 本地卡图加载失败 → 显示默认卡背占位图
+ * 卡图 onerror 统一处理（含稀有度回退链）
+ * 加载失败时，从 URL 解析当前稀有度，沿回退链尝试下一个稀有度的卡图
+ * 回退链走完仍失败 → 显示默认卡背 printing.jpg
  *
  * @param {HTMLImageElement} img - 加载失败的 img 元素
  */
 function handleCardImageError(img) {
-    img.onerror = null;  // 防止死循环
+    // 从 URL 提取当前稀有度：匹配 _{RARITY}.webp（如 _GMR-OF.webp、_UR.webp）
+    var match = img.src.match(/_([A-Z][A-Z0-9-]*)\.webp/);
+    if (match) {
+        var currentRarity = match[1];
+        var nextRarity = RARITY_FALLBACK_CHAIN[currentRarity];
+        if (nextRarity) {
+            // 替换稀有度部分，尝试下一个
+            img.onerror = function() { handleCardImageError(this); };
+            img.src = img.src.replace('_' + currentRarity + '.webp', '_' + nextRarity + '.webp');
+            return;
+        }
+    }
+    // 回退链走完或无法解析 → 显示默认卡背
+    img.onerror = null;
     img.src = 'data/ocg/printing.jpg';
+}
+
+/**
+ * 缓存卡图加载成功的 URL（配合 onload 事件使用）
+ * 从 DOM 层级读取 data-card-id 和 data-rarity，存入 CARD_IMAGE_FALLBACK_CACHE
+ * 后续大图预览时优先使用缓存 URL，避免重复走 onerror 回退链（每次都是 404 请求）
+ *
+ * @param {HTMLImageElement} img - 加载成功的 img 元素
+ */
+function cacheCardImageUrl(img) {
+    // 跳过占位图
+    if (!img || !img.src || img.src.includes('printing.jpg')) return;
+    var cardEl = img.closest('[data-card-id]');
+    if (!cardEl) return;
+    var cardId = cardEl.dataset.cardId;
+    var rarity = cardEl.dataset.rarity;
+    if (cardId && rarity) {
+        CARD_IMAGE_FALLBACK_CACHE.set(cardId + '_' + rarity, img.src);
+    }
 }
 
 // ====== 页面加载完成后初始化 ======
@@ -512,7 +545,7 @@ function bindCardImageViewer() {
         // 设置大图和名称
         viewerImage.src = largeUrl;
         viewerImage.alt = cardName;
-        viewerImage.onerror = function() { this.src = 'data/ocg/printing.jpg'; this.onerror = null; };
+        viewerImage.onerror = function() { handleCardImageError(this); };
 
         // 构建显示名称（编号 + 中文名 + 外文名）
         let displayName = '';
@@ -4486,7 +4519,7 @@ const rarityWeight = RARITY_ORDER_ASC;
                         // 先清空旧图，防止切换时闪现上一张图片
                         img.src = '';
                         img.src = imgUrl;
-                        img.onerror = function() { this.src = 'data/ocg/printing.jpg'; this.onerror = null; };
+                        img.onerror = function() { handleCardImageError(this); };
                     }
                     if (nameEl) {
                         const cardSetCode = card.cardSetCode || card.setNumber || '';
