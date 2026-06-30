@@ -35,6 +35,11 @@ test_output/
 screenshots/
 *.bak
 
+# Playwright
+playwright-report/
+playwright/.cache/
+test-results/
+
 # 本地大文件资源（Python虚拟环境、OCR图片、先行卡卡图等，不提交到 Git）
 local/
 
