@@ -90,7 +90,7 @@ git checkout dev
 
 ---
 
-## 🎨 第四步：安装 Skills（用户级，21 个）
+## 🎨 第四步：安装 Skills（用户级，18 个）
 
 在 Claude Code 中依次执行 `/skills` 命令搜索并安装以下 skill，或直接用 `npx skills add` 命令：
 
@@ -114,13 +114,8 @@ npx skills add systematic-debugging
 npx skills add verification-before-completion
 npx skills add using-superpowers
 
-# 探索与搜索（2 个）
-npx skills add smart-explore
-npx skills add mem-search
-
 # 文档与报告（3 个）
 npx skills add self-improvement
-npx skills add timeline-report
 npx skills add writing-plans
 npx skills add writing-skills
 
@@ -131,7 +126,7 @@ npx skills add ui-ux-pro-max
 npx skills add using-git-worktrees
 ```
 
-> 安装后会自动出现在 `~/.claude/skills/` 目录，共 21 个 skill。
+> 安装后会自动出现在 `~/.claude/skills/` 目录，共 18 个 skill。
 
 ---
 
