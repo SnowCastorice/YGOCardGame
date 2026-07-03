@@ -13,9 +13,25 @@
 | `CLAUDE.md` | 项目指引（开发规范、架构、命令等） |
 | `.mcp.json` | Chrome DevTools MCP 配置 |
 | `.claude/settings.json` | 项目级共享设置（含 Hooks） |
+| `.claude/settings.local.json` | 本地设置（自动生成，不提交） |
+| `.claude/hooks/pre-push-check.sh` | PreToolUse Hook：提交前版本号+数据一致性检查 |
+| `.claude/hooks/pre-compact.sh` | PreCompact Hook：上下文压缩前检查 |
+| `.claude/agents/price-ocr.md` | 自定义 Agent：OCR 价格识别专家 |
+| `.claude/commands/diary.md` | 自定义斜杠命令：`/diary` |
+| `.claude/commands/reflect.md` | 自定义斜杠命令：`/reflect` |
 | `.claude/skills/` | Skills（skill-global-search、self-improvement 等） |
-| `.claude/hooks/` | Claude Stop Hook（版本号检查） |
 | `tools/version-check.sh` | Git pre-commit Hook 脚本 |
+
+### local/ 目录（gitignore，不随仓库同步）
+
+| 路径 | 用途 |
+|------|------|
+| `local/venv/` | Python 3.11 虚拟环境（PaddleOCR + 依赖，仅 Windows 设备需要） |
+| `local/.env` | R2 凭据等敏感配置 |
+| `local/PreviewCards/{卡包}/` | 先行卡图素材（命名规范见 `docs/NAMING_CONVENTION.md`） |
+| `local/OCRPricePics/{卡包}/{日期}/` | 集换社价格截图归档 |
+
+> 详细规范见 `docs/TOOLS.md` 末尾的「local/ 目录结构规范」章节。
 
 ## 第二步：首次启动后的手动配置
 

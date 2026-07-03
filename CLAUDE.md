@@ -18,13 +18,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 开发环境
 
+- **跨设备**：Windows（OCR/CUDA 加速）↔ macOS（日常前端开发），详见 `docs/SETUP.md`
 - **终端**：macOS 终端（zsh）/ Git Bash（Windows），使用 Bash 语法，非 PowerShell / CMD
-- **调试**：Chrome DevTools 模拟 Xiaomi 14（400×890px）
+- **调试**：Chrome DevTools 模拟 Xiaomi 14（400×890px），MCP 已配置（`.mcp.json`）
 - **本地预览**：`python3 -m http.server 8000`（macOS）/ `python -m http.server 8000`（Windows），访问 `http://localhost:8000`
 - **临时文件**：必须保存到 `test_output/`，不得在其他位置随意创建目录
-- **Python 工具**：通过虚拟环境执行
-  - macOS：`local/venv/bin/python`（详见 `docs/TOOLS.md`）
-  - Windows：`local/venv/Scripts/python.exe`（详见 `docs/TOOLS.md`）
+- **Python 工具**：通过虚拟环境执行（macOS: `local/venv/bin/python`，Windows: `local/venv/Scripts/python.exe`），详见 `docs/TOOLS.md`
+- **🔒 安全**：GitHub 公开仓库，严禁上传 API Key / Token / 凭据。敏感配置放 `local/.env`（已 gitignore），提交前检查 `git diff --stat`
+- **目录约定**：`.claude/`（AI 配置）、`local/`（本地数据，gitignore）结构详见 `docs/SETUP.md`
 
 ## 分支管理与发布
 
@@ -74,7 +75,7 @@ currency → priceSystem → inventory → pack-stats → api → game
 | `js/currency.js` / `inventory.js` / `pack-stats.js` / `priceSystem.js` | 各子系统（localStorage 状态管理） |
 | `data/ocg/cards/*.json` | 卡包数据（含预注入的 cardData，运行时零 API 调用） |
 | `data/ocg/prices/*.json` | 市场价格（OCR 提取） |
-| `tools/` | Python 工具（OCR、数据库更新、卡包构建） |
+| `tools/` | Python 工具（OCR 价格更新、数据库更新、卡包构建、卡图处理） |
 
 所有模块使用 **IIFE 模式**（`const Foo = (function(){ ... return {...} })()`）。
 
@@ -99,6 +100,8 @@ currency → priceSystem → inventory → pack-stats → api → game
 > 详细架构、数据流、数据注入机制见 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)。
 > 背包、图鉴、货币、开包系统规格见 [`docs/FEATURES.md`](docs/FEATURES.md)。
 
+> Python 工具（OCR 价格更新、数据库、卡包构建、卡图处理等 19 个脚本）详见 [`docs/TOOLS.md`](docs/TOOLS.md)。
+
 ## 开发规范
 
 - **代码注释**使用中文
@@ -110,6 +113,19 @@ currency → priceSystem → inventory → pack-stats → api → game
 - **临时文件**：统一保存到 `test_output/`（已 .gitignore），禁止随意建目录，及时清理。CR 报告、审查文档等生成物也保存在此目录，**严禁保存到用户桌面或项目外路径**
 - **Edit 后验证语法**：JS 文件用 `node --check file.js`，Python 文件用 `python3 -c "import ast; ast.parse(open('file.py').read())"`（macOS）/ `python -c "..."`（Windows）
 - **外部 API**：所有请求通过 `requestThrottler`（间隔 ≥ 300ms），YGOProDeck 限制 20 req/s
+
+### 文件管理
+
+| 目录 | 用途 | 规则 |
+|------|------|------|
+| 根目录 | 只放入口文件 | `index.html`、`README.md`、`CLAUDE.md`、`.gitignore`、`.mcp.json` |
+| `docs/` | 项目文档、分析报告 | 分析文档和参考文档放此，不散落根目录 |
+| `docs/archive/` | 过时参考文档 | 确认无用后删除 |
+| `test_output/` | 纯临时产物 | 每次任务后清理，OCR 中间文件保留 CSV 对照表 |
+| `test_output/_archive/` | 有参考价值的旧产物 | 确认无用后删除 |
+| `local/` | 本地数据（gitignore） | 不在仓库中，敏感配置放 `local/.env` |
+
+**原则**：创建前先设计目录结构，不随意建目录；定期清理过期临时文件；归档优于直接删除。
 
 ## 常用命令
 
