@@ -55,7 +55,7 @@ def get_price_from_entry(entry):
     return entry
 
 
-def main(date_str=None, parsed_path=None):
+def main(date_str=None, parsed_path=None, csv_path=None):
     """主函数，date_str 为日期字符串（如 '20260309'），不传则使用当前日期"""
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -132,8 +132,15 @@ def main(date_str=None, parsed_path=None):
                 'name': card.get('name_hint', '') or card.get('cardData', {}).get('cn_name', ''),
                 'rarityVersions': card.get('rarityVersions', []),
             }
-    sp = blzd_cards_data.get('supplementPack', {})
-    for card in sp.get('cards', []):
+    # 加载辅助包数据（从 supplementPackFile 引用文件或内嵌 supplementPack）
+    sp_cards = []
+    sp_file = blzd_cards_data.get('supplementPackFile', '')
+    if sp_file:
+        sp_data = load_json(os.path.join(base_dir, 'data', 'ocg', 'cards', sp_file))
+        sp_cards = sp_data.get('cards', sp_data.get('cardIds', []))
+    else:
+        sp_cards = blzd_cards_data.get('supplementPack', {}).get('cards', [])
+    for card in sp_cards:
         set_num = card.get('setNumber', '')
         if set_num:
             blzd_card_map[set_num] = {
@@ -141,7 +148,7 @@ def main(date_str=None, parsed_path=None):
                 'name': card.get('name_hint', '') or card.get('cardData', {}).get('cn_name', ''),
                 'rarityVersions': card.get('rarityVersions', []),
             }
-    print(f"BLZD 卡片映射: 正包 {len(blzd_cards_data.get('cardIds', []))} 张 + 辅助包 {len(sp.get('cards', []))} 张")
+    print(f"BLZD 卡片映射: 正包 {len(blzd_cards_data.get('cardIds', []))} 张 + 辅助包 {len(sp_cards)} 张")
 
     # ===== 准备CSV对照表 =====
     csv_rows = []
@@ -850,7 +857,7 @@ def main(date_str=None, parsed_path=None):
     # =====================
     # 导出CSV对照表
     # =====================
-    csv_path = os.path.join(base_dir, 'test_output', 'price_comparison.csv')
+    csv_path = csv_path or os.path.join(base_dir, 'test_output', 'price_comparison.csv')
     with open(csv_path, 'w', encoding='utf-8-sig', newline='') as f:
         writer = csv.writer(f)
         writer.writerows(csv_rows)

@@ -6,10 +6,12 @@ OCR价格更新一键工作流 (v6 - 卡包+日期隔离版)
 整合 截图归档 → 截图重命名 → 行裁切 → 单卡裁切 → 单卡OCR → 结构化解析 的完整流程。
 
 目录结构:
-  截图目录: local/OCRPricePics/<卡包>/<日期>/
-  中间产物: test_output/<卡包>/<日期>/row_pics/
-            test_output/<卡包>/<日期>/card_pics/
-            test_output/<卡包>/<日期>/card_ocr_results.json
+  截图目录: local/OCRPricePics/<卡包>/<日期>/sources/
+  中间产物: test_output/<卡包>/<日期>/01_rows/
+            test_output/<卡包>/<日期>/02_cards/
+            test_output/<卡包>/<日期>/03_ocr_results.json
+            test_output/<卡包>/<日期>/04_parsed_prices.json
+            test_output/<卡包>/<日期>/06_price_comparison.csv
             ...
 
 行裁切方案：card_rect_cutter.py（基于OpenCV Canny边缘检测+卡图矩形定位，115px精确裁切）
@@ -64,6 +66,15 @@ EXPECTED_HEIGHT = 2752
 # 支持的卡包列表（按长度降序排列，避免 BLZD 先匹配 BLZDS）
 SUPPORTED_PACKS = ['BLZDS', 'BLZD', 'LOCH', 'LOCR', 'LOSP-Vol2', 'LOSP-Vol1']
 
+# 输出子目录/文件名（编号前缀，流程顺序一目了然）
+ROWS_DIR = '01_rows'
+CARDS_DIR = '02_cards'
+OCR_RESULTS_FILE = '03_ocr_results.json'
+PARSED_PRICES_FILE = '04_parsed_prices.json'
+REVIEW_REPORT_FILE = '05_review_report.txt'
+PRICE_COMPARISON_FILE = '06_price_comparison.csv'
+CARD_CUT_INFO_FILE = 'card_cut_info.json'  # 裁切元信息（OCR步骤需要）
+
 # 截图根目录
 PICS_ROOT = os.path.join(BASE_DIR, 'local', 'OCRPricePics')
 
@@ -94,8 +105,13 @@ def _extract_date_from_filename(filename):
     return None
 
 
+def get_sources_dir(pack, date_str):
+    """获取截图源文件目录: local/OCRPricePics/<卡包>/<日期>/sources/"""
+    return os.path.join(PICS_ROOT, pack, date_str, 'sources')
+
+
 def get_pics_dir(pack, date_str):
-    """获取截图目录路径: local/OCRPricePics/<卡包>/<日期>/"""
+    """获取截图目录路径: local/OCRPricePics/<卡包>/<日期>/（兼容旧接口）"""
     return os.path.join(PICS_ROOT, pack, date_str)
 
 
@@ -117,13 +133,13 @@ def clean_test_output(pack, date_str):
         return
 
     # 需要清理的目录和文件
-    dirs_to_clean = ['row_pics', 'card_pics']
+    dirs_to_clean = [ROWS_DIR, CARDS_DIR]
     files_to_clean = [
-        'card_ocr_results.json',
-        'card_cut_info.json',
+        OCR_RESULTS_FILE,
+        CARD_CUT_INFO_FILE,
         'crop_info.json',
-        'parsed_prices_v6.json',
-        'price_comparison.csv',
+        PARSED_PRICES_FILE,
+        PRICE_COMPARISON_FILE,
         'price_extract_summary.txt',
     ]
 
@@ -152,11 +168,11 @@ def check_screenshots(pack, date_str):
 
     返回: (截图目录路径, 截图文件列表)
     """
-    pic_dir = get_pics_dir(pack, date_str)
+    pic_dir = get_sources_dir(pack, date_str)
 
     if not os.path.exists(pic_dir):
         print(f"❌ 截图目录不存在: {pic_dir}")
-        print(f"   请先运行 --step organize 将截图归档到日期目录")
+        print(f"   请将截图放入 local/OCRPricePics/{pack}/{date_str}/sources/ 目录")
         sys.exit(1)
 
     # 获取PNG文件列表
@@ -184,7 +200,7 @@ def check_screenshots(pack, date_str):
         img.close()
 
     if bad_files:
-        print(f"\n⚠️ 以下截图分辨率不正确（期望 {EXPECTED_WIDTH}x{EXPECTED_HEIGHT}）:")
+        print(f"\n⚠️ 以下截图分辨率不正确（期望 {EXPECTED_WIDTH}x{EXPECTED_HEIGHT} 或其旋转）:")
         for f, w, h in bad_files:
             print(f"   {f}: {w}x{h}")
         print(f"\n   请在MuMu模拟器中调整分辨率为 {EXPECTED_WIDTH}x{EXPECTED_HEIGHT} ppi264")
@@ -303,10 +319,10 @@ def _quick_ocr_for_pack(img_path):
 
 def step_organize(pack, date_str):
     """
-    步骤0: 将卡包目录下的截图按日期归档
+    步骤0: 将卡包目录下的截图按日期归档到 sources/ 子目录
 
     扫描 local/OCRPricePics/<卡包>/ 目录下的 .png 截图，
-    从文件名提取日期，移动到 <卡包>/<日期>/ 子目录下。
+    从文件名提取日期，移动到 <卡包>/<日期>/sources/ 子目录下。
 
     如果指定了 date_str，只处理该日期的截图。
     """
@@ -343,19 +359,19 @@ def step_organize(pack, date_str):
             skipped += 1
             continue
 
-        # 创建日期目录并移动
-        date_dir = os.path.join(pack_dir, file_date)
-        os.makedirs(date_dir, exist_ok=True)
+        # 创建日期+sources目录并移动
+        sources_dir = os.path.join(pack_dir, file_date, 'sources')
+        os.makedirs(sources_dir, exist_ok=True)
 
         src = os.path.join(pack_dir, filename)
-        dst = os.path.join(date_dir, filename)
+        dst = os.path.join(sources_dir, filename)
         if os.path.exists(dst):
-            print(f"  ⚠️ 目标已存在: {date_dir}/{filename}，跳过")
+            print(f"  ⚠️ 目标已存在: {file_date}/sources/{filename}，跳过")
             skipped += 1
             continue
 
         shutil.move(src, dst)
-        print(f"  📦 {filename} → {pack}/{file_date}/")
+        print(f"  📦 {filename} → {pack}/{file_date}/sources/")
         moved += 1
 
     print(f"\n📊 归档完成: 移动 {moved} 张，跳过 {skipped} 张")
@@ -372,37 +388,21 @@ def step_rename(pack, date_str):
     """
     print_banner(f"步骤 1: 截图重命名（{pack}/{date_str}）")
 
-    pic_dir = get_pics_dir(pack, date_str)
+    pic_dir = get_sources_dir(pack, date_str)
     screenshots = sorted([f for f in os.listdir(pic_dir) if f.lower().endswith('.png')])
     print(f"📂 找到 {len(screenshots)} 张截图")
 
     # 第一轮：确定每张截图的卡包前缀
+    # rename 步骤始终使用 --pack 参数指定的卡包名，无需 OCR
+    # OCR 识别卡包前缀仅用于未指定 --pack 的场景（保留函数但当前不调用）
     pack_list = []  # [(原始文件名, 卡包前缀)]
-    need_ocr = []   # 需要OCR识别的截图索引
 
     for i, filename in enumerate(screenshots):
         detected = _detect_pack_from_filename(filename)
-        if detected is not None:
-            print(f"  ✅ {filename} → 已识别卡包: {detected}（从文件名）")
-        else:
-            need_ocr.append(i)
+        if detected is None:
+            detected = pack  # 无法从文件名识别时直接使用 --pack 参数
         pack_list.append((filename, detected))
-
-    # 对需要OCR的截图批量识别
-    if need_ocr:
-        print(f"\n📋 有 {len(need_ocr)} 张截图需要OCR识别卡包前缀...")
-        for idx in need_ocr:
-            filename = pack_list[idx][0]
-            img_path = os.path.join(pic_dir, filename)
-            print(f"  🔍 [{need_ocr.index(idx)+1}/{len(need_ocr)}] OCR识别 {filename}...")
-            detected, _ = _quick_ocr_for_pack(img_path)
-            if detected == 'UNKNOWN':
-                # 如果OCR无法识别，使用目录名作为卡包前缀
-                detected = pack
-                print(f"    ⚠️ OCR无法自动识别，使用目录名: {pack}")
-            else:
-                print(f"    → 识别为: {detected}")
-            pack_list[idx] = (filename, detected)
+        print(f"  ✅ {filename} → 卡包: {detected}")
 
     # 第二轮：按卡包分组编号重命名
     pack_counters = {}
@@ -476,9 +476,9 @@ def step_cut(pack, date_str):
     sys.path.insert(0, os.path.join(BASE_DIR, 'tools'))
     import card_rect_cutter
 
-    pic_dir = get_pics_dir(pack, date_str)
+    pic_dir = get_sources_dir(pack, date_str)
     output_dir = get_output_dir(pack, date_str)
-    row_pics_dir = os.path.join(output_dir, 'row_pics')
+    row_pics_dir = os.path.join(output_dir, ROWS_DIR)
     os.makedirs(row_pics_dir, exist_ok=True)
 
     # 清理旧的裁切图片
@@ -542,8 +542,8 @@ def step_card_cut(pack, date_str):
     import card_cutter
 
     output_dir = get_output_dir(pack, date_str)
-    row_pics_dir = os.path.join(output_dir, 'row_pics')
-    card_pics_dir = os.path.join(output_dir, 'card_pics')
+    row_pics_dir = os.path.join(output_dir, ROWS_DIR)
+    card_pics_dir = os.path.join(output_dir, CARDS_DIR)
 
     card_cutter.process_all_rows(BASE_DIR, row_pics_dir=row_pics_dir, card_pics_dir=card_pics_dir, output_dir=output_dir)
 
@@ -557,9 +557,9 @@ def step_ocr_cards(pack, date_str):
     import json
 
     output_dir = get_output_dir(pack, date_str)
-    card_pics_dir = os.path.join(output_dir, 'card_pics')
-    results_path = os.path.join(output_dir, 'card_ocr_results.json')
-    cut_info_path = os.path.join(output_dir, 'card_cut_info.json')
+    card_pics_dir = os.path.join(output_dir, CARDS_DIR)
+    results_path = os.path.join(output_dir, OCR_RESULTS_FILE)
+    cut_info_path = os.path.join(output_dir, CARD_CUT_INFO_FILE)
 
     # 获取所有单卡图片
     if not os.path.exists(card_pics_dir):
@@ -670,10 +670,10 @@ def step_parse(pack, date_str):
     import extract_prices
 
     output_dir = get_output_dir(pack, date_str)
-    ocr_path = os.path.join(output_dir, 'card_ocr_results.json')
-    output_path = os.path.join(output_dir, 'parsed_prices_v6.json')
+    ocr_path = os.path.join(output_dir, OCR_RESULTS_FILE)
+    output_path = os.path.join(output_dir, PARSED_PRICES_FILE)
     summary_path = os.path.join(output_dir, 'price_extract_summary.txt')
-    cut_info_path = os.path.join(output_dir, 'card_cut_info.json')
+    cut_info_path = os.path.join(output_dir, CARD_CUT_INFO_FILE)
 
     extract_prices.main(date_str,
                         ocr_path=ocr_path,
@@ -736,8 +736,8 @@ def step_review(pack, date_str):
     import json
 
     output_dir = get_output_dir(pack, date_str)
-    parsed_path = os.path.join(output_dir, 'parsed_prices_v6.json')
-    ocr_results_path = os.path.join(output_dir, 'card_ocr_results.json')
+    parsed_path = os.path.join(output_dir, PARSED_PRICES_FILE)
+    ocr_results_path = os.path.join(output_dir, OCR_RESULTS_FILE)
 
     if not os.path.exists(parsed_path):
         print("❌ 找不到解析结果，请先运行 parse 步骤")
@@ -768,32 +768,21 @@ def step_review(pack, date_str):
 
     # 建立 setNumber → 旧价格映射
     old_prices_map = {}  # setNumber → {rarity: price}
-    for card_key, card_info in loch_prices.get('cards', {}).items():
-        sn = card_info.get('setNumber', '')
-        if sn:
-            old_prices_map[sn] = card_info.get('prices', {})
-    for card_key, card_info in locr_prices.get('cards', {}).items():
-        sn = card_info.get('setNumber', '')
-        if sn:
-            old_prices_map[sn] = card_info.get('prices', {})
-    for card_key, card_info in blzd_prices.get('cards', {}).items():
-        sn = card_info.get('setNumber', '')
-        if sn:
+    for prices_file in [loch_prices, locr_prices, blzd_prices]:
+        for card_key, card_info in prices_file.get('cards', {}).items():
+            # card_key 就是 setNumber（如 BLZD-JP001）
+            sn = card_key
+            if not sn:
+                continue
             old_prices_map[sn] = card_info.get('prices', {})
 
     # 建立 setNumber → 卡名映射
     card_name_map = {}
-    for card_key, card_info in loch_prices.get('cards', {}).items():
-        sn = card_info.get('setNumber', '')
-        if sn:
-            card_name_map[sn] = card_info.get('name', '')
-    for card_key, card_info in locr_prices.get('cards', {}).items():
-        sn = card_info.get('setNumber', '')
-        if sn:
-            card_name_map[sn] = card_info.get('name', '')
-    for card_key, card_info in blzd_prices.get('cards', {}).items():
-        sn = card_info.get('setNumber', '')
-        if sn:
+    for prices_file in [loch_prices, locr_prices, blzd_prices]:
+        for card_key, card_info in prices_file.get('cards', {}).items():
+            sn = card_key
+            if not sn:
+                continue
             card_name_map[sn] = card_info.get('name', '')
 
     # 从OCR解析结果中提取新价格
@@ -1024,9 +1013,10 @@ def step_merge(pack, date_str):
     import merge_prices
 
     output_dir = get_output_dir(pack, date_str)
-    parsed_path = os.path.join(output_dir, 'parsed_prices_v6.json')
+    parsed_path = os.path.join(output_dir, PARSED_PRICES_FILE)
+    csv_path = os.path.join(output_dir, PRICE_COMPARISON_FILE)
 
-    merge_prices.main(date_str=date_str, parsed_path=parsed_path)
+    merge_prices.main(date_str=date_str, parsed_path=parsed_path, csv_path=csv_path)
 
 
 def main():
@@ -1125,12 +1115,12 @@ def main():
     print(f"  📦 卡包: {pack}")
     print(f"  📅 日期: {date_str}")
     print(f"  ⏱️  总耗时: {total_time:.1f}s")
-    print(f"  📂 截图目录: {get_pics_dir(pack, date_str)}")
+    print(f"  📂 截图目录: {get_sources_dir(pack, date_str)}")
     print(f"  📂 输出目录: {output_dir}")
 
     if 'merge' in steps_to_run:
         print(f"\n  📊 请检查价格对照表:")
-        print(f"     {os.path.join(output_dir, 'price_comparison.csv')}")
+        print(f"     {os.path.join(output_dir, PRICE_COMPARISON_FILE)}")
         print(f"\n  确认无误后执行:")
         print(f"     git add data/ocg/prices/")
         print(f'     git commit -m "更新卡片市场价格 ({date_str[:4]}-{date_str[4:6]}-{date_str[6:]})"')

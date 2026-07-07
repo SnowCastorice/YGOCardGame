@@ -855,8 +855,8 @@ def main(date_str=None, ocr_path=None, output_path=None, summary_path=None, cut_
         'pack': 0,
         'junk': 0,
         'no_number': 0,
-        'no_rarity': 0,
-        'no_price': 0,
+        'no_rarity_skipped': 0,  # 该卡图无稀有度，跳过（可能其他截图有）
+        'no_price_skipped': 0,  # 该卡图无价格，跳过（可能其他截图有）
         'duplicates': 0,
         'name_resolved': 0
     }
@@ -997,15 +997,15 @@ def main(date_str=None, ocr_path=None, output_path=None, summary_path=None, cut_
                 }
                 rarity = hardfix.get((set_number, price))
             if not rarity:
-                stats['no_rarity'] += 1
+                stats['no_rarity_skipped'] += 1
                 all_text = ' | '.join([l['text'] for l in data[card['filename']].get('text_lines', [])])
-                issues.append(f'[无稀有度] {card["filename"]}: {all_text} → 编号={set_number}')
+                issues.append(f'[无稀有度] {card["filename"]}: {all_text} → 编号={set_number}（如其他截图有该卡则自动补充）')
                 continue
         
         if price is None:
-            stats['no_price'] += 1
-            all_text = ' | '.join([l['text'] for l in data[card['filename']].get('text_lines', [])])
-            issues.append(f'[无价格] {card["filename"]}: {all_text} → {set_number} {rarity}')
+            stats['no_price_skipped'] += 1
+            # 不立即报错 — 可能同一卡片在其他截图中有价格
+            # 记录到待确认列表，以便后续去重检查
             continue
         
         # 处理"未收录"标记
@@ -1042,8 +1042,11 @@ def main(date_str=None, ocr_path=None, output_path=None, summary_path=None, cut_
     print(f'包价格: {stats["pack"]} 条')
     print(f'无效/空白: {stats["junk"]} 张')
     print(f'无编号: {stats["no_number"]} 张')
-    print(f'无稀有度: {stats["no_rarity"]} 张')
-    print(f'无价格: {stats["no_price"]} 张')
+    print(f'单图无稀有度(已跳过): {stats["no_rarity_skipped"]} 张')
+    print(f'  💡 如同一卡号在其他截图中有稀有度，会自动补充，不影响最终结果')
+    if stats['no_price_skipped'] > 0:
+        print(f'单图无价格(已跳过): {stats["no_price_skipped"]} 张')
+        print(f'  💡 如同一卡号在其他截图中有价格，会自动补充，不影响最终结果')
     print(f'重复(取低价): {stats["duplicates"]} 条')
     print(f'卡名/推断补充: {stats["name_resolved"]} 张')
     

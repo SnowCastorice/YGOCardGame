@@ -163,6 +163,33 @@ local/venv/Scripts/python.exe tools/ocr_workflow.py --pack <卡包> --date <日�
 - **不要跳过 review 步骤**，必须展示审核结果给用户确认
 - **不要修改 Python 脚本**，只负责调用和分析结果
 - 截图分辨率必须是 2064×2752，否则裁切参数不匹配
+- **分辨率不符合时立即告知用户**，列出期望值 vs 实际值，让用户自己修复截图，**不做自动旋转/缩放等额外处理**
 - OCR 步骤耗时较长，执行前告知用户预计时间
 - 所有临时文件在 `test_output/` 目录，已被 `.gitignore` 忽略
 - 处理完成后及时清理中间产物（`01_rows/`、`02_cards/`），保留 JSON 和 CSV 结果
+
+## 常见问题排查
+
+### 分辨率不匹配
+
+截图分辨率必须为 2064×2752（竖屏）。如果是 2752×2064（横屏），在 MuMu 模拟器中调整方向重新截图。**不要尝试自动旋转。**
+
+### 部分卡片显示"单图无价格"
+
+parse 步骤输出的 `单图无价格(已跳过): N 张` 表示某张卡图没有价格文字（可能被 UI 遮挡），但**同一卡片在其他截图中的有价格版本会自动补充**。只要最终问题列表中没有该卡，就不用担心。
+
+### 所有价格都显示为"新卡/新稀有度"
+
+review 步骤显示全部新卡时，通常是 `step_review()` 读取旧价格文件的 key 格式不匹配。检查旧价格 JSON 的 key 是否为 setNumber 本身（如 `BLZD-JP001`），而非 `setNumber` 字段。
+
+### BLZD-JPS 辅助包价格未保存
+
+`merge_prices.py` 通过 `supplementPackFile` 字段加载辅助包卡片数据。如果 `ocg_blzds.json` 存在但 merge 报"未找到"，检查脚本是否读取了 `supplementPackFile` 而非 `supplementPack`。
+
+### Windows 乱码/报错
+
+所有 Python 命令必须加 `PYTHONIOENCODING=utf-8` 前缀，否则 emoji 字符会导致 `UnicodeEncodeError`。
+
+### rename 步骤太慢
+
+如果 `--pack` 已指定卡包名，rename 不需要 OCR。脚本已优化为直接使用 `--pack` 参数，跳过 PaddleOCR 模型加载（节省 ~55s）。
