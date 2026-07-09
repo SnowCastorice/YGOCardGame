@@ -890,10 +890,20 @@ def main(date_str=None, ocr_path=None, output_path=None, summary_path=None, cut_
             stats['pack'] += 1
             price = parse_price(text_lines)
             all_text = ' '.join([l['text'] for l in text_lines])
-            if '原盒' in all_text and price:
-                pack_prices[series]['box'] = price
-            elif '原包' in all_text and price:
-                pack_prices[series]['pack'] = price
+            # 排除"未收录"等无效价格（避免覆盖有效价格）
+            if price is not None and price != '未收录' and isinstance(price, (int, float)):
+                if '原盒' in all_text:
+                    old = pack_prices[series].get('box')
+                    if old is None or old == '未收录':
+                        pack_prices[series]['box'] = price
+                    else:
+                        pack_prices[series]['box'] = min(old, price)
+                elif '原包' in all_text:
+                    old = pack_prices[series].get('pack')
+                    if old is None or old == '未收录':
+                        pack_prices[series]['pack'] = price
+                    else:
+                        pack_prices[series]['pack'] = min(old, price)
             continue
         
         # 判断是否是JPY原盒标签

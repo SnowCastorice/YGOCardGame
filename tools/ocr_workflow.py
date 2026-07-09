@@ -1086,10 +1086,17 @@ def main():
     if non_organize_steps:
         check_screenshots(pack, date_str)
 
-    # 清理历史数据（仅在完整流程或从 rename/cut 开始时执行）
-    if args.step is None or args.step in ('rename', 'cut'):
-        if args.step != 'organize':
-            clean_test_output(pack, date_str)
+    # 清理历史数据：仅当从头开始（rename/cut）时才清理
+    # --from 模式不清理（保留中间产物用于断点恢复）
+    should_clean = False
+    if args.from_step:
+        # 从早期步骤开始时清理
+        should_clean = args.from_step in ('rename', 'cut')
+    elif args.step is None or args.step in ('rename', 'cut'):
+        should_clean = args.step != 'organize'
+
+    if should_clean:
+        clean_test_output(pack, date_str)
 
     total_start = time.time()
 

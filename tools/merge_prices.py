@@ -32,6 +32,11 @@ from datetime import datetime
 # 特殊标记：价格未收录
 PRICE_NOT_LISTED = "未收录"
 
+# 单包价格系数：单包价 = 盒价 / 每盒包数 × 系数
+PACK_PRICE_COEFFICIENT = 1.2
+# 默认每盒包数（未在 packs.json 中显式配置时使用）
+DEFAULT_PACKS_PER_BOX = 30
+
 
 def load_json(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
@@ -725,12 +730,34 @@ def main(date_str=None, parsed_path=None, csv_path=None):
     # 从OCR解析结果中读取卡包价格
     ocr_pack_prices = ocr_data.get('pack_prices', {})
 
+    # 加载 packs.json 获取每盒包数
+    packs_config = load_json(os.path.join(base_dir, 'data', 'ocg', 'packs.json'))
+    packs_per_box_map = {}  # packCode → packsPerBox
+    for p in packs_config.get('packs', []):
+        code = p.get('packCode', '')
+        ppb = p.get('packsPerBox', DEFAULT_PACKS_PER_BOX)
+        packs_per_box_map[code] = ppb
+
+    def calc_pack_price(box_price, pack_code):
+        """从盒价计算单包价：向上取整(盒价 / 每盒包数 × 系数)"""
+        if box_price is None or box_price == PRICE_NOT_LISTED:
+            return None
+        ppb = packs_per_box_map.get(pack_code, DEFAULT_PACKS_PER_BOX)
+        raw = box_price / ppb * PACK_PRICE_COEFFICIENT
+        return int(raw) if raw == int(raw) else int(raw) + 1  # 向上取整
+
     csv_rows.append(['', '', '', '', '', '', '', '', '', ''])
+
+    def ceil_price(p):
+        """向上取整价格（整数保持不变，小数则进一）"""
+        if p is None or p == PRICE_NOT_LISTED or not isinstance(p, (int, float)):
+            return p
+        return int(p) if p == int(p) else int(p) + 1
 
     # LOCH 盒/包价格
     loch_pack = ocr_pack_prices.get('loch', {})
     if 'box' in loch_pack:
-        loch_prices['packPrices']['LOCH']['box'] = loch_pack['box']
+        loch_prices['packPrices']['LOCH']['box'] = ceil_price(loch_pack['box'])
         loch_has_changes = True
         print(f"  LOCH 盒=¥{loch_pack['box']} ✅ (OCR识别)")
         csv_rows.append(['卡包价格', 'LOCH', '', '盒', f"¥{loch_prices['packPrices']['LOCH'].get('box', '-')}", '', '', '', f"¥{loch_pack['box']}", 'OCR识别'])
@@ -738,16 +765,19 @@ def main(date_str=None, parsed_path=None, csv_path=None):
         print(f"  LOCH 盒=¥{loch_prices['packPrices']['LOCH'].get('box', '?')} (沿用旧价，OCR未识别)")
         csv_rows.append(['卡包价格', 'LOCH', '', '盒', '', '', '', '', f"¥{loch_prices['packPrices']['LOCH'].get('box', '?')}", '沿用旧价'])
 
-    if 'pack' in loch_pack:
-        loch_prices['packPrices']['LOCH']['pack'] = loch_pack['pack']
+    # LOCH 单包价从盒价推算
+    loch_box = loch_prices['packPrices']['LOCH'].get('box')
+    if loch_box is not None and loch_box != PRICE_NOT_LISTED:
+        loch_calc_pack = calc_pack_price(loch_box, 'LOCH')
+        loch_prices['packPrices']['LOCH']['pack'] = loch_calc_pack
         loch_has_changes = True
-        print(f"  LOCH 包=¥{loch_pack['pack']} ✅ (OCR识别)")
-        csv_rows.append(['卡包价格', 'LOCH', '', '包', f"¥{loch_prices['packPrices']['LOCH'].get('pack', '-')}", '', '', '', f"¥{loch_pack['pack']}", 'OCR识别'])
+        print(f"  LOCH 包=¥{loch_calc_pack} 📐 (盒价¥{loch_box} / {packs_per_box_map.get('LOCH', '?')}包 × {PACK_PRICE_COEFFICIENT})")
+        csv_rows.append(['卡包价格', 'LOCH', '', '包', f"¥{loch_prices['packPrices']['LOCH'].get('pack', '-')}", '', '', '', f"¥{loch_calc_pack}", f'盒价推算'])
     else:
-        print(f"  LOCH 包=¥{loch_prices['packPrices']['LOCH'].get('pack', '?')} (沿用旧价，OCR未识别)")
+        print(f"  LOCH 包=¥{loch_prices['packPrices']['LOCH'].get('pack', '?')} (沿用旧价，无有效盒价)")
         csv_rows.append(['卡包价格', 'LOCH', '', '包', '', '', '', '', f"¥{loch_prices['packPrices']['LOCH'].get('pack', '?')}", '沿用旧价'])
 
-    # LOSP vol1 包价格（写入独立文件）
+    # LOSP vol1 包价格（写入独立文件，无盒价，直接使用OCR原包价）
     losp_pack = ocr_pack_prices.get('losp', {})
     losp_ocr_has_vol1 = any(sn for sn in losp_ocr if sn.startswith('LOSP-JP0') and int(sn.split('JP')[1][:3]) <= 10)
     if 'pack' in losp_pack and losp_ocr_has_vol1:
@@ -762,7 +792,7 @@ def main(date_str=None, parsed_path=None, csv_path=None):
     # BLZD 盒/包价格
     blzd_pack = ocr_pack_prices.get('blzd', {})
     if 'box' in blzd_pack:
-        blzd_prices['packPrices']['BLZD']['box'] = blzd_pack['box']
+        blzd_prices['packPrices']['BLZD']['box'] = ceil_price(blzd_pack['box'])
         blzd_has_changes = True
         print(f"  BLZD 盒=¥{blzd_pack['box']} ✅ (OCR识别)")
         csv_rows.append(['卡包价格', 'BLZD', '', '盒', f"¥{blzd_prices['packPrices']['BLZD'].get('box', '-')}", '', '', '', f"¥{blzd_pack['box']}", 'OCR识别'])
@@ -770,19 +800,22 @@ def main(date_str=None, parsed_path=None, csv_path=None):
         print(f"  BLZD 盒=¥{blzd_prices['packPrices']['BLZD'].get('box', '?')} (沿用旧价，OCR未识别)")
         csv_rows.append(['卡包价格', 'BLZD', '', '盒', '', '', '', '', f"¥{blzd_prices['packPrices']['BLZD'].get('box', '?')}", '沿用旧价'])
 
-    if 'pack' in blzd_pack:
-        blzd_prices['packPrices']['BLZD']['pack'] = blzd_pack['pack']
+    # BLZD 单包价从盒价推算
+    blzd_box = blzd_prices['packPrices']['BLZD'].get('box')
+    if blzd_box is not None and blzd_box != PRICE_NOT_LISTED:
+        blzd_calc_pack = calc_pack_price(blzd_box, 'BLZD')
+        blzd_prices['packPrices']['BLZD']['pack'] = blzd_calc_pack
         blzd_has_changes = True
-        print(f"  BLZD 包=¥{blzd_pack['pack']} ✅ (OCR识别)")
-        csv_rows.append(['卡包价格', 'BLZD', '', '包', f"¥{blzd_prices['packPrices']['BLZD'].get('pack', '-')}", '', '', '', f"¥{blzd_pack['pack']}", 'OCR识别'])
+        print(f"  BLZD 包=¥{blzd_calc_pack} 📐 (盒价¥{blzd_box} / {packs_per_box_map.get('BLZD', '?')}包 × {PACK_PRICE_COEFFICIENT})")
+        csv_rows.append(['卡包价格', 'BLZD', '', '包', f"¥{blzd_prices['packPrices']['BLZD'].get('pack', '-')}", '', '', '', f"¥{blzd_calc_pack}", f'盒价推算'])
     else:
-        print(f"  BLZD 包=¥{blzd_prices['packPrices']['BLZD'].get('pack', '?')} (沿用旧价，OCR未识别)")
+        print(f"  BLZD 包=¥{blzd_prices['packPrices']['BLZD'].get('pack', '?')} (沿用旧价，无有效盒价)")
         csv_rows.append(['卡包价格', 'BLZD', '', '包', '', '', '', '', f"¥{blzd_prices['packPrices']['BLZD'].get('pack', '?')}", '沿用旧价'])
 
     # LOCR 盒/包价格
     locr_pack = ocr_pack_prices.get('locr', {})
     if 'box' in locr_pack:
-        locr_prices['packPrices']['LOCR']['box'] = locr_pack['box']
+        locr_prices['packPrices']['LOCR']['box'] = ceil_price(locr_pack['box'])
         locr_has_changes = True
         print(f"  LOCR 盒=¥{locr_pack['box']} ✅ (OCR识别)")
         csv_rows.append(['卡包价格', 'LOCR', '', '盒', f"¥{locr_prices['packPrices']['LOCR'].get('box', '-')}", '', '', '', f"¥{locr_pack['box']}", 'OCR识别'])
@@ -790,13 +823,16 @@ def main(date_str=None, parsed_path=None, csv_path=None):
         print(f"  LOCR 盒=¥{locr_prices['packPrices']['LOCR'].get('box', '?')} (沿用旧价，OCR未识别)")
         csv_rows.append(['卡包价格', 'LOCR', '', '盒', '', '', '', '', f"¥{locr_prices['packPrices']['LOCR'].get('box', '?')}", '沿用旧价'])
 
-    if 'pack' in locr_pack:
-        locr_prices['packPrices']['LOCR']['pack'] = locr_pack['pack']
+    # LOCR 单包价从盒价推算
+    locr_box = locr_prices['packPrices']['LOCR'].get('box')
+    if locr_box is not None and locr_box != PRICE_NOT_LISTED:
+        locr_calc_pack = calc_pack_price(locr_box, 'LOCR')
+        locr_prices['packPrices']['LOCR']['pack'] = locr_calc_pack
         locr_has_changes = True
-        print(f"  LOCR 包=¥{locr_pack['pack']} ✅ (OCR识别)")
-        csv_rows.append(['卡包价格', 'LOCR', '', '包', f"¥{locr_prices['packPrices']['LOCR'].get('pack', '-')}", '', '', '', f"¥{locr_pack['pack']}", 'OCR识别'])
+        print(f"  LOCR 包=¥{locr_calc_pack} 📐 (盒价¥{locr_box} / {packs_per_box_map.get('LOCR', '?')}包 × {PACK_PRICE_COEFFICIENT})")
+        csv_rows.append(['卡包价格', 'LOCR', '', '包', f"¥{locr_prices['packPrices']['LOCR'].get('pack', '-')}", '', '', '', f"¥{locr_calc_pack}", f'盒价推算'])
     else:
-        print(f"  LOCR 包=¥{locr_prices['packPrices']['LOCR'].get('pack', '?')} (沿用旧价，OCR未识别)")
+        print(f"  LOCR 包=¥{locr_prices['packPrices']['LOCR'].get('pack', '?')} (沿用旧价，无有效盒价)")
         csv_rows.append(['卡包价格', 'LOCR', '', '包', '', '', '', '', f"¥{locr_prices['packPrices']['LOCR'].get('pack', '?')}", '沿用旧价'])
 
     # LOSP vol2 包价格（写入独立文件）
