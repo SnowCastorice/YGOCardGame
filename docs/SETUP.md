@@ -11,7 +11,7 @@
 | 文件 | 作用 |
 |------|------|
 | `CLAUDE.md` | 项目指引（开发规范、架构、命令等） |
-| `.mcp.json` | Chrome DevTools MCP 配置 |
+| `.mcp.json` | Chrome DevTools MCP 配置（通用写法；Windows 需本地覆盖，见 [SETUP_WINDOWS.md](SETUP_WINDOWS.md) 3.3）|
 | `.claude/settings.json` | 项目级共享设置（含 Hooks） |
 | `.claude/settings.local.json` | 本地设置（自动生成，不提交） |
 | `.claude/hooks/pre-push-check.sh` | PreToolUse Hook：提交前版本号+数据一致性检查 |

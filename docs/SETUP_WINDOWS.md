@@ -1,7 +1,7 @@
 # 🪟 Windows 设备 Claude Code 同步配置指南
 
 > 本文档用于在新 Windows 设备上快速同步 Claude Code 完整开发环境。
-> macOS 主机配置快照时间：2026-07-01
+> macOS 主机配置快照时间：2026-09-21
 
 ---
 
@@ -87,6 +87,29 @@ git checkout dev
   }
 }
 ```
+
+### 3.3 chrome-devtools MCP 的 Windows 本地覆盖（必做）
+
+项目里的 `.mcp.json`（随 Git 同步）保存的是**通用写法** `"command": "npx"`，macOS/Linux 开箱即用。但 **Windows 上 Claude Code 无法直接执行 `npx`**（`npx` 实际是 `npx.cmd` 批处理文件，启动会报 `Windows requires 'cmd /c' wrapper to execute npx`），需要在**设备本地**加一个同名覆盖。
+
+**原理**：Claude Code 的 MCP 作用域优先级为 `local > project > user`，同名服务器以最高优先级的定义为准。因此本地覆盖会盖过 `.mcp.json`，且只影响这台设备。
+
+**操作步骤**（手动编辑最稳）：
+
+1. 关闭 Claude Code
+2. 编辑 `%USERPROFILE%\.claude.json`，找到 `projects` → 本项目路径的条目 → 在其中的 `mcpServers` 加入：
+
+```json
+"chrome-devtools": {
+  "command": "cmd",
+  "args": ["/c", "npx", "-y", "chrome-devtools-mcp@latest"]
+}
+```
+
+3. 保存后运行 `claude mcp list` 验证，应显示 `chrome-devtools ... ✔ Connected`
+
+> ⚠️ 不要用 `claude mcp add` 配置这个（已知 bug 会把 `/c` 误判为路径，见 anthropics/claude-code#46360），手动编辑 `~/.claude.json` 最稳。
+> ⚠️ 若 `claude mcp list` 提示同名服务器冲突警告，属正常现象——local 覆盖生效，实际用的是 Windows 写法。
 
 ---
 
@@ -192,11 +215,11 @@ claude
 |---|--------|-----------|----------|
 | 1 | CLAUDE.md 被读取 | 直接问 Claude "当前项目是什么" | 回答"游戏王开包模拟器" |
 | 2 | 中文交流正常 | 直接对话 | Claude 用中文回复 |
-| 3 | Skills 可用 | `/skills` | 列出 36 个 skill |
+| 3 | Skills 可用 | `/skills` | 显示 skill 列表（含用户级 18 个）|
 | 4 | Playwright MCP 可用 | `/mcp` | 显示 playwright 的 23 个工具 |
 | 5 | price-ocr Agent 可用 | `/agents` | 显示 price-ocr agent |
 | 6 | Hooks 生效 | 尝试 git commit | 触发版本号检查 |
-| 7 | Chrome DevTools MCP | 打开 Chrome 后 `/mcp` | 显示 chrome-devtools 工具 |
+| 7 | Chrome DevTools MCP | 完成 3.3 本地覆盖后 `/mcp` | 显示 chrome-devtools 工具 |
 | 8 | OCR 环境 | `local\venv\Scripts\python.exe -c "import paddle; print(paddle.device.is_compiled_with_cuda())"` | `True` |
 
 ---
@@ -210,10 +233,10 @@ claude
 | .claude/hooks/ | 项目级 | ✅ Git |
 | .claude/agents/ | 项目级 | ✅ Git |
 | .claude/commands/ | 项目级 | ✅ Git |
-| .mcp.json | 项目根目录 | ✅ Git |
+| .mcp.json | 项目根目录 | ✅ Git（通用写法，Windows 另需本地覆盖）|
 | `~/.claude/settings.json` | 用户级 | ❌ 手动创建 |
-| `~/.claude.json` (MCP) | 用户级 | ❌ 手动添加 |
-| `~/.claude/skills/` (21个) | 用户级 | ❌ `npx skills add` |
+| `~/.claude.json` (MCP) | 用户级 + local 覆盖 | ❌ 手动添加 |
+| `~/.claude/skills/` (18个) | 用户级 | ❌ `npx skills add` |
 | Python venv | `local/venv/` | ❌ 手动安装 |
 | Global npm 包 | 系统级 | ❌ `npm install -g` |
 
@@ -221,8 +244,8 @@ claude
 
 ## 🔄 同步提醒
 
-- macOS 和 Windows 的 `.mcp.json` 中 `chrome-devtools` 的 `command` 字段不同：
-  - **macOS**: `"command": "cmd"`, `"args": ["/c", "npx", ...]`
-  - **Windows**: `"command": "cmd"`, `"args": ["/c", "npx", ...]`（Windows 上相同，用 `cmd /c` 均可）
+- **chrome-devtools MCP 的平台差异**（重要）：
+  - `.mcp.json`（随 Git 同步）统一使用 `npx` 通用写法，**macOS/Linux 直接可用**
+  - **Windows 无法直接执行 `npx`**，需在设备本地加 `cmd /c` 覆盖（见 3.3），该覆盖不随 Git 同步，每台 Windows 设备配置一次即可
 - 用户级 `~/.claude/settings.json` 中的 API 配置如果不同设备用不同 API key，记得各自修改
 - macOS 的 `~/.claude/skills/` 目录可以直接复制到 Windows 的 `%USERPROFILE%\.claude\skills\`，但推荐用 `npx skills add` 重新安装以保持一致
